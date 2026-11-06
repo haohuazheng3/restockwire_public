@@ -11,6 +11,7 @@
  * slot is read in its store's own zone (storeTimeZone), exactly as restockTimes.ts does.
  */
 import { unstable_cache } from "next/cache";
+import { STATS_DAYS } from "@/lib/stock/window";
 import { sql } from "drizzle-orm";
 import { db, hasDatabase } from "../db";
 import { countryOfStore, partNumbersFor, storeByNumber, storeTimeZone, type ModelKey } from "../apple/catalog";
@@ -21,7 +22,7 @@ import { PATTERN_MIN, PATTERN_MIN_DAYS, WEEKDAY_MIN_SPAN, localHourDay } from ".
 import { busiestWindow } from "./restockTimes";
 
 /** The heatmap, streaks and ranking look back this many days; the leaderboard LEADERBOARD_DAYS. */
-export const WIRE_DAYS = 30;
+export const WIRE_DAYS = STATS_DAYS;
 export const LEADERBOARD_DAYS = 7;
 /** A store enters the sell-out ranking from this many timed restock → sell-out pairs. */
 export const RANKING_MIN_PAIRS = 3;

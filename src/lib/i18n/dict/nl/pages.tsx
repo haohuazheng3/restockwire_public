@@ -128,7 +128,7 @@ export const pages: Dict["pages"] = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>Op dit moment biedt {a.place}{a.street ? ` (${a.street})` : ""} <b className="text-ink">{n$(a.duo)} van de {n$(a.duoOf)}</b> configuraties van de iPhone Duo aan om op te halen, <b className="text-ink">{n$(a.pro)} van de {n$(a.proOf)}</b> van de iPhone 18 Pro en <b className="text-ink">{n$(a.pm)} van de {n$(a.pmOf)}</b> van de iPhone 18 Pro Max.{a.peak ? <> Het gebruikelijke aanvuluur hier is <b className="text-ink">{a.peak}</b> lokale tijd.</> : null}</>
     ),
-    restocks30: (n: number) => `${n$(n)} ${n === 1 ? "aanvulling" : "aanvullingen"} in 30 dagen`,
+    restocks30: (n: number) => `${n$(n)} ${n === 1 ? "aanvulling" : "aanvullingen"} in 14 dagen`,
     lookupOff: "Apple heeft de voorraadcheck voor ophalen in deze winkel voorlopig uitgezet. RestockWire vraagt het elke 30 minuten opnieuw en toont de voorraad zodra Apple antwoordt.",
     checked: "Gecheckt",
     alertHere: (short: string) => `Volg deze winkel voor de ${short}`,

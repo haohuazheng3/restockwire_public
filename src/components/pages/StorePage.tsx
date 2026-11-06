@@ -226,34 +226,25 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
           <Link href={alert} className="btn btn-primary btn-sm">{S.alertHere(duo.short)}</Link>
         </div>
       </div>
-      <AlertPanelFor href={alert} summary={lang === "en" ? S.panel(s.name) : S.panel(N.store(s))} country={cc} />
 
+      {/* RestockWire order: live wire → this store's pattern → stock tables → alert → hours & guide. */}
       <div className="mt-6"><Last24Hours data={d.recent} label={G.atPlace(place)} stores={[s]} country={cc} stock={d.stock} lastBefore={d.lastDuoRestock} alert={alert} /></div>
-
+      <section className="mt-6 min-w-0">
+        <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">{S.history}</h2><Link href={restocksAll} className="text-sm text-ink-3 hover:text-ink">{G.allOfArrow(sRegion)}</Link></div>
+        <RestockFeed rows={d.feed.slice(0, 8)} showModel emptyText={S.historyEmpty} />
+      </section>
       <div className="mt-6"><ModelPlaceCards place={storePlace(s)} stockNow={d.stockNow} of={Object.fromEntries(MODELS.map((m) => [m.key, catalogFor(m.key, cc).length])) as Record<ModelKey, number>} unit={S.configsInStock} /></div>
       <div className="mt-3"><PlaceStatStrip stores={1} stockNow={d.stockNow} stats={d.pstats} storeMode /></div>
 
-      <section className="mt-6">
-        <h2 className="text-xl font-semibold">{S.stockNowH2}</h2>
-        <div className="mt-3"><StockByModel summary={d.summary} storeNumber={s.storeNumber} {...(d.lookupOff ? { lookupOff: true } : {})} /></div>
-      </section>
-
-      <div className="mt-6" id="configs"><ConfigTable store={s} rows={d.rows} {...(d.lookupOff ? { lookupOff: true } : {})} /></div>
-
-      <div className="mx-auto mt-8 max-w-3xl">
-        <Figure id={photo1} />
-        <KeywordSections sections={sections} facts={facts} />
-      </div>
-
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-6">
+          <RestockHeatmap data={d.heat} label={G.here} stores={[s]} />
+          <RestockStreak data={d.streak} label={G.here} />
           <section className="pane p-5">
             <h2 className="text-xl font-semibold">{S.whenRestock(N.store(s))}</h2>
             <div className="mt-3"><RestockClock stats={d.stats} label={G.here} reports={d.reports} /></div>
             {rtLink && <p className="mt-3 text-sm"><Link href={rtLink.href} className="font-medium text-ink underline-offset-2 hover:underline">{rtLink.place}: the hours the iPhone Duo comes back, store by store →</Link></p>}
           </section>
-          <RestockHeatmap data={d.heat} label={G.here} stores={[s]} />
-          <RestockStreak data={d.streak} label={G.here} />
           <section className="pane p-5">
             <h2 className="text-xl font-semibold">{S.howFast(N.store(s))}</h2>
             <div className="mt-3"><SellOutTimes data={d.sell} label={G.here} /></div>
@@ -266,10 +257,6 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
             <h2 className="text-xl font-semibold">{G.restocksBy}</h2>
             <div className="mt-3"><RestocksByConfig stats={d.pstats} label={G.here} store={s.storeNumber} country={cc} /></div>
           </section>
-          <section className="min-w-0">
-            <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">{S.history}</h2><Link href={restocksAll} className="text-sm text-ink-3 hover:text-ink">{G.allOfArrow(sRegion)}</Link></div>
-            <RestockFeed rows={d.feed} showModel emptyText={S.historyEmpty} />
-          </section>
         </div>
         <aside className="space-y-4">
           <MiniMap lat={s.lat} lng={s.lng} label={place} href={`${mapPath(cc)}?store=${s.storeNumber}&model=${DEFAULT_MODEL}`} />
@@ -278,6 +265,17 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
           {d.inState.length > 0 && <NearbyStores title={S.elsewhereIn(sRegion)} stores={d.inState} stock={d.stock} />}
           {us && <NearbyStores title={G.acrossStateLine} stores={d.outside} stock={d.stock} />}
         </aside>
+      </div>
+
+      <section className="mt-6">
+        <h2 className="text-xl font-semibold">{S.stockNowH2}</h2>
+        <div className="mt-3"><StockByModel summary={d.summary} storeNumber={s.storeNumber} {...(d.lookupOff ? { lookupOff: true } : {})} /></div>
+      </section>
+      <div className="mt-6" id="configs"><ConfigTable store={s} rows={d.rows} {...(d.lookupOff ? { lookupOff: true } : {})} /></div>
+      <AlertPanelFor href={alert} summary={lang === "en" ? S.panel(s.name) : S.panel(N.store(s))} country={cc} />
+      <div className="mx-auto mt-8 max-w-3xl">
+        <Figure id={photo1} />
+        <KeywordSections sections={sections} facts={facts} />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">

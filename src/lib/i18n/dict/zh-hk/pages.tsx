@@ -115,7 +115,7 @@ export const pages: Dict["pages"] = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>{a.peak ? <>慣常補貨鐘點：當地<b className="text-ink">{a.peak}</b>。</> : null}此刻在架（店舖取貨）：iPhone Duo <b className="text-ink">{n(a.duo)}/{n(a.duoOf)} 款</b>、iPhone 18 Pro <b className="text-ink">{n(a.pro)}/{n(a.proOf)} 款</b>、iPhone 18 Pro Max <b className="text-ink">{n(a.pm)}/{n(a.pmOf)} 款</b>——{addressOfName(a.place) ? `${a.place}，${addressOfName(a.place)}` : `${a.place}${a.street ? `，${a.street}` : ""}`}。</>
     ),
-    restocks30: (k: number) => `補貨 ${n(k)} 次／30 日`,
+    restocks30: (k: number) => `補貨 ${n(k)} 次／14 日`,
     lookupOff: "這間分店的店舖取貨查詢，Apple 目前沒有開放。RestockWire 每 30 分鐘重試一次；Apple 一恢復回應，現貨便會顯示。",
     checked: "讀取於",
     alertHere: (short: string) => `${short} 一到這間店就通知我`,

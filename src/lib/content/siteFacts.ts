@@ -4,6 +4,7 @@
  * (first sightings excluded); other trackers' reports never enter these numbers. Cached an hour.
  */
 import { unstable_cache } from "next/cache";
+import { STATS_DAYS } from "@/lib/stock/window";
 import { sql } from "drizzle-orm";
 import { db, hasDatabase } from "../db";
 import { ALL_STORES, PART_INDEX, countryOfStore, modelKeyFor, storePath, storeTimeZone, type Store } from "../apple/catalog";
@@ -23,7 +24,7 @@ export const TRACKING_SINCE_INTL = "2026-11-02";
 export const PATTERN_MIN = 5;
 export const PATTERN_MIN_DAYS = 3;
 export const WEEKDAY_MIN_SPAN = 14;
-export const PATTERN_DAYS = 30;
+export const PATTERN_DAYS = STATS_DAYS;
 
 export interface StorePattern {
   storeNumber: string;

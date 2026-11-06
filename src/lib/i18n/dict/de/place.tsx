@@ -29,7 +29,7 @@ const mal = (k: number) => (k === 1 ? "einmal" : `${n(k)}-mal`);
 const nameOf = (i: IntlPlaceInput) => (i.kind === "state" ? `${i.cc === "ch" ? "Kanton " : ""}${regionLabel(i.cc, i.name, LANG)}` : cityLabel(i.cc, i.name, LANG));
 
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${cc.INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "seit Erfassungsstart am 2. November" : "in den vergangenen 30 Tagen";
+  return now - Date.parse(`${cc.INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "seit Erfassungsstart am 2. November" : "in den vergangenen 14 Tagen";
 }
 const SinceWhen = () => { const s = sinceWhen(); return s[0].toUpperCase() + s.slice(1); };
 

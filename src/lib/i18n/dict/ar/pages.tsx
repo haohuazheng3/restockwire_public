@@ -118,7 +118,7 @@ export const pages: Dict["pages"] = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>يعرض {a.place}{a.street ? ` في ${streetWithout(a.street, a.place)}` : ""} الآن للاستلام من المتجر: من iPhone Duo <b className="text-ink">{N(a.duo)} من {count(a.duoOf, CONFIGS)}</b>، ومن iPhone 18 Pro <b className="text-ink">{N(a.pro)} من {count(a.proOf, CONFIGS)}</b>، ومن iPhone 18 Pro Max <b className="text-ink">{N(a.pm)} من {count(a.pmOf, CONFIGS)}</b>.{a.peak ? <> وساعة التوفر المعتادة هنا هي <b className="text-ink">{a.peak}</b> بالتوقيت المحلي.</> : null}</>
     ),
-    restocks30: (n: number) => (n === 0 ? "لا توفر خلال 30 يومًا" : `توفر ${count(n, TIMES)} خلال 30 يومًا`),
+    restocks30: (n: number) => (n === 0 ? "لا توفر خلال 14 يومًا" : `توفر ${count(n, TIMES)} خلال 14 يومًا`),
     lookupOff: "أوقفت Apple مؤقتًا الاستعلام عن الاستلام من هذا المتجر. يعيد RestockWire السؤال كل 30 دقيقة، ويعرض مخزونه لحظة أن تجيب Apple.",
     checked: "أحدث قراءة",
     alertHere: (short: string) => `راقب توفر ${short} في هذا المتجر`,

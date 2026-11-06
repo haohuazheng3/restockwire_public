@@ -17,9 +17,9 @@ import { SV, apple, cap, color, dur, fit, klock, kr, land, n, noun, pc, pl, taxN
 
 const TRACKING_START = Date.parse("2026-11-02T00:00:00Z");
 
-/** Window wording: counted from the 2 November start while the 30-day window still reaches it, else 30 days back. */
+/** Window wording: counted from the 2 November start while the 14-day window still reaches it, else 30 days back. */
 function sinceWhen(now = Date.now()): string {
-  return now - TRACKING_START < 30 * 86400_000 ? "sedan starten 2 november" : "på 30 dagar";
+  return now - TRACKING_START < 14 * 86400_000 ? "sedan starten 2 november" : "på 14 dagar";
 }
 
 /** Date and time in the country's own zone. */

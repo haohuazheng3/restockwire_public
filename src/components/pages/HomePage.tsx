@@ -18,7 +18,6 @@ import { productFor, productPath, storePlace } from "@/lib/seo/products";
 import { RestockFeed } from "@/components/restocks/RestockFeed";
 import { Dot } from "@/components/stock/StatusBits";
 import { LiveChecked } from "@/components/site/LiveChecked";
-import { CHECK_NOTE } from "@/lib/plans";
 import { BrowseModels, BrowsePopular } from "@/components/seo/Browse";
 import { BrowseCountryModels, BrowseCountryPopular } from "@/components/seo/CountryBrowse";
 import { RelatedBlock } from "@/components/seo/Related";
@@ -87,7 +86,7 @@ export async function HomePage({ country: c, searchParams: sp }: { country: Coun
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
       <section className="pt-6 sm:pt-10">
-        <div className="eyebrow inline-flex items-center gap-2"><span className="dot dot-ok dot-live" /> On the wire · 269 US Apple Stores · {CHECK_NOTE}</div>
+        <div className="eyebrow inline-flex items-center gap-2"><span className="dot dot-ok dot-live" /> On the wire · 269 US Apple Stores · every restock logged to the minute</div>
         <h1 className="display mt-3 text-3xl sm:text-5xl">{HOME_TITLES.main.h1}</h1>
         <p className="mt-2 max-w-3xl text-ink-2"><Inline text={HOME_INTRO} facts={facts} /></p>
       </section>
@@ -115,21 +114,21 @@ export async function HomePage({ country: c, searchParams: sp }: { country: Coun
         <RestockLeaderboard data={leaders} label="in the US" limit={5} regions="state" country="us" />
         <RestockStreak data={streak} label="in the US" />
       </div>
+      <section className="pane mt-6 p-5" aria-labelledby="sellout-h">
+        <h2 id="sellout-h" className="text-xl font-semibold">How many seconds does an iPhone restock last?</h2>
+        <div className="mt-3"><SellOutTimes data={sell} label="at US Apple Stores" showStore /></div>
+      </section>
+
+      <div className="mx-auto mt-12 max-w-3xl">
+        <KeywordSections sections={sections} facts={facts} />
+        <div className="mt-10"><RichFaq items={HOME_FAQ} facts={facts} title="Quick answers" /></div>
+        <div className="mt-8"><SourceList sources={HOME_SOURCES} facts={facts} /></div>
+      </div>
 
       <RelatedBlock title="Stock, place by place">
         <BrowsePopular />
         <BrowseModels />
       </RelatedBlock>
-
-      <div className="mx-auto mt-12 max-w-3xl">
-        <KeywordSections sections={sections} facts={facts} />
-        <section className="pane mt-10 p-5" aria-labelledby="sellout-h">
-          <h2 id="sellout-h" className="text-xl font-semibold">How many seconds does an iPhone restock last?</h2>
-          <div className="mt-3"><SellOutTimes data={sell} label="at US Apple Stores" showStore /></div>
-        </section>
-        <div className="mt-10"><RichFaq items={HOME_FAQ} facts={facts} title="Quick answers" /></div>
-        <div className="mt-8"><SourceList sources={HOME_SOURCES} facts={facts} /></div>
-      </div>
     </div>
   );
 }
@@ -223,7 +222,7 @@ async function IntlHome({ c, sp }: { c: Country; sp: SearchParams }) {
       <JsonLd data={itemListJsonLd(P.home.itemList(cc), stores)} />
 
       <section className="pt-6 sm:pt-10">
-        <div className="eyebrow inline-flex items-center gap-2"><span className="dot dot-ok dot-live" /> {H.live} · {P.allStoresPhrase(cc)} · {t().pages.common.checkNote}</div>
+        <div className="eyebrow inline-flex items-center gap-2"><span className="dot dot-ok dot-live" /> {H.live} · {P.allStoresPhrase(cc)}</div>
         <h1 className="display mt-3 text-3xl sm:text-5xl">{P.homeH1(cc)}</h1>
         <p className="mt-2 max-w-3xl text-ink-2"><Inline text={P.homeIntro(cc)} facts={facts} /></p>
       </section>
@@ -246,21 +245,21 @@ async function IntlHome({ c, sp }: { c: Country; sp: SearchParams }) {
         <RestockLeaderboard data={leaders} label={P.home.last24Label(cc)} limit={5} regions={c.regionNoun && new Set(stores.map((x) => x.state)).size > 1 ? c.regionNoun : null} country={cc} />
         <RestockStreak data={streak} label={P.home.last24Label(cc)} />
       </div>
+      <section className="pane mt-6 p-5" aria-labelledby="sellout-h">
+        <h2 id="sellout-h" className="text-xl font-semibold">{P.home.selloutH2(cc)}</h2>
+        <div className="mt-3"><SellOutTimes data={sell} label={P.home.selloutLabel(cc)} showStore={n > 1} /></div>
+      </section>
+
+      <div className="mx-auto mt-12 max-w-3xl">
+        <KeywordSections sections={sections} facts={facts} />
+        <div className="mt-10"><RichFaq items={faq} facts={facts} title={H.questions} /></div>
+        <div className="mt-8"><SourceList sources={[P.sources(cc as Exclude<typeof cc, "us">).pickupHelp, P.sources(cc as Exclude<typeof cc, "us">).storeList, P.sources(cc as Exclude<typeof cc, "us">).tax, { label: P.home.newsroom, url: "https://www.apple.com/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/" }]} facts={facts} where={P.allStoresPhrase(cc)} since={t().pages.common.since} /></div>
+      </div>
 
       <RelatedBlock title={P.home.browse(cc)}>
         <BrowseCountryPopular country={c} />
         <BrowseCountryModels country={c} />
       </RelatedBlock>
-
-      <div className="mx-auto mt-12 max-w-3xl">
-        <KeywordSections sections={sections} facts={facts} />
-        <section className="pane mt-10 p-5" aria-labelledby="sellout-h">
-          <h2 id="sellout-h" className="text-xl font-semibold">{P.home.selloutH2(cc)}</h2>
-          <div className="mt-3"><SellOutTimes data={sell} label={P.home.selloutLabel(cc)} showStore={n > 1} /></div>
-        </section>
-        <div className="mt-10"><RichFaq items={faq} facts={facts} title={H.questions} /></div>
-        <div className="mt-8"><SourceList sources={[P.sources(cc as Exclude<typeof cc, "us">).pickupHelp, P.sources(cc as Exclude<typeof cc, "us">).storeList, P.sources(cc as Exclude<typeof cc, "us">).tax, { label: P.home.newsroom, url: "https://www.apple.com/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/" }]} facts={facts} where={P.allStoresPhrase(cc)} since={t().pages.common.since} /></div>
-      </div>
     </div>
   );
 }

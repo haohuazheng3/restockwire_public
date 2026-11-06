@@ -8,6 +8,7 @@
  * are any, are drawn as their own dashed series (stacked over ours, legend + footnote) and never counted.
  */
 import { MODELS, STORE_INDEX, partNumbersFor, storeTimeZone, storesOf } from "@/lib/apple/catalog";
+import { STATS_DAYS } from "@/lib/stock/window";
 import { restockPattern, restockReportStats, restockSlots } from "@/lib/stock/queries";
 import { sellouts } from "@/lib/stock/sellouts";
 import { SellOutTimes } from "@/components/restocks/SellOutTimes";
@@ -72,7 +73,7 @@ export async function RestockTimes({ watches }: { watches: Rule[] }) {
   const zoneStores = countries.flatMap((cc) => storesOf(cc)).filter((s) => storeTimeZone(s) === tz).map((s) => s.storeNumber);
   const others = zoneStores.filter((n) => !own.includes(n));
 
-  const [mine, mineSlots, rep, sell] = await Promise.all([restockPattern(own, parts, [], tz), restockSlots(own, parts, tz), restockReportStats(own, tz, 30, undefined, parts), sellouts({ storeNumbers: own, parts })]);
+  const [mine, mineSlots, rep, sell] = await Promise.all([restockPattern(own, parts, [], tz), restockSlots(own, parts, tz), restockReportStats(own, tz, STATS_DAYS, undefined, parts), sellouts({ storeNumbers: own, parts })]);
   const thin = mine.total < THIN && others.length > 0;
   const [area, areaSlots] = thin ? await Promise.all([restockPattern(zoneStores, parts, [], tz), restockSlots(others, parts, tz)]) : [null, []];
 

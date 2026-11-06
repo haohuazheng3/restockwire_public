@@ -100,7 +100,7 @@ const shopPath = (code: CountryCode) => SHOP[code] ?? COUNTRIES[code].buyPath ??
 /* ------------------------------------------------------------------ time */
 
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${cc.INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "depuis l’ouverture du fil, le 2 novembre" : "en 30 jours";
+  return now - Date.parse(`${cc.INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "depuis l’ouverture du fil, le 2 novembre" : "en 14 jours";
 }
 function whenIn(code: CountryCode, iso: string | Date): string {
   return stamp(L(code), iso, COUNTRIES[code].timeZone, true);

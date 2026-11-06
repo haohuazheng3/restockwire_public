@@ -1,4 +1,5 @@
 import { STORES, STORAGE_ORDER, catalogFor, colorsFor, storagesFor, modelByKey, type ModelKey } from "@/lib/apple/catalog";
+import { STATS_DAYS } from "@/lib/stock/window";
 import { restockFeed, restockStats, restockReportStats } from "@/lib/stock/queries";
 import { fmtPrice } from "@/lib/seo/enrich";
 import { productFor, productPath } from "@/lib/seo/products";
@@ -88,7 +89,7 @@ export async function LiveWidget({ id, model = "duo", facts }: { id: LiveWidgetI
   }
   if (id === "clock") {
     const numbers = STORES.map((s) => s.storeNumber);
-    const [stats, reports] = await Promise.all([restockStats(numbers, "America/New_York", 30, model), restockReportStats(numbers, "America/New_York", 30, model, undefined, "us")]);
+    const [stats, reports] = await Promise.all([restockStats(numbers, "America/New_York", STATS_DAYS, model), restockReportStats(numbers, "America/New_York", STATS_DAYS, model, undefined, "us")]);
     return <div className="pane-2 my-5 p-4"><RestockClock stats={stats} label={d.clockLabel(m.name)} reports={reports} /></div>;
   }
   if (id === "stores-now" || id === "status") {

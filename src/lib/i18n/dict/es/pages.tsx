@@ -112,7 +112,7 @@ export const pages: Dict["pages"] = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>Ahora mismo {a.place}{a.street ? ` (${a.street})` : ""} tiene disponibles para recogida en tienda <b className="text-ink">{n(a.duo)} de {n(a.duoOf)}</b> configuraciones del iPhone Duo, <b className="text-ink">{n(a.pro)} de {n(a.proOf)}</b> del iPhone 18 Pro y <b className="text-ink">{n(a.pm)} de {n(a.pmOf)}</b> del iPhone 18 Pro Max.{a.peak ? <> La hora habitual de reposición aquí es <b className="text-ink">{/^1:/.test(a.peak) ? "la" : "las"} {a.peak}</b>, hora local.</> : null}</>
     ),
-    restocks30: (k: number) => `${reposiciones(k)} en 30 días`,
+    restocks30: (k: number) => `${reposiciones(k)} en 14 días`,
     lookupOff: "Apple ha desactivado por ahora las consultas de recogida en tienda para esta tienda. RestockWire vuelve a preguntar cada 30 minutos y mostrará su stock en cuanto Apple responda.",
     checked: "Comprobado",
     alertHere: (short: string) => `Vigilar esta tienda para el ${short}`,

@@ -43,7 +43,7 @@ const RESTOCKS = forms({ one: "عودة توفر واحدة", two: "عودتا �
 const branches = (n: number) => (n === 2 ? "الفرعين" : allWord(n).replace(/^المتاجر/, "الفروع"));
 
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "منذ انطلاق الرصد في 2 نوفمبر" : "في الأيام الثلاثين الأخيرة";
+  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "منذ انطلاق الرصد في 2 نوفمبر" : "في الأيام الثلاثين الأخيرة";
 }
 /** "3 نوفمبر، 10:04 ص بتوقيت الإمارات" (the country's zone). */
 function whenIn(cc: CountryCode, iso: string | Date): string {

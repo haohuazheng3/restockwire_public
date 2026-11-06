@@ -17,9 +17,9 @@ import type { KeywordSection } from "@/components/content/KeywordSections";
 import { content } from "./content";
 import { L, n, pc, money, pais, enPais, dePais, noun, cap, impuesto, taxNote, lasH, apples, tiendas, reposiciones, ciudades, v, tc, aprox } from "./words";
 
-/** While the 30-day window still reaches the first tracked day, say so instead of claiming 30 days. */
+/** While the 14-day window still reaches the first tracked day, say so instead of claiming 30 days. */
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "desde el inicio del seguimiento (2 de noviembre)" : "en los 30 días más recientes";
+  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "desde el inicio del seguimiento (2 de noviembre)" : "en los 14 días más recientes";
 }
 
 /** "2 nov, 15:04 CET" in the country's zone. */

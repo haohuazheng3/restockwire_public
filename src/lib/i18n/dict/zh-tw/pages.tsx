@@ -115,7 +115,7 @@ export const pages: Dict["pages"] = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>{zs(`此刻${a.place}${a.street ? `（${a.street}）` : ""}上架門市取貨的規格：iPhone Duo `)}<b className="text-ink">{a.duoOf} 款中有 {a.duo} 款</b>、iPhone 18 Pro <b className="text-ink">{a.proOf} 款中有 {a.pro} 款</b>、iPhone 18 Pro Max <b className="text-ink">{a.pmOf} 款中有 {a.pm} 款</b>。{a.peak ? <>這裡平常的補貨時段是當地時間<b className="text-ink">{a.peak}</b>。</> : null}</>
     ),
-    restocks30: (n: number) => `30 天內補貨 ${n} 次`,
+    restocks30: (n: number) => `14 天內補貨 ${n} 次`,
     lookupOff: "Apple 暫時關閉了這家門市的取貨查詢。RestockWire 每 30 分鐘再查一次，Apple 一有回應就列出現貨。",
     checked: "已檢查",
     alertHere: (short: string) => zs(`替這家門市盯 ${short}`),

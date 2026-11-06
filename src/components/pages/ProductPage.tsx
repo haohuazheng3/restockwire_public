@@ -6,6 +6,7 @@
  * every other country, its three model pages (§12); everything else is noindex, follow.
  */
 import type { Metadata } from "next";
+import { STATS_DAYS } from "@/lib/stock/window";
 import { LiveChecked } from "@/components/site/LiveChecked";
 import { cache } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -72,9 +73,9 @@ const load = cache(async (cc: Country["cc"], slug: string, path: string) => {
     modelStock("18-pro", cc),
     modelStock("18-pro-max", cc),
     placeStats({ storeNumbers: numbers, parts: product.parts, tz: place.tz, country: cc }),
-    restockStats(numbers, place.tz, 30, undefined, product.parts, cc),
+    restockStats(numbers, place.tz, STATS_DAYS, undefined, product.parts, cc),
     restockFeed({ parts: product.parts, storeNumbers: numbers, kind: "all", limit: 8, country: cc }),
-    restockReportStats(numbers, place.tz, 30, undefined, product.parts, cc),
+    restockReportStats(numbers, place.tz, STATS_DAYS, undefined, product.parts, cc),
     sellouts({ storeNumbers: numbers, parts: product.parts, country: cc }),
     // National, whatever the place: the configuration's heatmap and the model's leaderboard across the country.
     restockHeatmap({ country: cc, parts: product.parts }),

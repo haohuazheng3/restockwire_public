@@ -22,7 +22,7 @@ export const SITE_FEATURES = [
   `${SPEED.fastSec}-second reads on alert stores; ${SPEED.checkSec}-second reads on all other Apple Stores`,
   `Phone push roughly ${SPEED.alertSec} seconds after the confirming read`,
   "Two reads must agree before a change counts; a first sighting is a baseline, not a restock",
-  "Per-store restock hours: typical local hour, busiest weekday, 30-day count",
+  "Per-store restock hours: typical local hour, busiest weekday, 14-day count",
   "Running log of confirmed restocks and sell-outs: minute, store, exact configuration",
   `Pickup stock by storage and color, live, at ${ALL_STORES.length} Apple Stores in ${INTL_CODES.length + 1} countries`,
 ];

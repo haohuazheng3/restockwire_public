@@ -6,7 +6,7 @@ export const HOME_INTRO = "Latest confirmed iPhone Duo restock: **{{duo.lastRest
 
 export const HOME_SECTIONS: Record<string, { lead: string; blocks: Block[] }> = {
   "apple inventory checker": {
-    lead: "The inventory below is apple.com's own in-store pickup availability, read for all **40 configurations** at **269 stores**: every store **every 15 seconds**, stores with alerts **every 5**.",
+    lead: "The inventory below is apple.com's own in-store pickup availability, read for all **40 configurations** at **269 stores**: four reads a minute at every store, twelve a minute at the stores members have alerts on.",
     blocks: [
       { t: "table", head: ["Model", "Configurations", "Stores listing it now", "Confirmed restocks"], rows: [["[iPhone Duo](/in-stock/iphone-duo)", "8", "{{duo.storesNow}}", "{{duo.restocks}}"], ["[iPhone 18 Pro](/in-stock/iphone-18-pro)", "16", "{{pro.storesNow}}", "{{pro.restocks}}"], ["[iPhone 18 Pro Max](/in-stock/iphone-18-pro-max)", "16", "{{pm.storesNow}}", "{{pm.restocks}}"]], caption: "The wire at this minute; restocks counted since {{trackingSince}}", source: "RestockWire's live read of all 269 US Apple Stores" },
       { t: "ul", items: [
@@ -19,7 +19,7 @@ export const HOME_SECTIONS: Record<string, { lead: string; blocks: Block[] }> = 
     ],
   },
   "apple store stock checker": {
-    lead: "Reading the checker costs nothing; an alert, from **$5 a month**, does the refreshing for you: your stores sit on the 5-second wire, and a confirmed restock is on your phone about **3 seconds** later.",
+    lead: "Reading the checker costs nothing; an alert, from **$5 a month**, does the refreshing for you: your stores are read twelve times a minute, and a confirmed restock is on your phone about **3 seconds** later.",
     blocks: [
       { t: "ol", items: [
         "Pick the iPhone, storage and color under **Alert me**, then tick the stores you can reach; the nearest come first, with miles and drive time.",

@@ -60,7 +60,7 @@ const helpSource = (code: CountryCode): Source => ({ label: "Apple 지원: 매�
 /* ------------------------------------------------------------------ 기간, 이름, 시각 */
 
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "11월 2일 추적을 켠 뒤로" : "지난 30일 사이";
+  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "11월 2일 추적을 켠 뒤로" : "지난 14일 사이";
 }
 
 /** 미국 매장 도시·주와 이름이 같은 곳은 나라를 붙여요("Manchester(영국)"). */

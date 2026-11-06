@@ -124,7 +124,7 @@ export default async function HowItWorks() {
         "@type": "HowTo", name: "Finding when your Apple Store restocks the iPhone",
         step: [
           { "@type": "HowToStep", name: "Open your store's page", text: "Type a store, city or ZIP into search, or pick a state from the Apple Stores list.", url: `${site}/apple-stores` },
-          { "@type": "HowToStep", name: "Read “When does … restock?”", text: "It gives the usual local restock hour, the busiest weekday and the last 30 days." },
+          { "@type": "HowToStep", name: "Read “When does … restock?”", text: "It gives the usual local restock hour, the busiest weekday and the last 14 days." },
           { "@type": "HowToStep", name: "Look at your configuration", text: "The per-configuration restock table ranks which storage and color come back most." },
           { "@type": "HowToStep", name: "Add an alert", text: `The store then moves to ${SPEED.fastSec}-second checks and your phone hears about a confirmed restock ${SPEED.alertSec} seconds later.` },
         ],

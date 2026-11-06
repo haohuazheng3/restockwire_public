@@ -118,7 +118,7 @@ export const pages: Dict["pages"] = {
     intro: (a) => (
       <>{a.peak ? <>Créneau habituel du stock ici : <b className="text-ink">{a.peak}</b> (heure du magasin). </> : null}À l’instant, {a.place}{a.street ? ` (${a.street})` : ""} propose en retrait <b className="text-ink">{num("fr", a.duo)}/{num("fr", a.duoOf)}</b> variantes d’iPhone Duo, <b className="text-ink">{num("fr", a.pro)}/{num("fr", a.proOf)}</b> d’iPhone 18 Pro et <b className="text-ink">{num("fr", a.pm)}/{num("fr", a.pmOf)}</b> d’iPhone 18 Pro Max.</>
     ),
-    restocks30: (k) => `30 jours : ${plural("fr", k, { one: "# remise en stock", other: "# remises en stock" })}`,
+    restocks30: (k) => `14 jours : ${plural("fr", k, { one: "# remise en stock", other: "# remises en stock" })}`,
     lookupOff: "Apple a suspendu la consultation du retrait pour ce magasin. RestockWire repose la question toutes les 30 minutes ; le stock réapparaît ici dès la première réponse.",
     checked: "Contrôle",
     alertHere: (short) => `Alerte ${short} sur ce magasin`,

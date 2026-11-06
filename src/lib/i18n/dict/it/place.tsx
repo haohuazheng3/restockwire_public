@@ -17,9 +17,9 @@ import { IT, aLuogo, aggettivo, dei, eur, il, inPaese, leOre, n as N, paese, pl,
 
 /* ------------------------------------------------------------------ small pieces */
 
-/** "dal 2 novembre, quando è iniziato il monitoraggio" while the 30-day window reaches back to the start, else "negli ultimi 30 giorni". */
+/** "dal 2 novembre, quando è iniziato il monitoraggio" while the 14-day window reaches back to the start, else "negli ultimi 14 giorni". */
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "dal 2 novembre, quando è iniziato il monitoraggio" : "negli ultimi 30 giorni";
+  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "dal 2 novembre, quando è iniziato il monitoraggio" : "negli ultimi 14 giorni";
 }
 
 /** Place names that are also US Apple Store cities or states get the country ("Manchester, Regno Unito"). */

@@ -113,7 +113,7 @@ export const pages: Dict["pages"] = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>Gerade bietet {a.place}{a.street ? ` (${a.street})` : ""} <b className="text-ink">{a.duo} von {a.duoOf}</b> iPhone-Duo-Konfigurationen zur Abholung im Store an, dazu <b className="text-ink">{a.pro} von {a.proOf}</b> beim iPhone 18 Pro und <b className="text-ink">{a.pm} von {a.pmOf}</b> beim iPhone 18 Pro Max.{a.peak ? <> Die übliche Restock-Uhrzeit hier ist <b className="text-ink">{a.peak}</b> Ortszeit.</> : null}</>
     ),
-    restocks30: (k: number) => `${plural(k, "Restock", "Restocks")} in 30 Tagen`,
+    restocks30: (k: number) => `${plural(k, "Restock", "Restocks")} in 14 Tagen`,
     lookupOff: "Apple hat die Abholabfrage für diesen Store vorerst abgeschaltet. RestockWire fragt alle 30 Minuten erneut und zeigt den Bestand, sobald Apple antwortet.",
     checked: "Geprüft",
     alertHere: (short: string) => `${short} hier beobachten`,

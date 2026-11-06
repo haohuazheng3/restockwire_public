@@ -1,4 +1,5 @@
 import { desc, eq, gt, inArray, sql, and, isNull, type SQL } from "drizzle-orm";
+import { STATS_DAYS } from "./window";
 import { unstable_cache } from "next/cache";
 import { db, hasDatabase, schema } from "../db";
 import { PART_INDEX, STORE_INDEX, MODELS, itemFor, modelKeyFor, partNumbersFor, partNumbersOf, storesOf, countryOfStore, hasOwnPartNumbers, type ModelKey, type CatalogItem, type Store } from "../apple/catalog";
@@ -285,7 +286,7 @@ export async function restockCounts(q: Pick<RestockQuery, "model" | "state" | "c
 export interface RestockStats { total: number; byHour: number[]; byWeekday: number[]; days: number; tz: string; dates?: number; spanDays?: number }
 
 /** When restocks happen at these stores: local hour-of-day and weekday histograms over the last `days`. */
-export async function restockStats(storeNumbers: string[], tz: string, days = 30, model?: ModelKey, onlyParts?: string[], country?: CountryCode): Promise<RestockStats> {
+export async function restockStats(storeNumbers: string[], tz: string, days = STATS_DAYS, model?: ModelKey, onlyParts?: string[], country?: CountryCode): Promise<RestockStats> {
   const empty: RestockStats = { total: 0, byHour: Array(24).fill(0), byWeekday: Array(7).fill(0), days, tz };
   if (!hasDatabase() || storeNumbers.length === 0) return empty;
   // The stores name the country unless the caller does.
@@ -323,7 +324,7 @@ export interface RestockPattern extends RestockStats {
 }
 
 /** Restocks of `parts` at `storeNumbers` over the last `days`, bucketed by hour and weekday in `tz`. */
-export async function restockPattern(storeNumbers: string[], parts: string[], exactParts: string[], tz: string, days = 30): Promise<RestockPattern> {
+export async function restockPattern(storeNumbers: string[], parts: string[], exactParts: string[], tz: string, days = STATS_DAYS): Promise<RestockPattern> {
   const empty: RestockPattern = { total: 0, byHour: Array(24).fill(0), byWeekday: Array(7).fill(0), days, tz, exact: { total: 0, byHour: Array(24).fill(0) }, stores: [] };
   if (!hasDatabase() || storeNumbers.length === 0 || parts.length === 0) return empty;
   const ev = schema.availabilityEvents;
@@ -354,7 +355,7 @@ export interface RestockSlotRow { slot: number; store: string; drops: number; mi
  * The restock timeline's raw material: drops of `parts` at `storeNumbers` over the last `days`, per
  * 15-minute slot of the day in `tz` and store, with the mean minute of the day of each slot's drops.
  */
-export async function restockSlots(storeNumbers: string[], parts: string[], tz: string, days = 30): Promise<RestockSlotRow[]> {
+export async function restockSlots(storeNumbers: string[], parts: string[], tz: string, days = STATS_DAYS): Promise<RestockSlotRow[]> {
   if (!hasDatabase() || storeNumbers.length === 0 || parts.length === 0) return [];
   const list = (xs: string[]) => sql.join(xs.map((x) => sql`${x}`), sql`, `);
   const since = new Date(Date.now() - days * 86400_000);
@@ -493,11 +494,11 @@ const cachedPlaceStats = unstable_cache(
 );
 
 /**
- * Restock / sell-out statistics for a set of stores and/or one model over the last `days` (default 30). Three
+ * Restock / sell-out statistics for a set of stores and/or one model over the last `days` (default STATS_DAYS, 14). Three
  * queries, cached 60 s. No store set = the whole `country` (default: the stores' country, else the US).
  */
 export async function placeStats(opts: { storeNumbers?: string[]; model?: ModelKey; parts?: string[]; tz?: string; days?: number; country?: CountryCode } = {}): Promise<PlaceStats> {
-  const days = opts.days ?? 30;
+  const days = opts.days ?? STATS_DAYS;
   const tz = opts.tz ?? "America/New_York";
   if (!hasDatabase()) return EMPTY_STATS(days, tz);
   const cc = opts.country ?? (opts.storeNumbers?.length ? countryOfStore(opts.storeNumbers[0]) : undefined) ?? "us";
@@ -658,7 +659,7 @@ async function reportRows(cc: CountryCode, days: number): Promise<ReportInput[]>
  * window and model/parts filter as its restockStats call. null when there are none (the module then renders
  * exactly as it did before reports existed). Nothing here ever feeds a count.
  */
-export async function restockReportStats(storeNumbers: string[], tz: string, days = 30, model?: ModelKey, onlyParts?: string[], country?: CountryCode): Promise<ReportSeries | null> {
+export async function restockReportStats(storeNumbers: string[], tz: string, days = STATS_DAYS, model?: ModelKey, onlyParts?: string[], country?: CountryCode): Promise<ReportSeries | null> {
   if (!hasDatabase() || storeNumbers.length === 0) return null;
   // An account's stores can be in several countries; a page's are in one.
   const countries = country ? [country] : [...new Set(storeNumbers.map((n) => countryOfStore(n) ?? "us"))];

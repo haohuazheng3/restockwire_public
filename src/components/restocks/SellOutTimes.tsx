@@ -85,9 +85,10 @@ export function SellOutTimes({ data, label, showStore = false, limit = 10 }: { d
 
       {have && (
         <StatGrid cols={4} className="mt-3">
-          <Stat value={median.value} unit={median.unit} label={w.tileHalf(what)} tone="accent" />
+          {/* RestockWire leads with the share gone inside a minute (the sister site leads with the median). */}
+          <Stat value={pct(s.within60, lang)} label={w.tileWithin60} tone="accent" />
           <Stat value={pct(s.within30, lang)} label={w.tileWithin30} tone="warn" />
-          <Stat value={pct(s.within60, lang)} label={w.tileWithin60} />
+          <Stat value={median.value} unit={median.unit} label={w.tileHalf(what)} />
           <Stat value={fastest.value} unit={fastest.unit} label={w.tileFastest(s.n, s.days)} tone="muted" />
         </StatGrid>
       )}

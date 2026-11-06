@@ -18,9 +18,9 @@ import { hourLabel } from "../content/siteFacts";
 /** Other countries' stores have been checked since this day (the US since October 29). */
 export const INTL_TRACKING_SINCE = "2026-11-02";
 
-/** "since November 2, when tracking began" while the 30-day window still reaches back to the start, else "in the last 30 days". */
+/** "since November 2, when tracking began" while the 14-day window still reaches back to the start, else "in the last 14 days". */
 export function sinceWhenIntl(now = Date.now()): string {
-  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "since November 2, when tracking began" : "in the last 30 days";
+  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "since November 2, when tracking began" : "in the last 14 days";
 }
 
 const money = (c: Country, v: number) => formatPrice(c, v);

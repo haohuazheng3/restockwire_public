@@ -132,7 +132,7 @@ export const pages = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>Right now {a.place}{a.street ? ` at ${a.street}` : ""} has <b className="text-ink">{a.duo} of {a.duoOf}</b> iPhone Duo configurations, <b className="text-ink">{a.pro} of {a.proOf}</b> of the iPhone 18 Pro and <b className="text-ink">{a.pm} of {a.pmOf}</b> of the iPhone 18 Pro Max listed for in-store pickup.{a.peak ? <> The usual restock hour here is <b className="text-ink">{a.peak}</b> local time.</> : null}</>
     ),
-    restocks30: (n: number) => `${n} restocks in 30 days`,
+    restocks30: (n: number) => `${n} restocks in 14 days`,
     lookupOff: "Apple has switched off in-store pickup lookups for this store for now. RestockWire asks again every 30 minutes and lists its stock the moment Apple answers.",
     checked: "Checked",
     alertHere: (short: string) => `Watch this store for the ${short}`,

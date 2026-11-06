@@ -117,7 +117,7 @@ describe("components render through the JSON data cache and are never empty", ()
     expect(html).toContain('aria-label="Tuesday 7–8 AM: 4 restocks"');
     expect(html).toContain("busiest · Tuesday 7–8 AM · 4 restocks");
     const thin = renderToStaticMarkup(RestockHeatmap({ data: json(emptyHeatmap()), label: "here" }));
-    expect(thin).toContain("No confirmed restock here in the last 30 days yet");
+    expect(thin).toContain("No confirmed restock here in the last 14 days yet");
     expect((thin.match(/<td /g) ?? []).length).toBe(168);
   });
   it("streak: four tiles, or one line without restocks", () => {
@@ -127,7 +127,7 @@ describe("components render through the JSON data cache and are never empty", ()
     expect(html).toContain("2 days ago");
     expect(html).toContain("5 d");
     expect(html).toContain("↑ up on last week");
-    expect(renderToStaticMarkup(RestockStreak({ data: emptyStreak(), label: "here", now }))).toContain("No confirmed restock here in the last 30 days");
+    expect(renderToStaticMarkup(RestockStreak({ data: emptyStreak(), label: "here", now }))).toContain("No confirmed restock here in the last 14 days");
   });
   it("ranking and leaderboard: name the leaders; one line when there is nothing", () => {
     const ranking = { ...emptyRanking(), rows: rankingFrom([{ storeNumber: ny.storeNumber, n: 4, medianSec: 40, fastestSec: 12 }, { storeNumber: ca.storeNumber, n: 3, medianSec: 95, fastestSec: 50 }]) };

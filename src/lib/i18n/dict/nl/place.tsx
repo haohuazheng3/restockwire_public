@@ -58,9 +58,9 @@ const fitT = (v: string[], max = 60) => fitTitleW(v, max);
 
 /* ------------------------------------------------------------------ time */
 
-/** Since-the-start phrase while the 30-day window still reaches back to 2 November, else the 30-day phrase. */
+/** Since-the-start phrase while the 14-day window still reaches back to 2 November, else the 30-day phrase. */
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${CC.INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "sinds de start van de meting op 2 november" : "over de laatste 30 dagen";
+  return now - Date.parse(`${CC.INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "sinds de start van de meting op 2 november" : "over de laatste 14 dagen";
 }
 
 /** "3 nov, 10:05 CET" in the country's zone. */

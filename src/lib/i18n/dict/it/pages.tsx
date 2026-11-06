@@ -120,7 +120,7 @@ export const pages: Dict["pages"] = {
     intro: (x: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>{x.place}{x.street ? ` (${x.street})` : ""}, configurazioni ritirabili adesso: iPhone Duo <b className="text-ink">{N(x.duo)}/{N(x.duoOf)}</b>, iPhone 18 Pro <b className="text-ink">{N(x.pro)}/{N(x.proOf)}</b>, iPhone 18 Pro Max <b className="text-ink">{N(x.pm)}/{N(x.pmOf)}</b>.{x.peak ? <> Ora tipica dei rifornimenti qui: <b className="text-ink">le {x.peak}</b> (ora del negozio).</> : null}</>
     ),
-    restocks30: (n: number) => `${N(n)} rifornimenti in 30 giorni`,
+    restocks30: (n: number) => `${N(n)} rifornimenti in 14 giorni`,
     lookupOff: "Per ora Apple ha disattivato la verifica del Ritiro in negozio per questo negozio. RestockWire riprova ogni 30 minuti e mostra la disponibilità nell'istante in cui Apple risponde.",
     checked: "Controllato",
     alertHere: (short: string) => `Tieni d'occhio questo negozio per il ${short}`,

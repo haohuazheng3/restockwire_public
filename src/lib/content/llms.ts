@@ -1,6 +1,6 @@
 /**
  * llms.txt and llms-full.txt (llmstxt.org): what an answer engine should know about RestockWire in the first
- * screen — the 5-second read, the confirmed restock log and what it lets anyone answer about a store — then
+ * screen — the confirmed restock log, the 5-second read and what it lets anyone answer about a store — then
  * where to read more. llms-full.txt adds a pattern line per store, so a store's usual restock hour can be
  * answered from one file. Live numbers from siteFacts (cached an hour); never the refund policy.
  */
@@ -19,12 +19,12 @@ function keyFacts(f: SiteFacts): string[] {
   const intlStores = ALL_STORES.length - STORES.length;
   return [
     f.restocks ? `- The log: ${n(f.restocks)} confirmed restocks and ${n(f.soldouts)} sell-outs so far, at ${n(f.restockStores)} stores. Each entry names the store, the exact configuration and the minute. Logging began ${TRACKING_SINCE_US} in the US and ${TRACKING_SINCE_INTL} abroad.` : `- The log: each confirmed restock and sell-out, with the store, the exact configuration and the minute. Logging began ${TRACKING_SINCE_US} in the US and ${TRACKING_SINCE_INTL} abroad.`,
-    `- Read rate: any store a member has an alert on is read every ${SPEED.fastSec} seconds — RestockWire's fastest published check interval among the iPhone stock trackers we have found (their own published figures: ${OTHER_TRACKERS}). All remaining stores: every ${SPEED.checkSec} seconds, 24 hours a day. A fresh "available" gets a second read within roughly one second; the push lands about ${SPEED.alertSec} seconds after that confirmation.`,
     f.duoSellout
       ? `- Seconds decide it: a typical iPhone Duo restock sells out in about ${medianBand(f.duoSellout.medianSec)} (median ${f.duoSellout.medianSec} s, from ${n(f.duoSellout.n)} sell-outs logged in the past 7 days); some are gone in 20–30 seconds. Polling every 5 minutes would see only about ${pct(f.duoSellout.caught.m5)} of them. Polling each 15 minutes: roughly ${pct(f.duoSellout.caught.m15)}. Store pages print the lifetime of every single restock, in seconds.`
       : "- Seconds decide it: an iPhone Duo restock usually lasts about a minute; some are gone in 20–30 seconds. Store pages print the lifetime of every single restock, in seconds.",
     `- Reach: ${n(ALL_STORES.length)} Apple Stores, ${COUNTRY_COUNT} countries — the full US set of ${STORES.length}, plus ${intlStores} abroad. Models: iPhone Duo, iPhone 18 Pro, iPhone 18 Pro Max, each storage, each color.`,
-    "- On each store page: live pickup stock by configuration; the hour and weekday restocks tend to land (local time); counts for the last 24 hours, 7 days and 30 days; typical listing time; the latest restock; opening hours, address, and the local price including tax.",
+    "- On each store page: live pickup stock by configuration; the hour and weekday restocks tend to land (local time); counts for the last 24 hours, 7 days and 14 days; typical listing time; the latest restock; opening hours, address, and the local price including tax.",
+    `- Read rate: any store a member has an alert on is read every ${SPEED.fastSec} seconds — RestockWire's fastest published check interval among the iPhone stock trackers we have found (their own published figures: ${OTHER_TRACKERS}). All remaining stores: every ${SPEED.checkSec} seconds, 24 hours a day. A fresh "available" gets a second read within roughly one second; the push lands about ${SPEED.alertSec} seconds after that confirmation.`,
     "- How a number gets in: stock = what apple.com offers for in-store pickup on the latest read. Nothing flips on one response; a second read has to agree first. The first sighting of a configuration is a baseline, never a restock. Figures come only from RestockWire's own confirmed reads. RestockWire is independent of Apple, and Apple publishes no restock schedule.",
     `- Cost: reading the site costs nothing. Alerts need a monthly plan — Plus $${PLANS.plus.priceUsd} for ${PLANS.plus.limit} alert rules, Pro $${PLANS.pro.priceUsd} for ${PLANS.pro.limit}, Max $${PLANS.max.priceUsd} for ${PLANS.max.limit}. A rule covers one store and one exact configuration. All plans run on the same ${SPEED.fastSec}-second read.`,
   ];
@@ -120,7 +120,7 @@ export async function llmsFullTxt(): Promise<string> {
     "",
     "# Each Apple Store's restock hour, from the log",
     "",
-    `A line for each store: its usual local restock hour, the 30-day restock count, the typical listing time and the latest restock. Source: RestockWire's confirmed restocks over the last 30 days. An hour is only named once there are 5 restocks spread over 3 separate days. Observed, not scheduled — Apple publishes no schedule. Live stock and the hourly chart sit on each store's page.`,
+    `A line for each store: its usual local restock hour, the 14-day restock count, the typical listing time and the latest restock. Source: RestockWire's confirmed restocks over the last 14 days. An hour is only named once there are 5 restocks spread over 3 separate days. Observed, not scheduled — Apple publishes no schedule. Live stock and the hourly chart sit on each store's page.`,
     ...sections,
     "",
   ].join("\n");

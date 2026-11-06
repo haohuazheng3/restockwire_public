@@ -115,7 +115,7 @@ export const pages: Dict["pages"] = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>Att hämta på {a.place}{a.street ? ` (${a.street})` : ""} just nu: iPhone Duo <b className="text-ink">{a.duo}/{a.duoOf}</b>, iPhone 18 Pro <b className="text-ink">{a.pro}/{a.proOf}</b> och iPhone 18 Pro Max <b className="text-ink">{a.pm}/{a.pmOf}</b> konfigurationer.{a.peak ? <> Nytt lager kommer oftast <b className="text-ink">{a.peak}</b> lokal tid.</> : null}</>
     ),
-    restocks30: (n: number): string => `30 dagar: ${n} påfyllningar`,
+    restocks30: (n: number): string => `14 dagar: ${n} påfyllningar`,
     lookupOff: "Apple har tills vidare stängt hämtningssökningen för butiken. RestockWire frågar på nytt var 30:e minut och visar lagret direkt när Apple svarar igen.",
     checked: "Kontroll",
     alertHere: (short: string): string => `${short}: bevaka butiken`,

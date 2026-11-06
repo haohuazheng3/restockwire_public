@@ -28,9 +28,9 @@ export interface PlaceCopyInput {
   max: PlaceStats;
 }
 
-/** "since October 29, when tracking began" while the 30-day window still reaches back to the start, else "in the last 30 days". */
+/** "since October 29, when tracking began" while the 14-day window still reaches back to the start, else "in the last 14 days". */
 export function sinceWhen(now = Date.now()): string {
-  return now - Date.parse("2026-10-29T00:00:00Z") < 30 * 86400_000 ? "since October 29, when tracking began" : "in the last 30 days";
+  return now - Date.parse("2026-10-29T00:00:00Z") < 14 * 86400_000 ? "since October 29, when tracking began" : "in the last 14 days";
 }
 
 const ET = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });

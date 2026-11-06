@@ -121,7 +121,7 @@ export const pages: Dict["pages"] = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>いま{a.place}{a.street ? `（${a.street}）` : ""}で店頭受け取りできるのは、iPhone Duo <b className="text-ink">{N(a.duoOf)}構成中{N(a.duo)}</b>、iPhone 18 Pro <b className="text-ink">{N(a.proOf)}構成中{N(a.pro)}</b>、iPhone 18 Pro Max <b className="text-ink">{N(a.pmOf)}構成中{N(a.pm)}</b>です。{a.peak ? <>この店舗のいつもの再入荷時間は、現地時間の<b className="text-ink">{a.peak}</b>台です。</> : null}</>
     ),
-    restocks30: (n: number) => `30日間で再入荷${N(n)}回`,
+    restocks30: (n: number) => `14日間で再入荷${N(n)}回`,
     lookupOff: "現在、Appleはこの店舗の店頭受け取り在庫照会を停止しています。RestockWireは30分ごとに問い合わせ直し、Appleが応答した瞬間に在庫を表示します。",
     checked: "チェック",
     alertHere: (short: string) => `この店舗で${short}を見張る`,

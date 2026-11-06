@@ -118,7 +118,7 @@ export const pages: Dict["pages"] = {
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>{a.place}{a.street ? `(${a.street})` : ""}{eunNeun(a.place).slice(a.place.length)} 현재 매장 픽업으로 iPhone Duo <b className="text-ink">{a.duo}/{a.duoOf}개</b>, iPhone 18 Pro <b className="text-ink">{a.pro}/{a.proOf}개</b>, iPhone 18 Pro Max <b className="text-ink">{a.pm}/{a.pmOf}개</b> 구성을 내놓고 있어요.{a.peak ? <> 재고가 가장 자주 들어오는 때는 현지 <b className="text-ink">{a.peak}</b>.</> : null}</>
     ),
-    restocks30: (n: number) => `재입고 ${n}번 · 30일`,
+    restocks30: (n: number) => `재입고 ${n}번 · 14일`,
     lookupOff: "현재 Apple이 이 매장의 픽업 조회를 막아 둔 상태예요. RestockWire가 30분 간격으로 다시 묻고 있고, 응답이 오면 바로 재고를 띄워요.",
     checked: "확인 시각",
     alertHere: (short: string) => `${short}, 이 매장에서 지켜보기`,

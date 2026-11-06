@@ -395,7 +395,7 @@ export default async function StockCheckerPage() {
         {/* ---------------------------------------------------------------- per store */}
         <section id="store" className="scroll-mt-24">
           <h2>{h2Of("store")}</h2>
-          <p><b>Live stock for all {items.length} configurations, restocks over 24 hours and 30 days, the usual restock hour once there is enough data, each restock&apos;s seconds, opening hours, address and the price with state sales tax{topStore && topRow ? `. Example: ${appleName(topStore)} in ${cityLine(topStore)}, the US store with the most confirmed Duo restocks since ${since} (${n(topRow.restocks)})` : ""}.</b></p>
+          <p><b>Live stock for all {items.length} configurations, restocks over 24 hours and 14 days, the usual restock hour once there is enough data, each restock&apos;s seconds, opening hours, address and the price with state sales tax{topStore && topRow ? `. Example: ${appleName(topStore)} in ${cityLine(topStore)}, the US store with the most confirmed Duo restocks since ${since} (${n(topRow.restocks)})` : ""}.</b></p>
           {topStore && topRow ? (
             <>
               <StatGrid cols={4} className="my-4">
@@ -408,7 +408,7 @@ export default async function StockCheckerPage() {
               </StatGrid>
               <KeyTable head={["On the store page", `${appleName(topStore)} now`]} rows={[
                 ["Live stock", <>Each of the {items.length} configurations, marked listed or not as of the newest check</>],
-                ["Restocks", <>{n(topRow.restocks)} since {since}{topPattern ? `, ${topPattern.restocks} in the last 30 days` : ""}, each with local time and seconds listed</>],
+                ["Restocks", <>{n(topRow.restocks)} since {since}{topPattern ? `, ${topPattern.restocks} in the last 14 days` : ""}, each with local time and seconds listed</>],
                 ["Usual hour", <>{topRow.peakHour != null ? `${rangeLabel(topRow.peakHour, topRow.peakHour + 1)} local time, from ${plural(topRow.days, "day")} of restocks` : `not yet: needs ${PATTERN_MIN} restocks on ${PATTERN_MIN_DAYS} separate days`}</>],
                 ...(topHours ? [["Hours", <>{topHours}</>] as [ReactNode, ReactNode]] : []),
                 ["Address", <>{fullAddress(topStore)}</>],

@@ -37,7 +37,7 @@ const provinceJa = (p: string) => regionLabel("ca", p, L);
 
 /** 「計測を始めた11月2日以降」（30日の窓が計測開始より前に届く間）、その後は「過去30日間」。 */
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "11月2日の計測開始から" : "直近30日";
+  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "11月2日の計測開始から" : "直近14日";
 }
 /** 「11月2日 15:04 JST」（国の時間帯で）。 */
 function whenIn(cc: CountryCode, iso: string | Date): string {

@@ -21,9 +21,9 @@ import { L, cn, currencyZh, hh, n, regionZh, stampZh, taxName, taxNoteZh, zhCfg,
 const money = (c: Country, v: number) => price(L, c, v);
 const TRACKING_START = "2026-11-02";
 
-/** 「自 11 月 2 日開始追蹤以來」／「最近 30 天」。 */
+/** 「自 11 月 2 日開始追蹤以來」／「最近 14 天」。 */
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${TRACKING_START}T00:00:00Z`) < 30 * 86400_000 ? "從 11 月 2 日開始記錄至今" : "最近 30 天";
+  return now - Date.parse(`${TRACKING_START}T00:00:00Z`) < 14 * 86400_000 ? "從 11 月 2 日開始記錄至今" : "最近 14 天";
 }
 
 /** 地名參數（英文資料或已是中文）→ Apple 台灣的寫法。 */

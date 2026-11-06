@@ -9,6 +9,7 @@
  * Listings shorter than one check can be missed altogether, so the share of very short restocks is a floor.
  */
 import { unstable_cache } from "next/cache";
+import { STATS_DAYS } from "./window";
 import { sql } from "drizzle-orm";
 import { db, hasDatabase } from "../db";
 import { MODELS, PART_INDEX, countryOfStore, modelKeyFor, partNumbersFor, type ModelKey } from "../apple/catalog";
@@ -128,7 +129,7 @@ const cached = unstable_cache(
  * Whole-country scopes pass no store list (the country's own part numbers keep it to that country).
  */
 export async function sellouts(opts: { storeNumbers?: string[]; model?: ModelKey; parts?: string[]; country?: CountryCode; days?: number; limit?: number } = {}): Promise<Sellouts> {
-  const days = opts.days ?? 30;
+  const days = opts.days ?? STATS_DAYS;
   if (!hasDatabase()) return EMPTY(days);
   const cc = opts.country ?? (opts.storeNumbers?.length ? countryOfStore(opts.storeNumbers[0]) : undefined) ?? "us";
   const parts = opts.parts ?? (opts.model ? partNumbersFor(opts.model, [], [], cc) : null);

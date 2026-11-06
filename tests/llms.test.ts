@@ -45,7 +45,7 @@ describe("llms-full.txt — every store's restock pattern", () => {
     const t = await llmsFullTxt();
     expect(t.split("\n").filter((l) => l.startsWith("- [Apple ") && l.includes("/apple-stores/")).length).toBe(ALL_STORES.length);
     expect(t).toMatch(/Apple Fifth Avenue\]\(https:\/\/restockwire\.com\/apple-stores\/new-york\/new-york\/fifthavenue\) — New York, NY\. Usual restock hour: 8 AM local time, with Friday the busiest day; 30 confirmed restocks/);
-    expect(t).toMatch(/Belfast, UK\. 3 confirmed restocks over the last 30 days on 1 day, not yet enough for a usual hour/);
+    expect(t).toMatch(/Belfast, UK\. 3 confirmed restocks over the last 14 days on 1 day, not yet enough for a usual hour/);
   });
 });
 
@@ -64,7 +64,7 @@ describe("store patterns", () => {
     // ten restocks in one burst are one day's event, not a habit (the other countries' first day)
     const burst = patternsFrom(Array.from({ length: 10 }, () => ({ storeNumber: "R092", at: "2026-11-02T14:00:00.000Z" })), {}, () => "Europe/London");
     expect(burst.R092).toMatchObject({ restocks: 10, days: 1, peakHour: null, peakWeekday: null });
-    expect(patternSentence(burst.R092)).toBe("10 confirmed restocks over the last 30 days on 1 day, not yet enough for a usual hour.");
-    expect(patternSentence(undefined)).toBe("Zero confirmed restocks over the last 30 days.");
+    expect(patternSentence(burst.R092)).toBe("10 confirmed restocks over the last 14 days on 1 day, not yet enough for a usual hour.");
+    expect(patternSentence(undefined)).toBe("Zero confirmed restocks over the last 14 days.");
   });
 });

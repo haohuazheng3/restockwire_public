@@ -159,10 +159,37 @@ export async function RegionPage({ country: c, params: p }: { country: Country; 
           <Link href={alert} className="btn btn-primary btn-sm">{G.alertIn(us ? s.code : name)}</Link>
         </div>
       </div>
-      <AlertPanelFor href={alert} summary={G.panelPick(name)} country={cc} />
 
       {/* Past-day answer for the whole state (any Duo back? which configuration?) sits above the matrix. */}
       <div className="mt-6"><Last24Hours data={d.recent} label={G.inPlace(name)} stores={stores} country={cc} stock={d.stock} lastBefore={d.copy.duo.lastRestock} alert={alert} /></div>
+      <section className="mt-6 min-w-0">
+        <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">{G.latestIn(name)}</h2><Link href={restocksHere} className="text-sm text-ink-3 hover:text-ink">{G.fullLog}</Link></div>
+        <RestockFeed rows={d.feed.slice(0, 8)} showModel emptyText={G.noneIn(name)} />
+        </section>
+
+      {/* RestockWire order: live wire → who restocks most and when → pattern charts → stock now → alert → guide. */}
+      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+        <RestockLeaderboard data={d.leaders} label={G.inPlace(name)} country={cc} />
+        <RestockHeatmap data={d.heat} label={G.inPlace(name)} stores={stores} />
+        <SellOutRanking data={d.ranking} label={G.inPlace(name)} storesTotal={stores.length} />
+        <section className="pane p-5">
+          <h2 className="text-xl font-semibold">{G.whenRestock(name)}</h2>
+          <div className="mt-3"><RestockClock stats={d.stats} label={G.inPlace(name)} reports={d.reports} /></div>
+          {us && <p className="mt-3 text-sm"><Link href={restockTimesPath(s.name)} className="font-medium text-ink underline-offset-2 hover:underline">{s.name}: the hours the iPhone Duo comes back, store by store →</Link></p>}
+        </section>
+        <section className="pane p-5">
+          <h2 className="text-xl font-semibold">{G.howFast(name)}</h2>
+          <div className="mt-3"><SellOutTimes data={d.sell} label={G.inPlace(name)} showStore /></div>
+        </section>
+        <section className="pane p-5">
+          <h2 className="text-xl font-semibold">{G.lastDays(d.pstats.days)}</h2>
+          <div className="mt-3"><DailyBars stats={d.pstats} label={G.inPlace(name)} /></div>
+        </section>
+        <section className="pane p-5">
+          <h2 className="text-xl font-semibold">{G.restocksBy}</h2>
+          <div className="mt-3"><RestocksByConfig stats={d.pstats} label={G.inPlace(name)} country={us ? undefined : cc} /></div>
+        </section>
+      </div>
 
       <div className="mt-6"><ModelPlaceCards place={us ? statePlace(s.name)! : treeOf(cc).regionPlace(s.name)!} stockNow={d.stockNow} of={stores.length} unit={G.storesWithIt} /></div>
       <div className="mt-3"><PlaceStatStrip stores={stores.length} cities={cities.length} stockNow={d.stockNow} stats={d.pstats} /></div>
@@ -184,37 +211,12 @@ export async function RegionPage({ country: c, params: p }: { country: Country; 
         </section>
       )}
 
+      <AlertPanelFor href={alert} summary={G.panelPick(name)} country={cc} />
+
       <div className="mx-auto mt-10 max-w-3xl">
         <Figure id={photo1} />
         <KeywordSections sections={d.intl ? P.placeSections(d.intl) : placeSections(d.copy)} facts={facts} />
         <Figure id={photo2} />
-      </div>
-
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <section className="pane p-5">
-          <h2 className="text-xl font-semibold">{G.whenRestock(name)}</h2>
-          <div className="mt-3"><RestockClock stats={d.stats} label={G.inPlace(name)} reports={d.reports} /></div>
-          {us && <p className="mt-3 text-sm"><Link href={restockTimesPath(s.name)} className="font-medium text-ink underline-offset-2 hover:underline">{s.name}: the hours the iPhone Duo comes back, store by store →</Link></p>}
-        </section>
-        <section className="pane p-5">
-          <h2 className="text-xl font-semibold">{G.howFast(name)}</h2>
-          <div className="mt-3"><SellOutTimes data={d.sell} label={G.inPlace(name)} showStore /></div>
-        </section>
-        <RestockHeatmap data={d.heat} label={G.inPlace(name)} stores={stores} />
-        <SellOutRanking data={d.ranking} label={G.inPlace(name)} storesTotal={stores.length} />
-        <RestockLeaderboard data={d.leaders} label={G.inPlace(name)} country={cc} />
-        <section className="pane p-5">
-          <h2 className="text-xl font-semibold">{G.lastDays(d.pstats.days)}</h2>
-          <div className="mt-3"><DailyBars stats={d.pstats} label={G.inPlace(name)} /></div>
-        </section>
-        <section className="pane p-5">
-          <h2 className="text-xl font-semibold">{G.restocksBy}</h2>
-          <div className="mt-3"><RestocksByConfig stats={d.pstats} label={G.inPlace(name)} country={us ? undefined : cc} /></div>
-        </section>
-        <section className="min-w-0">
-          <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">{G.latestIn(name)}</h2><Link href={restocksHere} className="text-sm text-ink-3 hover:text-ink">{G.fullLog}</Link></div>
-          <RestockFeed rows={d.feed} showModel emptyText={G.noneIn(name)} />
-        </section>
       </div>
 
       {!d.thin && <div className="mt-6"><NearbyStores title={R.nearbyOutside(name)} stores={d.outside} stock={d.stock} hint={R.nearbyHint(name)} /></div>}

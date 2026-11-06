@@ -5,6 +5,7 @@
  * their own tax rule. Austria and Belgium have one store each: their /apple-stores is that store's page (308).
  */
 import type { Metadata } from "next";
+import { STATS_DAYS } from "@/lib/stock/window";
 import { PendingLink as Link } from "@/components/ui/PendingLink";
 import { cache } from "react";
 import { citiesWithStores, cityPath, statePath, statesWithStores, storesOf, DEFAULT_MODEL, MODELS } from "@/lib/apple/catalog";
@@ -55,7 +56,7 @@ export const loadIndex = cache(async (cc: Country["cc"]) => {
     cc === "us" ? Promise.resolve(new Map()) : storesStock(numbers),
     cc === "us" ? Promise.resolve(null) : placeStats({ model: "duo", tz, country: cc }),
     cc === "us" ? Promise.resolve(null) : placeStats({ model: "18-pro-max", tz, country: cc }),
-    restockReportStats(numbers, tz, 30, undefined, undefined, cc),
+    restockReportStats(numbers, tz, STATS_DAYS, undefined, undefined, cc),
     sellouts({ country: cc }),
   ]);
   return { stockNow, pstats, stats, stock, duo, max, reports, sell };

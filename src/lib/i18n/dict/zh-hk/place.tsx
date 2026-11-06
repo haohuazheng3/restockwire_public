@@ -20,9 +20,9 @@ type NonUs = Exclude<CountryCode, "us">;
 const money = (cc: CountryCode, v: number) => price(L, COUNTRIES[cc], v);
 const lw = (items: string[], max = 6) => listWords(items, max, L);
 
-/** "自11月2日起計" while the 30-day window still reaches back to the start, else "最近 30 日". */
+/** "自11月2日起計" while the 14-day window still reaches back to the start, else "最近 14 日". */
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "自11月2日起計" : "最近 30 日";
+  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 14 * 86400_000 ? "自11月2日起計" : "最近 14 日";
 }
 
 /** The official pages behind a country's lines, in Chinese where the source has a Chinese page (Hong Kong). */

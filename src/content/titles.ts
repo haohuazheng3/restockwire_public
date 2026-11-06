@@ -32,7 +32,7 @@ export const PRODUCT_TITLES: Record<string, EntryTitles> = {
       { keyword: "iphone 18 pro max in stock near me", title: "iPhone 18 Pro Max in stock near me, nearest store on top" },
       { keyword: "iphone 18 pro max stock", title: "iPhone 18 Pro Max stock for each storage size and color" },
     ],
-    description: "The iPhone 18 Pro Max in stock for pickup right now: each storage and color at 269 US Apple Stores, on a 15-second wire, plus 5 seconds for your own stores.",
+    description: "The iPhone 18 Pro Max in stock for pickup right now: each storage and color at 269 US Apple Stores, with the restock log and the usual hour behind every store.",
   },
   "iphone-18-pro-max-burgundy": {
     main: { keyword: "iphone 18 pro max burgundy", title: "iPhone 18 Pro Max Burgundy: Price and Stock Now", h1: "iPhone 18 Pro Max Burgundy: price and stock right now" },
@@ -92,7 +92,7 @@ export const HOME_TITLES: EntryTitles = {
     { keyword: "apple inventory checker", title: "Apple inventory checker: Duo, 18 Pro, Pro Max per store" },
     { keyword: "apple store stock checker", title: "Apple Store stock checker that alerts you on restock" },
   ],
-  description: "Live iPhone Duo, 18 Pro and Pro Max pickup stock and restock hours at 269 US Apple Stores. Your stores get 5-second checks and a push about 3 s after a restock.",
+  description: "Live iPhone Duo, 18 Pro and Pro Max pickup stock at 269 US Apple Stores, every restock logged by store, configuration and minute.",
 };
 
 /** Store pages bound to measured keywords, keyed by store slug. `city` is set when a one-store city's query is bound too. */
