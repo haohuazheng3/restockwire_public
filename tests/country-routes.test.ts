@@ -4,6 +4,7 @@ import { publicRouteCheck } from "@/lib/seo/routes";
 import { storesOf, storePath, placeTarget, statesWithStores, citiesWithStores, hasStatePage } from "@/lib/apple/catalog";
 import { INTL_CODES } from "@/lib/apple/countries";
 import sitemap, { countryEntries } from "@/app/sitemap";
+import { inIndexScope } from "@/lib/seo/indexScope";
 import { switchHref, type SwitchCountry } from "@/components/site/CountrySwitcher";
 import { hreflangFor } from "@/components/pages/shared";
 import { liveKey, parseLiveKey } from "@/lib/liveScope";
@@ -111,27 +112,27 @@ describe("sitemap: every indexable country page, once, and nothing else", () => 
       for (const s of storesOf(cc)) expect(per[cc]).toContain(`${base}${storePath(s)}`);
     }
   });
-  it("has no duplicates, keeps the US part as it was, and has every country after it", async () => {
+  it("has no duplicates and lists exactly the index scope (lib/seo/indexScope.ts)", async () => {
     const all = (await sitemap()).map((e) => e.url);
     expect(new Set(all).size).toBe(all.length);
+    for (const url of all) expect(inIndexScope(new URL(url).pathname), url).toBe(true);
     const prefixes = [...INTL_CODES, ...NATIVE_LOCALES.map((l) => l.id)];
     const us = all.filter((u) => !prefixes.some((p) => u === `${base}/${p}` || u.startsWith(`${base}/${p}/`)));
-    // 356 US pages of the SEO plan §10–11, the eight iPhone Duo question pages of §13, the three phrasing pages and the
-    // state (32) and city (26) restock-times pages of docs/research.md §8.3.
-    const placePages = statesWithStores().filter((s) => hasStatePage(s.name)).length + citiesWithStores().filter((c) => c.stores.length > 1).length;
-    expect(placePages).toBe(58);
-    expect(us).toHaveLength(356 + 8 + 3 + placePages);
-    for (const p of ["/when-does-iphone-duo-restock", "/how-fast-does-iphone-duo-sell-out", "/iphone-duo-restock-alerts", "/iphone-duo-in-stock-near-me", "/how-to-buy-an-iphone-duo-in-store", "/iphone-duo-most-restocked-stores", "/apple-store-pickup-explained", "/iphone-duo-restock-checkout-guide", "/is-iphone-duo-back-in-stock", "/iphone-duo-availability-checker", "/where-to-buy-iphone-duo-today", "/when-does-iphone-duo-restock/california", "/when-does-iphone-duo-restock/california/los-angeles", "/when-does-iphone-duo-restock/hawaii/honolulu"]) expect(us).toContain(`${base}${p}`);
-    expect(us).not.toContain(`${base}/when-does-iphone-duo-restock/hawaii`);
-    expect(us).not.toContain(`${base}/when-does-iphone-duo-restock/delaware`);
-    // Every country's pages once in English and once per language it also has (docs/i18n.md §6).
-    const natives = NATIVE_LOCALES.reduce((a, l) => a + per[l.cc as keyof typeof per].length, 0);
-    expect(all.length).toBe(us.length + Object.values(per).reduce((a, l) => a + l.length, 0) + natives);
-    for (const l of NATIVE_LOCALES) {
-      const mine = all.filter((u) => u === `${base}/${l.id}` || u.startsWith(`${base}/${l.id}/`));
-      expect(mine.length, l.id).toBe(per[l.cc as keyof typeof per].length);
+    // US: 12 static pages, 11 question pages, 3 model pages, 32 states, 26 cities, 269 stores.
+    expect(us).toHaveLength(353);
+    for (const p of ["/when-does-iphone-duo-restock", "/how-fast-does-iphone-duo-sell-out", "/iphone-duo-restock-alerts", "/iphone-duo-in-stock-near-me", "/how-to-buy-an-iphone-duo-in-store", "/iphone-duo-most-restocked-stores", "/apple-store-pickup-explained", "/iphone-duo-restock-checkout-guide", "/is-iphone-duo-back-in-stock", "/iphone-duo-availability-checker", "/where-to-buy-iphone-duo-today", "/in-stock/iphone-duo"]) expect(us).toContain(`${base}${p}`);
+    expect(us).not.toContain(`${base}/when-does-iphone-duo-restock/california`);
+    expect(us.filter((u) => u.includes("/in-stock/"))).toHaveLength(3);
+    // Other countries: home, restock log and restock times each, plus the store index where it is a page of its own.
+    for (const cc of INTL_CODES) {
+      const mine = all.filter((u) => u === `${base}/${cc}` || u.startsWith(`${base}/${cc}/`));
+      for (const p of ["", "/restock-log", "/when-does-iphone-duo-restock"]) expect(mine, cc).toContain(`${base}/${cc}${p}`);
+      expect(mine.length, cc).toBeLessThanOrEqual(4);
       for (const url of mine) { const u = new URL(url); expect(publicRouteCheck(u.pathname, u.search), url).toBeNull(); }
     }
+    // No native-language page while the scope is narrow.
+    expect(all.filter((u) => NATIVE_LOCALES.some((l) => u === `${base}/${l.id}` || u.startsWith(`${base}/${l.id}/`)))).toHaveLength(0);
+    expect(all.length).toBeLessThan(450);
   });
 });
 

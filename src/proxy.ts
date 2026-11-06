@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { adminTokenFrom, verifyAdminToken } from "@/lib/admin/session";
 import { publicRouteCheck } from "@/lib/seo/routes";
 import { servePageCache } from "@/lib/pageCache";
+import { OUT_OF_SCOPE_ROBOTS, inIndexScope } from "@/lib/seo/indexScope";
 import { APP_LOCALE_HEADER, LANG_COOKIE, LOCALE_HEADER, isAppPath, localeFromSegment, nativeLocale, signInHome } from "@/lib/i18n/locales";
 
 const isProtected = createRouteMatcher(["/account", "/account/(.*)", "/checkout/success", "/checkout/success/(.*)"]);
@@ -65,8 +66,13 @@ export default clerkMiddleware(async (auth, req) => {
   if (req.nextUrl.pathname.startsWith("/api/")) return;
   // Anonymous document requests of public pages: the CDN-cacheable copy (src/app/api/page-cache).
   const cacheable = !native && servePageCache({ method: req.method, pathname: req.nextUrl.pathname, search: req.nextUrl.search, headers: req.headers, hasCookie: (n) => req.cookies.has(n) }, LANG_COOKIE);
-  if (cacheable) return NextResponse.rewrite(new URL(`/api/page-cache?p=${encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search)}`, req.url));
-  return withLang(NextResponse.next({ request: { headers: langHeaders() } }));
+  // Pages outside the index scope (lib/seo/indexScope.ts) stay served and linked, but are asked not to be indexed.
+  const scoped = (res: NextResponse) => {
+    if (!inIndexScope(req.nextUrl.pathname)) res.headers.set("X-Robots-Tag", OUT_OF_SCOPE_ROBOTS);
+    return res;
+  };
+  if (cacheable) return scoped(NextResponse.rewrite(new URL(`/api/page-cache?p=${encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search)}`, req.url)));
+  return scoped(withLang(NextResponse.next({ request: { headers: langHeaders() } })));
 });
 
 export const config = {

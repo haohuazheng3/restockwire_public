@@ -5,6 +5,7 @@ import { latestEventPerStore } from "@/lib/stock/queries";
 import { PRODUCTS, US, productPath, isIndexedProductPage } from "@/lib/seo/products";
 import { NATIVE_LOCALES, pathInLocale } from "@/lib/i18n/locales";
 import { blogSitemapEntries } from "@/lib/blog/sitemap";
+import { inIndexScope } from "@/lib/seo/indexScope";
 
 /** Regenerated hourly: lastModified of a store/city/state page is its latest real availability event when one is known. */
 export const revalidate = 3600;
@@ -77,5 +78,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const natives = NATIVE_LOCALES.flatMap((loc) => countryEntries(loc.cc as Exclude<CountryCode, "us">, base, now, latestOf).map((e) => ({ ...e, url: `${base}${pathInLocale(e.url.slice(base.length), loc)}` })));
   // The blog (lib/blog/sitemap.ts): /blog from its first post, categories with a post, every post; nothing while it is empty.
   const blog = blogSitemapEntries(base);
-  return [...statics, ...questions, ...restockPlaces, ...models, ...states, ...cities, ...stores, ...products, ...blog, ...countries, ...natives];
+  // Only what is inside the index scope (lib/seo/indexScope.ts); the rest is served with noindex, follow.
+  return [...statics, ...questions, ...restockPlaces, ...models, ...states, ...cities, ...stores, ...products, ...blog, ...countries, ...natives].filter((e) => inIndexScope(new URL(e.url).pathname));
 }

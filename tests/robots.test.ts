@@ -41,7 +41,7 @@ describe("robots.txt once the site is indexable", () => {
 
   it("lets every country's sitemap pages be crawled too", async () => {
     const urls = (await sitemap()).map((e) => new URL(e.url).pathname).filter((u) => INTL_CODES.some((cc) => u === `/${cc}` || u.startsWith(`/${cc}/`)));
-    expect(urls.length).toBeGreaterThan(300);
+    expect(urls.length).toBeGreaterThan(60);
     for (const ua of ["*", "GPTBot", "ClaudeBot"]) {
       const g = group(ua);
       expect(urls.filter((u) => !allowed(g, u)), ua).toEqual([]);
