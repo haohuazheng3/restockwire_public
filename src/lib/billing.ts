@@ -97,6 +97,8 @@ async function checkoutSession(userId: string, email: string, plan: PaidPlanKey,
     ...(STRIPE_LOCALE[lang] ? { locale: STRIPE_LOCALE[lang] } : {}),
     client_reference_id: userId,
     allow_promotion_codes: true,
+    // A 100%-off code (owner tests) needs no card; every paid subscription still asks for one.
+    payment_method_collection: "if_required",
     billing_address_collection: "auto",
     success_url: `${site}/checkout/success?session_id={CHECKOUT_SESSION_ID}&plan=${plan}${watchId ? `&watch=${encodeURIComponent(watchId)}` : ""}`,
     cancel_url: `${site}/account?checkout=cancelled`,
