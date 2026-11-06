@@ -5,6 +5,7 @@
  * unique keys + ON CONFLICT, conditional UPDATEs, and "unknown ≠ unavailable" states.
  */
 import {
+  bigint,
   pgTable,
   text,
   integer,
@@ -233,7 +234,8 @@ export const notifications = pgTable(
     id: bigserial("id", { mode: "number" }).primaryKey(),
     watchId: text("watch_id").notNull(),
     userId: text("user_id").notNull(),
-    eventId: integer("event_id"),
+    // bigint: this site's own events take ids from 5e9 up (migration 0015/0016).
+    eventId: bigint("event_id", { mode: "number" }),
     storeNumber: text("store_number").notNull(),
     partNumber: text("part_number").notNull(),
     channel: text("channel").notNull().default("email"), // email | push

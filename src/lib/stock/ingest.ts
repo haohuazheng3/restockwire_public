@@ -11,7 +11,7 @@
  *    (≈250 such blips in the poller's first seven hours). One response cannot flip a status alone.
  */
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { db, schema } from "../db";
+import { db, schema, retryDeadlock } from "../db";
 import type { PickupStoreResult } from "../apple/client";
 
 export type StockStatus = "available" | "unavailable" | "unknown";
@@ -202,14 +202,16 @@ export async function ingestStores(
     // and that lock is a WAL record of its own (18% of all WAL at ~2,000 rows a second, 2026-11-02). Only
     // pairs seen for the first time go through the insert.
     const CH = 200;
-    const known = rows.filter((r) => prev.has(`${r.storeNumber}|${r.partNumber}`));
+    // (store, part) order: the relay writes the same rows in that order too, so the two never deadlock (RestockWire).
+    const byKey = (a: { storeNumber: string; partNumber: string }, b: { storeNumber: string; partNumber: string }) => (a.storeNumber < b.storeNumber ? -1 : a.storeNumber > b.storeNumber ? 1 : a.partNumber < b.partNumber ? -1 : a.partNumber > b.partNumber ? 1 : 0);
+    const known = rows.filter((r) => prev.has(`${r.storeNumber}|${r.partNumber}`)).sort(byKey);
     const fresh = rows.filter((r) => !prev.has(`${r.storeNumber}|${r.partNumber}`));
     for (let i = 0; i < known.length; i += CH) {
       const values = sql.join(
         known.slice(i, i + CH).map((r) => sql`(${r.storeNumber}::text, ${r.partNumber}::text, ${r.dec.status}::text, ${r.dec.quote}::text, ${r.dec.commit?.since ?? now}::timestamptz, ${r.available && r.dec.status === "available" ? now : null}::timestamptz, ${r.dec.pendingStatus}::text, ${r.dec.pendingSince}::timestamptz, ${r.dec.pendingSeen}::int)`),
         sql`, `,
       );
-      await d.execute(sql`
+      await retryDeadlock(() => d.execute(sql`
         update store_sku_status as s set
           status = v.status, quote = v.quote, last_checked_at = ${now}::timestamptz,
           since = case when s.status is distinct from v.status then v.since else s.since end,
@@ -217,7 +219,7 @@ export async function ingestStores(
           last_available_at = coalesce(v.last_available_at, s.last_available_at),
           pending_status = v.pending_status, pending_since = v.pending_since, pending_seen = v.pending_seen
         from (values ${values}) as v(store_number, part_number, status, quote, since, last_available_at, pending_status, pending_since, pending_seen)
-        where s.store_number = v.store_number and s.part_number = v.part_number`);
+        where s.store_number = v.store_number and s.part_number = v.part_number`));
     }
     for (let i = 0; i < fresh.length; i += CH) {
       const chunk = fresh.slice(i, i + CH);

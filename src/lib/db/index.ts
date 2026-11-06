@@ -132,6 +132,26 @@ export async function waitOutBusy<T>(run: () => Promise<T>, backoff: number[] = 
   }
 }
 
+/**
+ * Postgres aborted one of two statements that locked the same rows in a different order (40P01). RestockWire has two
+ * writers of store_sku_status — the relay (rw-1) and its fast lane (linode-2/3) — so it happens; both write in
+ * (store, part) order, and a statement that still loses is simply run again (every such write is idempotent).
+ */
+export function isDeadlock(e: unknown): boolean {
+  const err = e as { code?: string; message?: string; cause?: { code?: string } };
+  return err?.code === "40P01" || err?.cause?.code === "40P01" || /deadlock detected/i.test(err?.message ?? "");
+}
+export async function retryDeadlock<T>(run: () => Promise<T>, tries = 3, sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))): Promise<T> {
+  for (let i = 1; ; i++) {
+    try {
+      return await run();
+    } catch (e) {
+      if (!isDeadlock(e) || i >= tries) throw e;
+      await sleep(50 + Math.random() * 150 * i);
+    }
+  }
+}
+
 const PROBE_SQL = `select pg_is_in_recovery() as recovery, current_setting('restockwire.host', true) as host,
   (select value from poller_state where key = 'cluster') as cluster`;
 /** How long a choice stands before it is checked again in the background. */

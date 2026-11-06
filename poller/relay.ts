@@ -31,7 +31,7 @@ import "dotenv/config";
 import { readFileSync } from "node:fs";
 import { Pool, type PoolConfig } from "pg";
 import { sql } from "drizzle-orm";
-import { db, poolConfig } from "../src/lib/db";
+import { db, poolConfig, retryDeadlock } from "../src/lib/db";
 
 /** The local pool itself: these statements bind whole arrays (unnest), which the sql template would expand. */
 function local() {
@@ -116,9 +116,11 @@ async function mirrorStatus(): Promise<void> {
     const t = Math.max(r.last_checked_at?.getTime() ?? 0, r.last_changed_at?.getTime() ?? 0);
     if (t > newest) newest = t;
   }
+  // (store, part) order, as the fast lane's ingest writes: the two writers then never deadlock on these rows.
+  rows.sort((a, b) => (a.store_number < b.store_number ? -1 : a.store_number > b.store_number ? 1 : a.part_number < b.part_number ? -1 : a.part_number > b.part_number ? 1 : 0));
   for (let i = 0; i < rows.length; i += 2000) {
     const c = rows.slice(i, i + 2000);
-    await local().query(`
+    await retryDeadlock(() => local().query(`
       insert into store_sku_status (store_number, part_number, status, quote, since, last_checked_at, last_changed_at, last_available_at, pending_status, pending_since, pending_seen)
       select * from unnest($1::text[], $2::text[], $3::text[], $4::text[],
                            $5::timestamptz[], $6::timestamptz[], $7::timestamptz[], $8::timestamptz[],
@@ -129,7 +131,7 @@ async function mirrorStatus(): Promise<void> {
       -- Only a newer check replaces a row: this site's own fast lane (poller/fast.ts) may hold a fresher one.
       where store_sku_status.last_checked_at is null
          or excluded.last_checked_at > store_sku_status.last_checked_at
-         or (excluded.last_checked_at = store_sku_status.last_checked_at and excluded.status is distinct from store_sku_status.status)`, [c.map((r) => r.store_number), c.map((r) => r.part_number), c.map((r) => r.status), c.map((r) => r.quote), c.map((r) => r.since), c.map((r) => r.last_checked_at), c.map((r) => r.last_changed_at), c.map((r) => r.last_available_at), c.map((r) => r.pending_status), c.map((r) => r.pending_since), c.map((r) => r.pending_seen)]);
+         or (excluded.last_checked_at = store_sku_status.last_checked_at and excluded.status is distinct from store_sku_status.status)`, [c.map((r) => r.store_number), c.map((r) => r.part_number), c.map((r) => r.status), c.map((r) => r.quote), c.map((r) => r.since), c.map((r) => r.last_checked_at), c.map((r) => r.last_changed_at), c.map((r) => r.last_available_at), c.map((r) => r.pending_status), c.map((r) => r.pending_since), c.map((r) => r.pending_seen)]));
   }
   // One second of overlap: rows stamped in the same instant as the newest one are read again (the upsert is idempotent).
   statusCursor = new Date(newest - 1_000);
