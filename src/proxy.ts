@@ -2,6 +2,7 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { adminTokenFrom, verifyAdminToken } from "@/lib/admin/session";
 import { publicRouteCheck } from "@/lib/seo/routes";
+import { servePageCache } from "@/lib/pageCache";
 import { APP_LOCALE_HEADER, LANG_COOKIE, LOCALE_HEADER, isAppPath, localeFromSegment, nativeLocale, signInHome } from "@/lib/i18n/locales";
 
 const isProtected = createRouteMatcher(["/account", "/account/(.*)", "/checkout/success", "/checkout/success/(.*)"]);
@@ -62,6 +63,9 @@ export default clerkMiddleware(async (auth, req) => {
     await auth.protect({ unauthenticatedUrl: new URL(`${signInHome(person)}?signin=1&next=${encodeURIComponent(back)}`, req.url).toString() });
   }
   if (req.nextUrl.pathname.startsWith("/api/")) return;
+  // Anonymous document requests of public pages: the CDN-cacheable copy (src/app/api/page-cache).
+  const cacheable = !native && servePageCache({ method: req.method, pathname: req.nextUrl.pathname, search: req.nextUrl.search, headers: req.headers, hasCookie: (n) => req.cookies.has(n) }, LANG_COOKIE);
+  if (cacheable) return NextResponse.rewrite(new URL(`/api/page-cache?p=${encodeURIComponent(req.nextUrl.pathname + req.nextUrl.search)}`, req.url));
   return withLang(NextResponse.next({ request: { headers: langHeaders() } }));
 });
 
