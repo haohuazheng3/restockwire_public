@@ -110,13 +110,13 @@ export async function StoresIndexPage({ country: c }: { country: Country }) {
         </div>
       </section>
 
-      <h2 className="mt-10 text-2xl font-semibold">US Apple Store locations, state by state</h2>
+      <h2 className="mt-10 text-2xl font-semibold">Every US state with an Apple Store, busiest first</h2>
       <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {states.map((s) => {
-          const mine = cities.filter((x) => x.state === s.name);
+        {[...states].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).map((s) => {
+          const mine = cities.filter((x) => x.state === s.name).sort((a, b) => b.stores.length - a.stores.length || a.name.localeCompare(b.name));
           return (
             <li key={s.slug} className="pane-2 min-w-0 p-4">
-              <Link href={statePath(s.name)} className="flex items-center justify-between gap-2 font-semibold hover:underline"><span>{s.name}</span><span className="shrink-0 text-sm font-normal text-ink-3">{s.count} store{s.count > 1 ? "s" : ""}{SALES_TAX[s.name] ? (SALES_TAX[s.name].combined === 0 ? " · no sales tax" : ` · ${SALES_TAX[s.name].combined}% tax`) : ""}</span></Link>
+              <Link href={statePath(s.name)} className="flex items-center justify-between gap-2 font-semibold hover:underline"><span>{s.name}</span><span className="shrink-0 text-sm font-normal text-ink-3">{s.count} Apple Store{s.count > 1 ? "s" : ""}{SALES_TAX[s.name] ? (SALES_TAX[s.name].combined === 0 ? " · tax-free" : ` · tax ${SALES_TAX[s.name].combined}%`) : ""}</span></Link>
               <div className="mt-2 flex flex-wrap gap-x-2 gap-y-1 text-xs">
                 {mine.map((x) => <Link key={x.slug} href={cityPath(x.state, x.name)} className="text-ink-2 hover:text-ink hover:underline">{x.name}{x.stores.length > 1 ? ` (${x.stores.length})` : ""}</Link>)}
               </div>

@@ -40,10 +40,6 @@ export function RestockFeed({ rows, model, showModel = true, emptyText }: { rows
               <span className={`rounded-full px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide ${available ? "bg-ok text-[var(--ok-ink)]" : "bg-ink/10 text-ink-2"}`}>{available ? d.available : d.soldOut}</span>
               <span className="truncate text-xs text-ink-3">{r.kind === "soldout" ? d.soldOutAt(when) : available ? d.since(when) : d.restockedAt(when)}</span>
             </div>
-            <Link href={productPath(productFor(key), here)} className="block min-w-0 truncate">
-              <span className="font-semibold text-ink hover:underline">{lang === "en" ? r.store.name : storeLabel(r.store, lang)}</span>
-              <span className="text-xs text-ink-3"> · {cityIn(r.store, lang)}</span>
-            </Link>
             <div className="flex items-center justify-between gap-2">
               <Link href={productPath(config, here)} className="inline-flex min-w-0 items-center gap-1.5 text-sm text-ink-2 hover:text-ink hover:underline">
                 <Swatch color={r.item.color} className="h-2.5 w-2.5" />
@@ -54,6 +50,10 @@ export function RestockFeed({ rows, model, showModel = true, emptyText }: { rows
                 {available && <a href={appleBuyUrl(r.item, r.store.country)} target="_blank" rel="noopener noreferrer" className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-line text-ink-2 hover:bg-ink/5" aria-label={d.buyAria(r.item.model, configLabel(r.item, lang))} title={d.buy}><BagIcon /></a>}
               </span>
             </div>
+            <Link href={productPath(productFor(key), here)} className="block min-w-0 truncate">
+              <span className="font-semibold text-ink hover:underline">{lang === "en" ? r.store.name : storeLabel(r.store, lang)}</span>
+              <span className="text-xs text-ink-3"> · {cityIn(r.store, lang)}</span>
+            </Link>
           </li>
         );
       })}

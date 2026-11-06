@@ -80,7 +80,7 @@ export function Footer({ loc }: { loc: Locale }) {
         <div className="hairline mt-6 pt-5 text-sm">
           <div className="eyebrow mb-3">Other countries</div>
           <ul className="flex flex-wrap gap-x-4 gap-y-2 text-ink-2">
-            {switchCountries().map((c) => <li key={c.cc}><Link href={c.cc === "us" ? "/" : `/${c.cc}`} className="hover:text-ink">{c.name}</Link></li>)}
+            {[...switchCountries()].sort((a, b) => a.name.localeCompare(b.name)).map((c) => <li key={c.cc}><Link href={c.cc === "us" ? "/" : `/${c.cc}`} className="hover:text-ink">{c.name}</Link></li>)}
           </ul>
         </div>
         <div className="hairline mt-6 flex flex-wrap items-center justify-between gap-3 pt-5 text-xs text-ink-3">
