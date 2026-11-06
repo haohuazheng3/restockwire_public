@@ -1,113 +1,104 @@
-// TODO(translate): English placeholder — see docs/voice.md §6
-import type { Dict } from "../en";
+/**
+ * 日本語: wire — 再入荷記録の4モジュール（src/components/restocks/{RestockHeatmap,RestockStreak,SellOutRanking,RestockLeaderboard}.tsx）。
+ * `label` は場所を表す名詞句（「東京」「Apple 銀座」「この店舗」「日本」）で届く。助詞はこちらで付ける。
+ * `what` は機種名・構成名で訳さない。件数は生の値（num() で整形）、時間・時刻・曜日・割合は整形済み。
+ * チェック間隔は15秒（全店舗）と5秒（通知設定店舗）のみ。しきい値（5回・3日、14日、3回）は事実なので変えない。
+ */
 import type { ReactNode } from "react";
+import { num } from "@/lib/i18n/format";
+import type { Dict } from "../en";
 
-const s = (n: number) => (n === 1 ? "" : "s");
+const N = (n: number) => num("ja", n);
+/** 地域の呼び方（英語の名詞 → 日本語）。 */
+const NOUN: Record<string, string> = { state: "州", province: "州", area: "エリア", department: "県", prefecture: "都道府県", emirate: "首長国", canton: "州", region: "地域", county: "県", city: "都市" };
+const nounJa = (noun: string) => NOUN[noun] ?? noun;
 
 export const wire: Dict["wire"] = {
-  /** RestockHeatmap: a 7 × 24 grid of confirmed restocks by local weekday and hour. */
   heatmap: {
-    title: (what: string, label: string) => `When does the ${what} restock ${label}? Weekday × hour`,
-    unknown: "The weekday-by-hour grid could not be read just now; the live stock and the restock log on this page are unaffected.",
-    none: (label: string, days: number) => `No confirmed restock ${label} in the last ${days} days yet — the grid fills in from the first one.`,
-    /** Under 5 restocks or under 3 days with one. */
+    title: (what: string, label: string) => `${label}で${what}が再入荷するのはいつ？曜日×時間帯`,
+    unknown: "曜日×時間帯のグラフをいま読み込めませんでした。このページのライブ在庫と再入荷の記録には影響ありません。",
+    none: (label: string, days: number) => `過去${N(days)}日間、${label}で確認された再入荷はまだありません。最初の1件からグラフが埋まっていきます。`,
     thin: (n: number, label: string, days: number, activeDays: number, min: number, minDays: number) =>
-      `${n} restock${s(n)} ${label} on ${activeDays} day${s(activeDays)} in the last ${days} — not enough data yet to call a pattern (RestockWire waits for ${min} restocks over ${minDays} days).`,
-    /** `weekday` "Tuesday", `window` "7–9 AM", `share` "34%". */
+      `過去${N(days)}日間の${label}の再入荷は${N(activeDays)}日に${N(n)}回。傾向を言うにはまだ足りません（RestockWireは${N(minDays)}日にわたる${N(min)}回の再入荷を待ちます）。`,
     pattern: (label: string, weekday: string, window: string, share: string, n: number, days: number) => (
-      <>Most restocks {label} land on <b className="text-ink">{weekday}s</b>, between <b className="text-ink">{window}</b> local time ({share} of {n} in the last {days} days).</>
+      <>{label}の再入荷は<b className="text-ink">{weekday}</b>、現地時間<b className="text-ink">{window}</b>が最多です（過去{N(days)}日間の{N(n)}回中{share}）。</>
     ),
-    /** Under 14 days of span: the hour, but no weekday claim. */
     patternHours: (label: string, window: string, share: string, n: number, spanDays: number) => (
-      <>Most restocks {label} land between <b className="text-ink">{window}</b> local time ({share} of {n}); {spanDays} day{s(spanDays)} of data is too few to name a weekday yet.</>
+      <>{label}の再入荷は現地時間<b className="text-ink">{window}</b>が最多です（{N(n)}回中{share}）。データはまだ{N(spanDays)}日分で、曜日を言うには足りません。</>
     ),
-    caption: (what: string, label: string, days: number) => `Confirmed ${what} restocks ${label} by local weekday and hour, last ${days} days`,
-    /** Every cell's title and screen-reader text: `hours` "7–8 AM". */
-    cell: (weekday: string, hours: string, n: number) => `${weekday} ${hours}: ${n} restock${s(n)}`,
-    /** The busiest cell. */
-    busiest: (weekday: string, hours: string, n: number) => `busiest · ${weekday} ${hours} · ${n} restock${s(n)}`,
-    legendFewer: "fewer",
-    legendMore: "more",
-    /** Multi-zone sets (a state across two zones, a country): every store counted in its own zone. */
-    localTime: "each store's own local time",
-    measuredTitle: "How this is measured",
+    caption: (what: string, label: string, days: number) => `${label}で確認された${what}の再入荷：現地の曜日×時間帯、過去${N(days)}日間`,
+    cell: (weekday: string, hours: string, n: number) => `${weekday} ${hours}：再入荷${N(n)}回`,
+    busiest: (weekday: string, hours: string, n: number) => `最多 · ${weekday} ${hours} · 再入荷${N(n)}回`,
+    legendFewer: "少",
+    legendMore: "多",
+    localTime: "各店舗の現地時間",
+    measuredTitle: "測り方",
     measured: (min: number, minDays: number, span: number) =>
-      `Each cell counts RestockWire's confirmed restocks (two checks agreeing; a store's first sighting never counted) that landed in that local hour of that weekday over the window, in the store's own time zone. A pattern is stated from ${min} restocks over ${minDays} different days, a weekday only once the data spans ${span} days — ten restocks in one burst are one event, not a habit.`,
+      `各マスは、期間中にその曜日・その現地時間帯に起きたRestockWireの確認済み再入荷（2回のチェックが一致したもの。店舗を初めて見たときの在庫は数えません）を、店舗ごとのタイムゾーンで数えたものです。傾向は${N(minDays)}日にわたる${N(min)}回の再入荷から示し、曜日はデータが${N(span)}日に達してから。1回にまとめて来た10件の再入荷は1つの出来事で、習慣ではありません。`,
   },
 
-  /** RestockStreak: days since the last restock, the longest drought, this week against last, the typical gap. */
   streak: {
-    title: (what: string, label: string) => `${what} restock streaks and droughts ${label}`,
-    unknown: "The streak numbers could not be read just now; the live stock and the restock log on this page are unaffected.",
-    none: (label: string, days: number) => `No confirmed restock ${label} in the last ${days} days — the current quiet spell is the whole window.`,
-    /** `since` "2 days ago" / "today"; `longest` "5.2 days" or null under two drops; `trend` the arrow line below or null when both weeks are 0. */
+    title: (what: string, label: string) => `${label}の${what}：再入荷の連続と空白`,
+    unknown: "連続・空白の数字をいま読み込めませんでした。このページのライブ在庫と再入荷の記録には影響ありません。",
+    none: (label: string, days: number) => `過去${N(days)}日間、${label}で確認された再入荷はありません。期間まるごとが静かなままです。`,
     lead: (o: { label: string; since: ReactNode; longest: string | null; thisWeek: number; lastWeek: number; trend: string | null; days: number }) => (
-      <>Last confirmed restock {o.label}: <b className="text-ink">{o.since}</b>{o.longest && <>; the longest quiet spell in {o.days} days was <b className="text-ink">{o.longest}</b></>}{o.trend && <>; <b className="text-ink">{o.thisWeek}</b> restock{s(o.thisWeek)} this week against {o.lastWeek} last week ({o.trend})</>}.</>
+      <>{o.label}で最後に確認された再入荷：<b className="text-ink">{o.since}</b>{o.longest && <>。{N(o.days)}日間で最も長い空白は<b className="text-ink">{o.longest}</b></>}{o.trend && <>。今週は<b className="text-ink">{N(o.thisWeek)}回</b>、先週は{N(o.lastWeek)}回（{o.trend}）</>}。</>
     ),
-    today: "today",
-    daysAgo: (n: number) => `${n} day${s(n)} ago`,
-    hoursAgo: (n: number) => `${n} hour${s(n)} ago`,
-    tileSince: "since the last confirmed restock",
-    tileSinceNone: (days: number) => `no restock in ${days} days`,
-    tileLongest: (days: number) => `longest quiet spell between restocks · ${days} d`,
-    /** `prev` last week's count. */
-    tileWeek: (prev: number) => `restocks in the last 7 days · ${prev} the week before`,
-    tileMedian: "typical gap between restock drops",
-    up: "↑ up on last week",
-    down: "↓ down on last week",
-    flat: "→ same as last week",
+    today: "今日",
+    daysAgo: (n: number) => `${N(n)}日前`,
+    hoursAgo: (n: number) => `${N(n)}時間前`,
+    tileSince: "最後の確認済み再入荷から",
+    tileSinceNone: (days: number) => `${N(days)}日間再入荷なし`,
+    tileLongest: (days: number) => `再入荷の間の最長の空白 · ${N(days)}日間`,
+    tileWeek: (prev: number) => `直近7日間の再入荷 · その前の週は${N(prev)}回`,
+    tileMedian: "再入荷の波の間隔（通常）",
+    up: "↑ 先週より増加",
+    down: "↓ 先週より減少",
+    flat: "→ 先週と同じ",
     none2: "–",
-    measuredTitle: "How this is measured",
-    measured: "A restock drop is every confirmed restock within the same half hour at the stores counted here, so eight configurations landing together are one drop, not eight; gaps are measured between drops. “This week” is the last 7 days, “last week” the 7 before them. Confirmed means two of RestockWire's checks agreed (every store every 15 seconds, stores with alerts every 5); a store's first sighting is never counted.",
+    measuredTitle: "測り方",
+    measured: "「再入荷の波」は、ここで数える店舗で同じ30分以内に起きた確認済み再入荷をまとめたものです。8つの構成が一緒に来ても波は1つで、8つではありません。間隔は波と波の間で測ります。「今週」は直近7日間、「先週」はその前の7日間。確認済みとは、RestockWireのチェック2回が一致したもの（全店舗15秒ごと、通知設定店舗は5秒ごと）。店舗を初めて見たときの在庫は数えません。",
   },
 
-  /** SellOutRanking: the place's stores ranked by how fast their restocks sold out. */
   ranking: {
-    title: (what: string, label: string) => `Which stores sell out the ${what} fastest ${label}?`,
-    unknown: "The sell-out ranking could not be read just now; the live stock and the restock log on this page are unaffected.",
-    /** Fewer than two stores qualify. `k` stores qualified, `min` pairs needed. */
+    title: (what: string, label: string) => `${label}で${what}がいちばん早く売り切れる店舗は？`,
+    unknown: "売り切れランキングをいま読み込めませんでした。このページのライブ在庫と再入荷の記録には影響ありません。",
     thin: (label: string, k: number, min: number, days: number) =>
-      `Not enough timed sell-outs ${label} yet: ${k} store${s(k)} with ${min} or more restocks that sold out in the last ${days} days, and a ranking needs two.`,
-    /** `fastest`/`slowest` are store links; `fastSec`/`slowSec` formatted durations. */
+      `${label}では、時間を測れた売り切れがまだ足りません。過去${N(days)}日間に売り切れた再入荷が${N(min)}回以上ある店舗は${N(k)}店舗で、ランキングには2店舗必要です。`,
     lead: (o: { label: string; fastest: ReactNode; fastSec: string; slowest: ReactNode; slowSec: string; days: number }) => (
-      <>Fastest {o.label}: <b className="text-ink">{o.fastest}</b>, half its restocks gone within <b className="text-ink">{o.fastSec}</b>; slowest: <b className="text-ink">{o.slowest}</b>, {o.slowSec} (last {o.days} days).</>
+      <>{o.label}で最速は<b className="text-ink">{o.fastest}</b>、再入荷の半数が<b className="text-ink">{o.fastSec}</b>以内に消えます。最も遅いのは<b className="text-ink">{o.slowest}</b>で{o.slowSec}（過去{N(o.days)}日間）。</>
     ),
-    caption: (what: string, label: string, days: number, min: number) => `${what} restocks ${label} by how fast they sold out, last ${days} days; stores with ${min} or more timed sell-outs`,
+    caption: (what: string, label: string, days: number, min: number) => `${label}の${what}再入荷を売り切れの速さ順に（過去${N(days)}日間、時間を測れた売り切れが${N(min)}回以上の店舗）`,
     thRank: "#",
-    thStore: "Store",
-    thMedian: "Half gone within",
-    thFastest: "Fastest",
-    thPairs: "Sold-out restocks",
-    /** The share of stores that made the table: "8 of 12 stores ranked". */
-    footnote: (ranked: number, total: number) => `${ranked} of ${total} store${s(total)} ranked`,
-    measuredTitle: "How this is measured",
+    thStore: "店舗",
+    thMedian: "半数が消えるまで",
+    thFastest: "最速",
+    thPairs: "売り切れた再入荷",
+    footnote: (ranked: number, total: number) => `${N(total)}店舗中${N(ranked)}店舗をランク付け`,
+    measuredTitle: "測り方",
     measured: (min: number) =>
-      `“Half gone within” is the median time from RestockWire's check that first saw a restock to the check that first saw it gone — an upper bound: stores with alerts are checked every 5 seconds, every other store every 15. Only stores with ${min} or more restocks that sold out in the window are ranked; a listing shorter than one check can be missed, so very fast stores look a little slower than they are.`,
+      `「半数が消えるまで」は、RestockWireのチェックが再入荷を最初に見つけてから、消えたことを最初に見つけるまでの時間の中央値です。上限値であり、通知を設定した店舗は5秒ごと、ほかの店舗は15秒ごとにチェックします。期間中に売り切れた再入荷が${N(min)}回以上ある店舗だけをランク付けしています。チェック1回分より短い在庫は見逃すことがあるため、非常に速い店舗は実際より少し遅く見えます。`,
   },
 
-  /** RestockLeaderboard: the stores with the most confirmed restocks in the last 7 days and their share. */
   leaderboard: {
-    title: (what: string, label: string, days: number) => `Which stores restocked the ${what} most ${label}? Last ${days} days`,
-    unknown: "The leaderboard could not be read just now; the live stock and the restock log on this page are unaffected.",
-    none: (what: string, label: string, days: number) => `No confirmed ${what} restock ${label} in the last ${days} days.`,
-    /** `store` a link, `share` "10%". */
+    title: (what: string, label: string, days: number) => `${label}で${what}の再入荷が多かった店舗は？過去${N(days)}日間`,
+    unknown: "ランキングをいま読み込めませんでした。このページのライブ在庫と再入荷の記録には影響ありません。",
+    none: (what: string, label: string, days: number) => `過去${N(days)}日間、${label}で確認された${what}の再入荷はありません。`,
     lead: (o: { store: ReactNode; n: number; total: number; share: string; label: string; days: number }) => (
-      <><b className="text-ink">{o.store}</b> led {o.label} with <b className="text-ink">{o.n}</b> of {o.total} confirmed restock{s(o.total)} (<b className="text-ink">{o.share}</b>) in the last {o.days} days.</>
+      <>過去{N(o.days)}日間、{o.label}のトップは<b className="text-ink">{o.store}</b>。確認済み再入荷{N(o.total)}回のうち<b className="text-ink">{N(o.n)}回</b>（<b className="text-ink">{o.share}</b>）でした。</>
     ),
-    caption: (what: string, label: string, days: number) => `Apple Stores ${label} by confirmed ${what} restocks, last ${days} days`,
+    caption: (what: string, label: string, days: number) => `${label}のアップルストア：確認済みの${what}再入荷の多い順、過去${N(days)}日間`,
     thRank: "#",
-    thStore: "Store",
-    thRestocks: "Restocks",
-    thShare: "Share",
-    /** Below the table: "10 of 41 stores with a restock · 212 restocks in all". */
-    footnote: (shown: number, stores: number, total: number) => `${shown} of ${stores} store${s(stores)} with a restock · ${total} restock${s(total)} in all`,
-    /** The same count by state (US) or region. `noun` "state" / "province" / "area". */
-    regionsTitle: (noun: string) => `By ${noun}`,
-    regionsCaption: (what: string, label: string, days: number, noun: string) => `Confirmed ${what} restocks ${label} by ${noun}, last ${days} days`,
-    thRegion: (noun: string) => noun.charAt(0).toUpperCase() + noun.slice(1),
-    thStores: "Stores",
-    measuredTitle: "How this is measured",
+    thStore: "店舗",
+    thRestocks: "再入荷",
+    thShare: "割合",
+    footnote: (shown: number, stores: number, total: number) => `再入荷のあった${N(stores)}店舗中${N(shown)}店舗 · 再入荷は計${N(total)}回`,
+    regionsTitle: (noun: string) => `${nounJa(noun)}別`,
+    regionsCaption: (what: string, label: string, days: number, noun: string) => `${label}で確認された${what}の再入荷：${nounJa(noun)}別、過去${N(days)}日間`,
+    thRegion: (noun: string) => nounJa(noun),
+    thStores: "店舗",
+    measuredTitle: "測り方",
     measured: (what: string) =>
-      `Confirmed ${what} restocks in the last 7 days from RestockWire's own checks of apple.com in-store pickup (every store every 15 seconds, stores with alerts every 5; two checks must agree; a store's first sighting is never counted). The share is of every confirmed restock in the same place and window.`,
+      `直近7日間に確認された${what}の再入荷。RestockWire自身がapple.comの店頭受け取りをチェックした結果です（全店舗15秒ごと、通知設定店舗は5秒ごと。2回のチェックの一致が必要で、店舗を初めて見たときの在庫は数えません）。割合は、同じ場所・同じ期間の確認済み再入荷全体に対するものです。`,
   },
 };

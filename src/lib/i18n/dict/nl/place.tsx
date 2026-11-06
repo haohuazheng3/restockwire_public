@@ -58,12 +58,10 @@ const fitT = (v: string[], max = 60) => fitTitleW(v, max);
 
 /* ------------------------------------------------------------------ time */
 
-/** "sinds we op 2 november begonnen te meten" while the 30-day window still reaches back to the start, else "in de afgelopen 30 dagen". */
+/** "sinds 2 november, toen de meting begon" while the 30-day window still reaches back to the start, else "in de afgelopen 30 dagen". */
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${CC.INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "sinds we op 2 november begonnen te meten" : "in de afgelopen 30 dagen";
+  return now - Date.parse(`${CC.INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "sinds 2 november, toen de meting begon" : "in de afgelopen 30 dagen";
 }
-/** The short label of the same window: "Sinds 2 november" / "Laatste 30 dagen". */
-const sinceShort = (now = Date.now()) => (now - Date.parse(`${CC.INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "Sinds 2 november" : "Laatste 30 dagen");
 
 /** "3 nov, 10:05 CET" in the country's zone. */
 function whenIn(cc: CountryCode, iso: string | Date): string {
@@ -82,12 +80,12 @@ function taxSentence(cc: CountryCode, region?: string): string {
   if (duo == null) return "";
   if (cc === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
-    if (t) return `Apple vraagt ${money(cc, duo)} voor een iPhone Duo met 256GB, exclusief belasting; met ${pct(L, t.rate)} ${CA_PROVINCE_TAX[region!].label} van ${region} kom je op ongeveer ${money(cc, t.total)}.`;
-    return `Apple vraagt ${money(cc, duo)} voor een iPhone Duo met 256GB, exclusief belasting: daar komt per provincie 5% tot 15% bij.`;
+    if (t) return `Een iPhone Duo met 256GB komt in ${region} op ongeveer ${money(cc, t.total)}: Apples ${money(cc, duo)} plus ${pct(L, t.rate)} ${CA_PROVINCE_TAX[region!].label}.`;
+    return `Een iPhone Duo met 256GB kost ${money(cc, duo)} exclusief belasting; de provincie van de ophaalwinkel telt aan de balie 5% tot 15% erbij.`;
   }
   const r = includedRate(COUNTRIES[cc]);
-  if (r == null) return `Een iPhone Duo met 256GB kost ${money(cc, duo)}, en zonder btw in Hongkong is dat precies wat je betaalt bij het ophalen.`;
-  return `Een iPhone Duo met 256GB kost ${money(cc, duo)} ${inC(cc)}, inclusief ${pct(L, r)} ${taxWord(cc)}: de apple.com-prijs geldt ook bij ophalen.`;
+  if (r == null) return `${money(cc, duo)} is de volledige prijs van een iPhone Duo met 256GB bij ophalen: Hongkong rekent geen omzetbelasting.`;
+  return `${money(cc, duo)} is de volledige prijs van een iPhone Duo met 256GB bij ophalen ${inC(cc)}, inclusief ${pct(L, r)} ${taxWord(cc)}.`;
 }
 
 const PRICE_ROWS: [ModelKey, string][] = [["duo", "256GB"], ["duo", "1TB"], ["18-pro-max", "256GB"], ["18-pro-max", "1TB"], ["18-pro", "256GB"]];
@@ -111,14 +109,15 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
         t: "table",
         head: ["iPhone", "Prijs op apple.com", `Met ${pct(L, t.total)} ${t.label}`],
         rows: rows.map(([label, p]) => [label, money(cc, p), money(cc, withProvinceTax(p, region!)!.total)]),
-        caption: `${region}: Apples Canadese prijs plus ${t.label} (${pct(L, t.total)})`,
+        caption: `Wat elke iPhone in ${region} kost met ${t.label} (${pct(L, t.total)})`,
         source: `[${src.label}](${src.url}); prijzen van apple.com/ca`,
       };
+      const parts = t.hst ? `${pct(L, t.hst)} HST` : t.pst ? `${pct(L, t.gst)} GST en ${pct(L, t.pst)} ${t.label.split(" + ")[1]}` : `${pct(L, t.gst)} GST (geen provinciale belasting)`;
       return {
         id: "price-with-tax",
-        h2: `${m.name} prijs in ${placeName} met belasting`,
-        lead: `De ${m.name} met 256GB kost **${money(cc, base)} exclusief belasting**; met de belasting van ${region} (${pct(L, t.total)}) kom je in een winkel in ${placeName} op ongeveer **${money(cc, withProvinceTax(base, region!)!.total)}**.`,
-        blocks: [{ t: "note", text: "**Belasting geldt waar je ophaalt:** de provincie van de winkel bepaalt het tarief, niet je woonadres." }, table],
+        h2: `Wat kost de ${m.name} in ${placeName} inclusief belasting?`,
+        lead: `**Ongeveer ${money(cc, withProvinceTax(base, region!)!.total)}** voor de ${m.name} met 256GB in een winkel in ${placeName}: Apples **${money(cc, base)} exclusief belasting**, plus ${parts} van ${region}.`,
+        blocks: [table, { t: "note", text: "**De ophaalwinkel bepaalt het tarief:** de provincie van de winkel telt, niet je woonadres." }],
       };
     }
     const provinces = Object.keys(CA_PROVINCE_TAX).filter((p) => storesOf("ca").some((s) => s.state === p));
@@ -126,13 +125,13 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
     const dearest = provinces.reduce((a, b) => (CA_PROVINCE_TAX[b].total > CA_PROVINCE_TAX[a].total ? b : a));
     return {
       id: "price-with-tax",
-      h2: `${m.name} prijs in Canada met belasting, per provincie`,
-      lead: `Apples **${money(cc, base)}** voor een ${m.name} met 256GB is exclusief belasting; de provincie van de winkel telt die erbij, van **${money(cc, withProvinceTax(base, cheapest)!.total)}** in ${cheapest} (${pct(L, CA_PROVINCE_TAX[cheapest].total)}) tot **${money(cc, withProvinceTax(base, dearest)!.total)}** in ${dearest} (${pct(L, CA_PROVINCE_TAX[dearest].total)}).`,
+      h2: `Wat kost de ${m.name} in Canada inclusief belasting, per provincie?`,
+      lead: `**Van ${money(cc, withProvinceTax(base, cheapest)!.total)} in ${cheapest} tot ${money(cc, withProvinceTax(base, dearest)!.total)} in ${dearest}** voor een ${m.name} met 256GB: Apples ${money(cc, base)} is exclusief belasting, en de provincie van de ophaalwinkel telt er ${pct(L, CA_PROVINCE_TAX[cheapest].total)} tot ${pct(L, CA_PROVINCE_TAX[dearest].total)} bij.`,
       blocks: [{
         t: "table",
         head: ["Provincie", "Belasting", "Tarief", `${m.short} 256GB met belasting`],
         rows: provinces.map((p) => [p, CA_PROVINCE_TAX[p].label, pct(L, CA_PROVINCE_TAX[p].total), money(cc, withProvinceTax(base, p)!.total)]),
-        caption: "Provincies met een Apple Store: belasting bij ophalen in de winkel",
+        caption: "Belasting op ophalen in de winkel, in elke provincie met een Apple Store",
         source: `[${src.label}](${src.url}); prijzen van apple.com/ca`,
       }],
     };
@@ -141,15 +140,15 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
   const tn = taxWord(cc);
   return {
     id: "price",
-    h2: `${m.name} prijs ${inC(cc)}: ${money(cc, base)}, ${taxNote(cc)}`,
+    h2: `Wat kost de ${m.name} ${inC(cc)}? ${money(cc, base)}, ${taxNote(cc)}`,
     lead: r == null
-      ? `**${money(cc, base)}** voor de ${m.name} met 256GB op apple.com is wat je betaalt bij het ophalen in ${placeName}: Hongkong kent **geen btw**.`
-      : `De ${m.name} met 256GB kost **${money(cc, base)}** ${inC(cc)}, **${pct(L, r)} ${tn} inbegrepen** (${money(cc, beforeTax(c, base))} zonder ${tn}). Bij het ophalen in ${placeName} komt er niets meer bij.`,
+      ? `**${money(cc, base)}, precies de apple.com-prijs**, voor de ${m.name} met 256GB bij ophalen in ${placeName}: Hongkong rekent **geen omzetbelasting** of btw.`
+      : `**${money(cc, base)}** voor de ${m.name} met 256GB bij ophalen in ${placeName}, met **${pct(L, r)} ${tn} al inbegrepen** (${money(cc, beforeTax(c, base))} zonder ${tn}); aan de balie komt er niets bij.`,
     blocks: [{
       t: "table",
       head: r == null ? ["iPhone", "Prijs op apple.com"] : ["iPhone", "Prijs op apple.com", `Zonder ${pct(L, r)} ${tn}`],
       rows: rows.map(([label, p]) => (r == null ? [label, money(cc, p)] : [label, money(cc, p), money(cc, beforeTax(c, p))])),
-      caption: `Prijzen van Apple ${inC(cc)}${r == null ? "" : `, ${tn} inbegrepen`}`,
+      caption: `Prijzen van Apple ${inC(cc)}, zoals je ze bij ophalen betaalt${r == null ? "" : ` (${tn} inbegrepen)`}`,
       source: `[${src.label}](${src.url}); prijzen van apple.com/${shopOf(cc)}`,
     }],
   };
@@ -160,13 +159,13 @@ function taxFaq(cc: CountryCode, placeName: string, region?: string): FaqItem {
   if (cc === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
     return t
-      ? { q: `Wat kost de iPhone Duo met belasting in ${placeName}?`, a: `Ongeveer ${money(cc, t.total)} voor 256GB: Apples ${money(cc, duo)} plus ${pct(L, t.rate)} ${CA_PROVINCE_TAX[region!].label} van ${region}, berekend waar je ophaalt.` }
-      : { q: "Is de Canadese prijs van Apple inclusief belasting?", a: `Nee. De iPhone Duo met 256GB kost ${money(cc, duo)} exclusief belasting; GST, HST of provinciale belasting komt erbij volgens de provincie van de winkel, van 5% in Alberta tot ${pct(L, 14.975)} in Quebec.` };
+      ? { q: `Wat is de prijs van de iPhone Duo in ${placeName} met belasting?`, a: `Ongeveer ${money(cc, t.total)} voor 256GB: ${pct(L, t.rate)} ${CA_PROVINCE_TAX[region!].label} van ${region} bovenop Apples ${money(cc, duo)}, gerekend door de ophaalwinkel.` }
+      : { q: "Zit de belasting in Apples Canadese prijzen?", a: `Nee: de iPhone Duo met 256GB kost ${money(cc, duo)} exclusief belasting. De provincie van de ophaalwinkel telt GST, HST of provinciale belasting erbij, van 5% in Alberta tot ${pct(L, 14.975)} in Quebec.` };
   }
   const r = includedRate(COUNTRIES[cc]);
   return r == null
-    ? { q: "Betaal je btw op een iPhone in Hongkong?", a: `Nee. Hongkong kent geen btw of omzetbelasting, dus de iPhone Duo met 256GB kost bij het ophalen ${money(cc, duo)}, precies de prijs op apple.com.` }
-    : { q: `Is de prijs op apple.com ${inC(cc)} inclusief ${taxWord(cc)}?`, a: `Ja. De ${money(cc, duo)} voor de iPhone Duo met 256GB is inclusief ${pct(L, r)} ${taxWord(cc)}; bij het ophalen in de winkel komt er niets bij.` };
+    ? { q: "Betaal je omzetbelasting op een iPhone in Hongkong?", a: `Nee: Hongkong kent geen omzetbelasting of btw. De iPhone Duo met 256GB kost bij ophalen ${money(cc, duo)}, precies zoals op apple.com.` }
+    : { q: `Zit de ${taxWord(cc)} al in Apples prijzen ${inC(cc)}?`, a: `Ja: de ${money(cc, duo)} voor een iPhone Duo met 256GB is inclusief ${pct(L, r)} ${taxWord(cc)}. Aan de ophaalbalie komt er niets meer bij.` };
 }
 
 /* ------------------------------------------------------------------ region / city pages */
@@ -174,12 +173,12 @@ function taxFaq(cc: CountryCode, placeName: string, region?: string): FaqItem {
 function placeTitle(i: IntlPlaceInput): string {
   const n = i.stores.length;
   const w = placeLabel(i.cc, placeName(i));
-  if (n === 1) return fitT([`Apple Store in ${w}: iPhone Duo-voorraad live`, `Apple Store in ${w}: iPhone-voorraad`, `Apple Store ${w}: iPhone-voorraad`]);
+  if (n === 1) return fitT([`Apple Store in ${w}: iPhone Duo ophalen, live`, `Apple Store in ${w}: iPhone-voorraad nu`, `Apple Store ${w}: iPhone-voorraad`]);
   return fitT([
-    `Apple Stores in ${w}: iPhone Duo-voorraad live in ${n === 2 ? "beide" : `alle ${n}`}`,
-    `Apple Stores in ${w}: iPhone Duo-voorraad live`,
-    `Apple Stores in ${w}: iPhone-voorraad vandaag`,
-    `Apple Stores ${w}: iPhone-voorraad`,
+    `Apple Stores in ${w}: iPhone Duo ophalen in ${n === 2 ? "beide" : `alle ${n}`}, live`,
+    `Apple Stores in ${w}: iPhone Duo ophalen, live`,
+    `Apple Stores in ${w}: iPhone-voorraad nu`,
+    `Apple Stores in ${w}: iPhone-voorraad`,
   ]);
 }
 
@@ -187,12 +186,9 @@ function placeTitle(i: IntlPlaceInput): string {
 function priceBit(cc: CountryCode, region?: string): string {
   const duo = CC.priceOf(cc, "duo");
   if (duo == null) return "";
-  if (cc === "ca") { const t = region ? withProvinceTax(duo, region) : null; return t ? `, ca. ${money(cc, t.total)} met belasting` : `, ${money(cc, duo)} excl. belasting`; }
-  const r = includedRate(COUNTRIES[cc]);
-  return r == null ? `, ${money(cc, duo)}` : `, ${money(cc, duo)} incl. ${taxWord(cc)}`;
+  if (cc === "ca") { const t = region ? withProvinceTax(duo, region) : null; return t ? ` en de Duo voor ca. ${money(cc, t.total)} met belasting van ${region}` : ` en de Duo voor ${money(cc, duo)} excl. belasting`; }
+  return ` en de Duo voor ${money(cc, duo)}, ${taxNote(cc)}`;
 }
-
-const yesNo = (v: number) => (v > 0 ? "ja" : "nee");
 
 function placeDescription(i: IntlPlaceInput): string {
   const n = i.stores.length;
@@ -200,22 +196,29 @@ function placeDescription(i: IntlPlaceInput): string {
   if (n === 1) {
     const one = appleOf(i.stores[0]);
     return fitT([
-      `${one} in ${w}: iPhone Duo ${i.stockNow.duo ? "nu klaar om op te halen" : "nu niet op voorraad"}, 18 Pro Max ${i.stockNow["18-pro-max"] ? "wel" : "niet"}. Live voorraad, aanvultijden${priceBit(i.cc, i.region)}.`,
-      `${one} in ${w}: live iPhone-voorraad om op te halen en aanvultijden.`,
+      `${one} in ${w} biedt de iPhone Duo nu ${i.stockNow.duo ? "wel" : "niet"} aan om op te halen, de 18 Pro Max ${i.stockNow["18-pro-max"] ? "wel" : "niet"}. Live, met aanvultijden${priceBit(i.cc, i.region)}.`,
+      `${one} in ${w}: iPhone Duo nu ${i.stockNow.duo ? "wel" : "niet"} op te halen, 18 Pro Max ${i.stockNow["18-pro-max"] ? "wel" : "niet"}. Live, met aanvultijden.`,
     ], 155);
   }
+  const verb = i.stockNow.duo === 1 ? "biedt" : "bieden";
   return fitT([
-    `${cnt(n, "Apple Store", "Apple Stores")} in ${w}: ${n$(i.stockNow.duo)} met de iPhone Duo nu klaar om op te halen, ${n$(i.stockNow["18-pro-max"])} met de 18 Pro Max. Live per winkel, aanvultijden${priceBit(i.cc, i.region)}.`,
-    `${cnt(n, "Apple Store", "Apple Stores")} in ${w}: ${n$(i.stockNow.duo)} met iPhone Duo-voorraad om op te halen, ${n$(i.stockNow["18-pro-max"])} met de 18 Pro Max. Live per winkel, aanvultijden.`,
+    `${n$(i.stockNow.duo)} van de ${n$(n)} Apple Stores in ${w} ${verb} de iPhone Duo nu aan om op te halen, ${n$(i.stockNow["18-pro-max"])} de 18 Pro Max. Per winkel, met aanvultijden${priceBit(i.cc, i.region)}.`,
+    `${n$(i.stockNow.duo)} van de ${n$(n)} Apple Stores in ${w} ${verb} de iPhone Duo nu aan, ${n$(i.stockNow["18-pro-max"])} de 18 Pro Max. Live per winkel, met aanvultijden.`,
   ], 155);
 }
 
+/** Live state first: how many of the place's stores list each model at this minute. */
 function placeIntro(i: IntlPlaceInput): string {
   const n = i.stores.length;
   const w = placeName(i);
-  if (n === 1) return `**${appleOf(i.stores[0])}** is de enige Apple Store in ${w}. Nu op te halen: iPhone Duo **${yesNo(i.stockNow.duo)}**, 18 Pro Max **${yesNo(i.stockNow["18-pro-max"])}**, 18 Pro **${yesNo(i.stockNow["18-pro"])}**.`;
-  const cities = i.kind === "state" && i.cities && i.cities > 1 ? ` (${cnt(i.cities, "stad", "steden")})` : "";
-  return `**${cnt(n, "Apple Store", "Apple Stores")}** in ${w}${cities}. Nu op te halen: de iPhone Duo bij **${n$(i.stockNow.duo)}**, de 18 Pro Max bij **${n$(i.stockNow["18-pro-max"])}** en de 18 Pro bij **${n$(i.stockNow["18-pro"])}**.`;
+  const pmNow = i.stockNow["18-pro-max"];
+  const proNow = i.stockNow["18-pro"];
+  if (n === 1) {
+    const one = appleOf(i.stores[0]);
+    return `**${one}**, de enige Apple Store in ${w}, biedt op dit moment ${i.stockNow.duo ? "**wel**" : "**geen**"} iPhone Duo aan om op te halen; de iPhone 18 Pro Max ${pmNow ? "**wel**" : "**niet**"}, de iPhone 18 Pro ${proNow ? "**wel**" : "**niet**"}.`;
+  }
+  const cities = i.kind === "state" && i.cities && i.cities > 1 ? `, verspreid over ${cnt(i.cities, "stad", "steden")},` : "";
+  return `**${n$(i.stockNow.duo)}** van de **${cnt(n, "Apple Store", "Apple Stores")}** in ${w}${cities} ${i.stockNow.duo === 1 ? "biedt" : "bieden"} op dit moment een iPhone Duo aan om op te halen; de iPhone 18 Pro Max staat op **${n$(pmNow)}**, de iPhone 18 Pro op **${n$(proNow)}**.`;
 }
 
 /** The scarcest configurations of a model across the place's stores (colour names in Dutch). */
@@ -233,13 +236,13 @@ function duoLead(i: IntlPlaceInput): string {
   const since = sinceWhen();
   if (n === 1) {
     const one = appleOf(i.stores[0]);
-    if (have.length > 0) return `**${one}** heeft nu een iPhone Duo om op te halen.`;
-    if (st.month > 0) return `**${one}** heeft nu geen iPhone Duo, maar kreeg er **${n$(st.month)} keer** nieuwe voorraad van ${since}.`;
-    return `**${one}** heeft nu geen iPhone Duo, en ${since} is er nog geen nieuwe Duo-voorraad gelogd.`;
+    if (have.length > 0) return `**Ja**: ${one} biedt op dit moment een iPhone Duo aan om op te halen.`;
+    if (st.month > 0) return `**Nu even niet**: ${one} biedt geen iPhone Duo aan, maar vulde hem ${since} wel **${n$(st.month)} keer** aan.`;
+    return `**Nu even niet**: ${one} biedt geen iPhone Duo aan, en heeft ${since} nog geen bevestigde Duo-aanvulling.`;
   }
-  if (have.length > 0) return `**${n$(have.length)} van de ${n$(n)} winkels** ${have.length === 1 ? "heeft" : "hebben"} nu een iPhone Duo: ${list(L, have.map(appleOf), 4, (k) => `nog ${n$(k)}`)}.`;
-  if (st.month > 0) return `**Geen van de ${n$(n)} winkels** heeft nu een iPhone Duo, maar ze kregen er **${n$(st.month)} keer** nieuwe voorraad van ${since}.`;
-  return `**Geen van de ${n$(n)} winkels** heeft nu een iPhone Duo, en ${since} is er nog geen nieuwe Duo-voorraad gelogd.`;
+  if (have.length > 0) return `**Ja, bij ${n$(have.length)} van de ${n$(n)} winkels**: ${list(L, have.map(appleOf), 4, (k) => `nog ${n$(k)}`)} ${have.length === 1 ? "biedt" : "bieden"} op dit moment een iPhone Duo aan om op te halen.`;
+  if (st.month > 0) return `**Nu even niet**: geen van de ${n$(n)} winkels biedt een iPhone Duo aan, al vulden ze hem samen ${since} **${n$(st.month)} keer** aan.`;
+  return `**Nu even niet**: geen van de ${n$(n)} winkels biedt een iPhone Duo aan, en geen enkele heeft ${since} een bevestigde Duo-aanvulling.`;
 }
 
 function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
@@ -248,14 +251,14 @@ function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
   const st = i.duo;
   const last = st.lastRestock ? i.stores.find((s) => s.storeNumber === st.lastRestock!.storeNumber) : undefined;
   const items: string[] = [];
-  if (have.length > 0 && st.month > 0) items.push(`**${sinceShort()}:** ${n$(st.month)} keer nieuwe Duo-voorraad in ${n === 1 ? "deze winkel" : "deze winkels"}`);
-  if (st.lastRestock && last) items.push(`**Laatste aanvulling:** ${whenIn(i.cc, st.lastRestock.at)} bij ${appleOf(last)}`);
-  if (st.medianMs != null) items.push(`**Hoe lang hij te koop staat:** een aangevulde Duo bleef zo'n ${dur(st.medianMs)} beschikbaar (mediaan)`);
-  const which = n <= 3 ? "bij de winkels waar je kunt komen" : `bij de ${Math.min(n, 5)} dichtstbijzijnde winkels waar je kunt komen`;
-  items.push(n === 1 ? `**Snelste route:** [stel een iPhone Duo-alert in voor ${appleOf(i.stores[0])}](${alert})` : `**Snelste route:** [stel een iPhone Duo-alert in voor ${w}](${alert}), ${which}`);
-  items.push("**Eén alert** = één winkel × één exacte configuratie; de push komt seconden nadat een winkel hem aanbiedt");
+  if (st.lastRestock && last) items.push(`**Laatste Duo-aanvulling hier:** ${whenIn(i.cc, st.lastRestock.at)} bij ${appleOf(last)}`);
+  if (have.length > 0 && st.month > 0) items.push(`**Bevestigd ${sinceWhen()}:** ${cnt(st.month, "Duo-aanvulling", "Duo-aanvullingen")} in ${n === 1 ? "deze winkel" : `de winkels in ${w}`}`);
+  if (st.medianMs != null) items.push(`**Hoe lang hij beschikbaar blijft:** zo'n ${dur(st.medianMs)} (mediaan) voordat de Duo weer uitverkocht is`);
+  const which = n === 1 ? "" : n <= 3 ? ` bij de ${n === 2 ? "twee" : "drie"} winkels waar je heen zou gaan` : ` bij de ${Math.min(n, 5)} dichtstbijzijnde winkels waar je heen zou gaan`;
+  items.push(`**Snelste weg naar een exemplaar:** [zet een alert op de iPhone Duo in ${n === 1 ? appleOf(i.stores[0]) : w}](${alert})${which}; winkels met een alert worden elke 5 seconden gelezen`);
+  items.push("**Eén alertregel** is één winkel × één exacte configuratie, en de push komt zo'n 3 seconden nadat een tweede check de aanvulling bevestigt");
   const blocks: Block[] = [];
-  if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**Dat kan binnen een minuut veranderen:** de snelste manier om er een te krijgen is een alert, niet apple.com blijven verversen." });
+  if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**Dat kan binnen een minuut anders zijn:** een alert ziet de volgende aanvulling lang voordat je hem met verversen op apple.com zou vinden." });
   blocks.push({ t: "ul", items });
   return blocks;
 }
@@ -270,21 +273,25 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
   return [
     {
       id: "iphone-duo",
-      h2: n === 1 ? `iPhone Duo in ${w}: heeft ${appleOf(i.stores[0])} hem nu?` : `iPhone Duo in ${w}: welke winkels hem nu hebben`,
+      h2: n === 1 ? `Heeft ${appleOf(i.stores[0])} in ${w} de iPhone Duo nu?` : `Welke Apple Stores in ${w} hebben de iPhone Duo nu?`,
       lead: duoLead(i),
       blocks: duoPoints(i, w, alert),
     },
     {
       id: "iphone-18-pro-max",
-      h2: n === 1 ? `iPhone 18 Pro Max in ${w}: voorraad nu` : `iPhone 18 Pro Max in ${w}: voorraad per winkel`,
+      h2: `Is de iPhone 18 Pro Max op voorraad in ${w}?`,
       lead: n === 1
-        ? `**${appleOf(i.stores[0])}** ${pmNow ? "heeft de iPhone 18 Pro Max op voorraad" : "heeft de iPhone 18 Pro Max nu niet op voorraad"}: **${pct(L, CC.pairsPct(i, "18-pro-max"))}** van de ${n$(pm)} configuraties ligt klaar om op te halen.`
-        : `**${n$(pmNow)} van de ${n$(n)} winkels** ${pmNow === 1 ? "heeft" : "hebben"} een iPhone 18 Pro Max, en **${pct(L, CC.pairsPct(i, "18-pro-max"))}** van de ${n$(n * pm)} combinaties van winkel × configuratie hier is op voorraad.`,
+        ? (pmNow > 0
+          ? `**Ja**: ${appleOf(i.stores[0])} biedt op dit moment **${pct(L, CC.pairsPct(i, "18-pro-max"))}** van de ${n$(pm)} configuraties van de iPhone 18 Pro Max aan om op te halen.`
+          : `**Nu even niet**: ${appleOf(i.stores[0])} biedt geen iPhone 18 Pro Max aan om op te halen.`)
+        : (pmNow > 0
+          ? `**Ja, bij ${n$(pmNow)} van de ${n$(n)} winkels**, en op dit moment is **${pct(L, CC.pairsPct(i, "18-pro-max"))}** van de ${n$(n * pm)} combinaties van winkel × configuratie in ${w} beschikbaar.`
+          : `**Nu even niet**: geen van de ${n$(n)} winkels in ${w} biedt een iPhone 18 Pro Max aan om op te halen.`),
       blocks: [{ t: "ul", items: [
-        ...(scarce.length ? [`**Nu het schaarst:** ${list(L, scarce.map((x) => `${x.label} (${n === 1 ? (x.stores ? "op voorraad" : "niet op voorraad") : `${n$(x.stores)} van ${n$(n)} winkels`})`))}`] : []),
-        `**iPhone 18 Pro:** ${n === 1 ? (i.stockNow["18-pro"] ? "op voorraad" : "nu niet op voorraad") : `in ${n$(i.stockNow["18-pro"])} van de ${n$(n)} winkels`}, ${pct(L, CC.pairsPct(i, "18-pro"))} van de ${n === 1 ? "configuraties" : "combinaties"} beschikbaar`,
-        `**${sinceShort()}:** ${i.max.month ? `${n$(i.max.month)} keer nieuwe 18 Pro Max-voorraad` : "nog geen nieuwe 18 Pro Max-voorraad"}`,
-        ...(i.max.medianMs != null ? [`**Hoe lang hij te koop staat:** een aangevulde Pro Max bleef zo'n ${dur(i.max.medianMs)} beschikbaar (mediaan)`] : []),
+        ...(scarce.length ? [`**Nu het moeilijkst te vinden:** ${list(L, scarce.map((x) => `${x.label} (${n === 1 ? (x.stores ? "beschikbaar" : "niet beschikbaar") : `${n$(x.stores)} van ${n$(n)} winkels`})`))}`] : []),
+        `**iPhone 18 Pro:** ${n === 1 ? (i.stockNow["18-pro"] ? "beschikbaar" : "nu niet beschikbaar") : `${n$(i.stockNow["18-pro"])} van ${n$(n)} winkels`}, ${pct(L, CC.pairsPct(i, "18-pro"))} van de ${n === 1 ? "configuraties" : "combinaties"} beschikbaar`,
+        `**Bevestigd ${sinceWhen()}:** ${i.max.month ? cnt(i.max.month, "18 Pro Max-aanvulling", "18 Pro Max-aanvullingen") : "nog geen 18 Pro Max-aanvulling"}`,
+        ...(i.max.medianMs != null ? [`**Hoe lang hij beschikbaar blijft:** zo'n ${dur(i.max.medianMs)} (mediaan) voordat een Pro Max weer uitverkocht is`] : []),
       ] }],
     },
     priceSection(i.cc, w, i.cc === "ca" ? i.region : undefined),
@@ -297,9 +304,9 @@ function storesIndexTitle(cc: CountryCode): string {
   const n = storesOf(cc).length;
   const w = land(cc);
   return fitT([
-    `Apple Store ${w}: ${n === 1 ? "de enige winkel" : `alle ${n} winkels`}, iPhone-voorraad live`,
-    `Apple Stores ${inC(cc)}: iPhone Duo-voorraad live`,
-    `Apple Stores ${w}: iPhone-voorraad live`,
+    n === 1 ? `Apple Store ${inC(cc)}: iPhone Duo ophalen, live` : `Apple Stores ${inC(cc)}: iPhone Duo ophalen in ${n === 2 ? "beide" : `alle ${n}`}, live`,
+    `Apple Stores ${inC(cc)}: iPhone Duo ophalen, live`,
+    `Apple Stores ${w}: iPhone-voorraad, live`,
   ], 70);
 }
 
@@ -307,15 +314,14 @@ function homeTitle(cc: CountryCode): string {
   const n = storesOf(cc).length;
   const w = land(cc);
   return fitT([
-    n === 1 ? `Apple Store ${w}: iPhone Duo-voorraad live, elke 15 sec.` : `iPhone Duo-voorraad ${inC(cc)}: alle ${n} Apple Stores live`,
-    `iPhone-voorraad ${w}: ${cnt(n, "Apple Store", "Apple Stores")}, elke 15 sec.`,
-    `iPhone-voorraad ${w}: elke 15 sec. gecheckt`,
-  ]);
+    `iPhone-voorraadchecker ${w}: live ophalen ${n === 1 ? "in de Apple Store" : `in ${n$(n)} Apple Stores`}`,
+    `iPhone-voorraadchecker ${w}: live ophaalvoorraad`,
+  ], 70);
 }
 
 function homeH1(cc: CountryCode): string {
   const n = storesOf(cc).length;
-  return n === 1 ? `iPhone-voorraadchecker voor de Apple Store ${inC(cc)}` : `iPhone-voorraadchecker voor alle ${n$(n)} Apple Stores ${inC(cc)}`;
+  return n === 1 ? `Live iPhone-ophaalvoorraad in de Apple Store ${inC(cc)}` : `Live iPhone-ophaalvoorraad in alle ${n$(n)} Apple Stores ${inC(cc)}`;
 }
 
 function allStoresPhrase(cc: CountryCode): string {
@@ -339,8 +345,8 @@ function modelPageTitles(cc: CountryCode, model: ModelKey): { title: string; h2:
   const n = storesOf(cc).length;
   const all = n === 1 ? "de Apple Store" : n === 2 ? "beide Apple Stores" : `alle ${n} Apple Stores`;
   return {
-    title: fitT([`${m.name} op voorraad ${inC(cc)}: live in ${all}`, `${m.name} op voorraad ${inC(cc)}: live`, `${m.name}-voorraad ${inC(cc)}`], 70),
-    h2: [`${m.name} in de buurt: welke winkels ${inC(cc)} hem nu hebben`, priceSection(cc, land(cc), undefined, model).h2],
+    title: fitT([`Is de ${m.name} op voorraad ${inC(cc)}? ${all[0].toUpperCase()}${all.slice(1)}, live`, `Is de ${m.name} op voorraad ${inC(cc)}? Live`, `${m.name}-voorraad ${inC(cc)}`], 70),
+    h2: [n === 1 ? `Heeft de Apple Store ${inC(cc)} de ${m.name} nu?` : `Welke Apple Stores ${inC(cc)} hebben de ${m.name} nu?`, priceSection(cc, land(cc), undefined, model).h2],
   };
 }
 
@@ -349,20 +355,20 @@ function modelIntro(cc: CountryCode, model: ModelKey, inStock: number): string {
   const n = storesOf(cc).length;
   const r = CC.priceRange(cc, model);
   const priceTxt = cc === "ca" ? `**${money(cc, r.low)}** exclusief belasting` : `**${money(cc, r.low)}**, ${taxNote(cc)}`;
-  const lead = n === 1
-    ? (inStock === 0 ? `De Apple Store ${inC(cc)} heeft de ${m.name} nu **niet** om op te halen` : `De Apple Store ${inC(cc)} heeft de ${m.name} **nu** om op te halen`)
-    : (inStock === 0 ? `**Geen** van de ${n$(n)} Apple Stores ${inC(cc)} heeft de ${m.name} nu om op te halen` : `**${n$(inStock)} van de ${n$(n)}** Apple Stores ${inC(cc)} ${inStock === 1 ? "heeft" : "hebben"} de ${m.name} nu om op te halen`);
-  return `${lead} (elke **15 seconden** gecontroleerd); prijzen vanaf ${priceTxt}.`;
+  const lead = inStock === 0
+    ? (n === 1 ? `Op dit moment biedt de Apple Store ${inC(cc)} de ${m.name} **niet** aan om op te halen` : `Op dit moment biedt **geen** van de ${n$(n)} Apple Stores ${inC(cc)} de ${m.name} aan om op te halen`)
+    : `Op dit moment ${inStock === 1 ? "biedt" : "bieden"} **${n$(inStock)} van de ${n$(n)}** Apple Stores ${inC(cc)} de ${m.name} aan om op te halen`;
+  return `${lead} (elke winkel wordt **elke 15 seconden** gelezen); prijzen vanaf ${priceTxt}.`;
 }
 
 function modelDescription(cc: CountryCode, model: ModelKey, inStock: number): string {
   const m = modelByKey(model)!;
   const n = storesOf(cc).length;
   const r = CC.priceRange(cc, model);
-  const now = n === 1 ? (inStock ? "De Apple Store heeft hem nu om op te halen." : "De Apple Store heeft hem nu niet.") : `${n$(inStock)} van de ${n$(n)} Apple Stores ${inStock === 1 ? "heeft" : "hebben"} hem nu om op te halen.`;
+  const verb = inStock === 1 ? "biedt" : "bieden";
   return fitT([
-    `Is de ${m.name} op voorraad ${inC(cc)}? ${now} Live per winkel en configuratie, vanaf ${money(cc, r.low)}${cc === "ca" ? " excl. belasting" : ""}, met aanvultijden.`,
-    `${m.name} ${inC(cc)}: ${now} Live voorraad per winkel en configuratie, aanvultijden en alerts.`,
+    `${n$(inStock)} van de ${n$(n)} Apple Stores ${inC(cc)} ${verb} de ${m.name} op dit moment aan om op te halen. Per winkel en per configuratie, vanaf ${money(cc, r.low)}${cc === "ca" ? " excl. belasting" : ""}, met aanvultijden.`,
+    `${n$(inStock)} van de ${n$(n)} Apple Stores ${inC(cc)} ${verb} de ${m.name} nu aan. Live ophaalvoorraad per winkel en configuratie, aanvultijden en alerts.`,
   ], 155);
 }
 
@@ -375,21 +381,20 @@ function homeDescription(cc: CountryCode): string {
   const c = COUNTRIES[cc];
   const n = storesOf(cc).length;
   const cur = c.currency === "EUR" ? "euro" : c.currency;
-  const where = n === 1 ? `bij ${appleOf(storesOf(cc)[0])}` : `in ${allStoresPhrase(cc)}`;
   return fitT([
-    `Zie live of de iPhone Duo, 18 Pro of Pro Max klaarligt ${where}, elke 15 seconden gecheckt. Met aanvultijden, prijzen in ${cur} en pushalerts.`,
-    `Zie live of de iPhone Duo, 18 Pro of Pro Max klaarligt ${where}, elke 15 seconden gecheckt. Plus aanvultijden, prijzen en pushalerts.`,
-    `Zie live of de iPhone Duo, 18 Pro of Pro Max klaarligt ${where}, elke 15 seconden gecheckt, met pushalerts.`,
+    `Live ophaalvoorraad van de iPhone Duo, 18 Pro en 18 Pro Max in ${allStoresPhrase(cc)}, elke 15 seconden gelezen. ${n === 1 ? "Prijzen" : "Aanvultijden en prijzen"} in ${cur}, en een push zodra je winkel aanvult.`,
+    `Live ophaalvoorraad van de iPhone Duo, 18 Pro en 18 Pro Max in ${allStoresPhrase(cc)}, elke 15 seconden gelezen, met een push zodra je winkel aanvult.`,
   ], 160);
 }
 
 function homeIntro(cc: CountryCode): string {
   const n = storesOf(cc).length;
+  const latest = `Laatste bevestigde aanvulling van de iPhone Duo ${inC(cc)}: **{{duo.lastRestock}}**.`;
   if (n === 1) {
     const s = appleOf(storesOf(cc)[0]);
-    return `Op dit moment liggen er bij ${s} **{{duo.pairsNow}} van de {{duo.pairsTotal}}** iPhone Duo-configuraties klaar om op te halen, **{{pro.pairsNow}}** van de iPhone 18 Pro en **{{pm.pairsNow}}** van de iPhone 18 Pro Max.`;
+    return `${latest} Op dit moment biedt ${s} **{{duo.pairsNow}} van de {{duo.pairsTotal}}** iPhone Duo-configuraties aan om op te halen, **{{pm.pairsNow}}** van de iPhone 18 Pro Max en **{{pro.pairsNow}}** van de iPhone 18 Pro.`;
   }
-  return `Op dit moment ligt de iPhone Duo klaar om op te halen in **{{duo.storesNow}} van de ${n$(n)}** Apple Stores ${inC(cc)}, de iPhone 18 Pro in **{{pro.storesNow}}** en de iPhone 18 Pro Max in **{{pm.storesNow}}**.`;
+  return `${latest} Op dit moment bieden **{{duo.storesNow}} van de ${n$(n)}** Apple Stores een Duo aan om op te halen, **{{pm.storesNow}}** een iPhone 18 Pro Max en **{{pro.storesNow}}** een iPhone 18 Pro.`;
 }
 
 /** Where people look for a store that isn't there (Google Ads: "apple store rotterdam" 1,600, "apple store utrecht" 1,300 a month). */
@@ -407,15 +412,15 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
   return [
     {
       id: "iphone-stock",
-      h2: `iPhone-voorraad ${inC(cc)}: Duo, 18 Pro en Pro Max per winkel`,
-      lead: `RestockWire leest elke 15 seconden op apple.com welke configuraties klaarliggen om op te halen in ${allStoresPhrase(cc)}: per winkel${n > 1 ? `, per ${c.regionNoun ? noun(cc) : "stad"}` : ""} en per configuratie.`,
+      h2: `Welke iPhones zijn nu op voorraad ${inC(cc)}?`,
+      lead: `De tabel geeft het antwoord, live: de eigen ophaalbeschikbaarheid van apple.com voor elke configuratie in ${allStoresPhrase(cc)}, elke 15 seconden gelezen${n > 1 ? ` en uitgesplitst per winkel, per ${c.regionNoun ? noun(cc) : "stad"} en per configuratie` : ""}.`,
       blocks: [
-        { t: "table", head: ["Model", "Configuraties", "Winkels met voorraad nu", "Aanvullingen gelogd"], rows: modelRows(cc, i.storesNow, i.restocks), caption: `Wat de check ${inC(cc)} omvat, stand van {{asOf}}` },
+        { t: "table", head: ["Model", "Configuraties", "Winkels die hem nu aanbieden", "Bevestigde aanvullingen"], rows: modelRows(cc, i.storesNow, i.restocks), caption: `Live stand ${inC(cc)} van {{asOf}}` },
         { t: "ul", items: [
-          `**Dekking:** ${spreadPhrase(cc)} · prijzen en artikelnummers zijn die van Apple ${land(cc)}`,
-          "**Elke winkel elke 15 seconden**, de winkels van je alerts elke 5",
-          "**Pas na twee checks telt het:** één haperend antwoord van apple.com wordt nooit een nep-aanvulling of nep-uitverkocht",
-          `**Elke bevestigde wijziging** komt in het [voorraadlogboek](${i.restocksPath}), de bron van de grafieken op ${i.index?.indexable ? `[de winkelpagina's](${i.index.path})` : "de winkelpagina"}`,
+          "**Bevestigd betekent twee keer:** een wijziging verschijnt pas als een tweede check het bevestigt, dus één haperend antwoord van apple.com wordt nooit een aanvulling of uitverkoop",
+          "**Een eerste waarneming is geen aanvulling:** een configuratie die we voor het eerst zien, legt alleen de beginstand vast",
+          `**Het logboek is de bron:** elke bevestigde wijziging gaat het [voorraadlogboek](${i.restocksPath}) in, dat de grafieken tekent op ${i.index?.indexable ? `[de winkelpagina's](${i.index.path})` : "de winkelpagina"}`,
+          `**Dekking:** ${spreadPhrase(cc)}, met Apples eigen prijzen en artikelnummers voor ${land(cc)}; winkels met een alert worden elke 5 seconden gelezen`,
           ...(NO_STORE_HERE[cc] ? [NO_STORE_HERE[cc]!] : []),
         ] },
         { t: "img", id: "phone-notification" },
@@ -424,17 +429,16 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
     priceSection(cc, land(cc)),
     {
       id: "alerts",
-      h2: `Apple Store-voorraad checken ${inC(cc)}, met een alert bij nieuwe voorraad`,
-      lead: `Checken is gratis; je betaalt pas om níet meer te hoeven checken. Kies de Apple Store${n === 1 ? "" : "s"} waar je kunt komen en de exacte iPhone, en je telefoon krijgt een push seconden nadat ${n === 1 ? "de winkel" : "een van die winkels"} hem aanbiedt om op te halen.`,
+      h2: `Hoe werken aanvulalerts ${inC(cc)}?`,
+      lead: `Je kiest de winkel${n === 1 ? "" : "s"} en de exacte iPhone; zodra ${n === 1 ? "de winkel" : "een ervan"} hem aanbiedt om op te halen, staat er zo'n 3 seconden na de bevestiging een push op je telefoon.`,
       blocks: [
         { t: "ol", items: [
-          "Tik op **Waarschuw me** en kies de iPhone, de opslag en de kleur.",
-          n === 1 ? `Vink de winkel aan: ${appleOf(stores[0])} in ${cityLabel(cc, stores[0].city, L)}.` : `Vink de winkels aan waar je kunt komen; de dichtstbijzijnde staan bovenaan, met ${unitWord} over de weg en reistijd.`,
-          "Zet RestockWire op een iPhone op je beginscherm en sta meldingen toe ([zo installeer je het](/phone-alerts)).",
-          "Komt de push binnen, open dan apple.com vanuit de melding en reken af met ophalen in die winkel.",
+          n === 1 ? `Kies onder **Waarschuw me** de iPhone, de opslag en de kleur; de winkel is ${appleOf(stores[0])} in ${cityLabel(cc, stores[0].city, L)}.` : `Kies onder **Waarschuw me** de iPhone, de opslag en de kleur, en vink de winkels aan waar je kunt komen; de dichtstbijzijnde staan bovenaan, met ${unitWord} over de weg en reistijd.`,
+          "Zet RestockWire op een iPhone op je beginscherm en sta meldingen toe; iOS bezorgt webpush alleen aan een geïnstalleerde app ([zo installeer je het](/phone-alerts)).",
+          "Komt de push binnen, open apple.com dan vanuit de melding en reken af met ophalen in die winkel.",
         ] },
-        { t: "table", head: ["Abonnement", "Prijs (USD)", "Alerts"], rows: [["Plus", "$5 / maand", "10"], ["Pro", "$10 / maand", "20"], ["Max", "$20 / maand", "50"]], caption: "Eén alert = één winkel × één exacte configuratie · rondkijken is gratis ([prijzen](/pricing))" },
-        { t: "note", text: "**Onze mening:** de Duo is een alert waard bij elke winkel waar je kunt komen; kijk bij de 18 Pro en Pro Max eerst naar de live cijfers." },
+        { t: "table", head: ["Abonnement", "Per maand (USD)", "Alertregels"], rows: [["Plus", "$5", "10"], ["Pro", "$10", "20"], ["Max", "$20", "50"]], caption: "Eén regel = één winkel × één exacte configuratie; rondkijken blijft gratis, en de snelheid is op elk abonnement gelijk ([prijzen](/pricing))" },
+        { t: "note", text: "**Onze inschatting:** de Duo verdient een alert bij elke winkel waar je kunt komen; kijk bij de 18 Pro en Pro Max eerst naar de live cijfers." },
         { t: "img", id: "apple-store-pickup-counter" },
       ],
     },
@@ -447,37 +451,37 @@ function homeFaq(cc: CountryCode, rt: RestockTimesBrief): Faq[] {
   const one = n === 1 ? appleOf(storesOf(cc)[0]) : null;
   const at = one ? `bij ${one}` : `in ${n$(rt.stores)} van de ${n$(rt.storesTotal)} winkels`;
   const when = rt.n === 0
-    ? `Nog geen bevestigde aanvulling sinds we op 2 november begonnen te meten. [Wanneer is de iPhone Duo weer op voorraad ${inC(cc)}?](${rt.path}) telt ze per lokaal uur en per dag zodra ze binnenkomen.`
+    ? `Nog geen enkele bevestigd sinds de meting op 2 november begon. [Wanneer vult Apple de iPhone Duo aan ${inC(cc)}?](${rt.path}) telt ze per lokaal uur en per dag zodra ze binnenkomen.`
     : rt.peakHour != null
-      ? `De meeste rond **${hour(L, rt.peakHour, true)} lokale tijd**: ${cnt(rt.n, "bevestigde aanvulling", "bevestigde aanvullingen")} ${at} sinds 2 november. [Per uur en per dag](${rt.path}).`
+      ? `De meeste komen rond **${hour(L, rt.peakHour, true)} lokale tijd**: ${cnt(rt.n, "bevestigde aanvulling", "bevestigde aanvullingen")} ${at} sinds 2 november. [Per uur en per dag](${rt.path}).`
       : `${cnt(rt.n, "bevestigde aanvulling", "bevestigde aanvullingen")} ${at} sinds 2 november, op te weinig dagen om al een vast uur te noemen. [Per uur en per dag](${rt.path}).`;
   return [
     one
-      ? { q: `Heeft ${one} de iPhone Duo nu op voorraad?`, a: `Bij de laatste check ({{asOf}}) lagen er {{duo.pairsNow}} van de {{duo.pairsTotal}} configuraties klaar. [iPhone Duo-voorraad ${inC(cc)}](${p}/in-stock/iphone-duo) toont ze allemaal, elke 15 seconden bijgewerkt.` }
-      : { q: `Welke Apple Stores ${inC(cc)} hebben de iPhone Duo nu?`, a: `{{duo.storesNow}} van de ${n$(n)} bij de laatste check ({{asOf}}). [iPhone Duo-voorraad ${inC(cc)}](${p}/in-stock/iphone-duo) noemt elke winkel en configuratie, elke 15 seconden bijgewerkt.` },
-    { q: `Wanneer is de iPhone Duo weer op voorraad ${inC(cc)}?`, a: when },
-    { q: "Hoe snel zijn de alerts?", a: `De winkels van je alerts worden elke 5 seconden gecontroleerd, ${n === 1 ? `de Apple Store ${inC(cc)}` : `elke Apple Store ${inC(cc)}`} elke 15. Een eerste "beschikbaar" wordt binnen een seconde opnieuw gecheckt, zodat een storing bij Apple nooit een alert wordt, en de push staat zo'n 3 seconden later op je telefoon.` },
-    { q: "Wat kost het?", a: "Live voorraad, de kaart en het voorraadlogboek zijn gratis. Alerts: Plus $5 per maand voor 10, Pro $10 voor 20 en Max $20 voor 50, afgerekend in Amerikaanse dollars; altijd opzegbaar ([prijzen](/pricing))." },
+      ? { q: `Biedt ${one} de iPhone Duo op dit moment aan?`, a: `Bij de laatste check ({{asOf}}) stonden er {{duo.pairsNow}} van de {{duo.pairsTotal}} configuraties klaar. [iPhone Duo-voorraad ${inC(cc)}](${p}/in-stock/iphone-duo) toont elke configuratie en ververst elke 15 seconden.` }
+      : { q: `Welke Apple Stores ${inC(cc)} bieden de iPhone Duo op dit moment aan?`, a: `{{duo.storesNow}} van de ${n$(n)} bij de laatste check ({{asOf}}). [iPhone Duo-voorraad ${inC(cc)}](${p}/in-stock/iphone-duo) noemt elke winkel en configuratie en ververst elke 15 seconden.` },
+    { q: `Wanneer vult Apple de iPhone Duo aan ${inC(cc)}?`, a: when },
+    { q: `Hoe snel ziet RestockWire een aanvulling ${inC(cc)}?`, a: `Winkels met een alert worden elke 5 seconden gelezen, ${n === 1 ? `de Apple Store ${inC(cc)}` : `elke Apple Store ${inC(cc)}`} elke 15; een eerste "beschikbaar" wordt binnen een seconde opnieuw gelezen. De bevestigde aanvulling staat zo'n 3 seconden later op je telefoon.` },
+    { q: "Heb ik een abonnement nodig om de voorraad te bekijken?", a: "Nee: live voorraad, de kaart en het voorraadlogboek zijn gratis. Een abonnement voegt alertregels toe, afgerekend in Amerikaanse dollars: Plus $5 per maand voor 10, Pro $10 voor 20, Max $20 voor 50, op te zeggen wanneer je wilt ([prijzen](/pricing))." },
     taxFaq(cc, land(cc)),
-    { q: "Kunnen jullie de iPhone voor me reserveren?", a: `Nee. Wij laten je weten zodra een winkel hem aanbiedt; jij koopt op apple.com met ophalen in de winkel, en Apple legt hem voor je apart ([Apple: hulp bij ophalen](${sources(cc as Exclude<CountryCode, "us">).pickupHelp.url})).` },
+    { q: "Houdt een alert de iPhone voor me vast?", a: `Nee; dat doet alleen een bestelling om op te halen op apple.com. Met de alert ben je als eerste bij het afrekenen, en Apple legt het toestel apart zodra je betaald hebt ([Apple: hulp bij ophalen](${sources(cc as Exclude<CountryCode, "us">).pickupHelp.url})).` },
   ];
 }
 
 const homeLabels: Dict["place"]["home"] = {
   appName: (cc: CountryCode) => `RestockWire iPhone-voorraadchecker ${land(cc)}`,
-  offer: "Live voorraad, kaart en voorraadlogboek zijn gratis; alerts vanaf $5 per maand",
+  offer: "Live voorraad, de kaart en het voorraadlogboek zijn gratis; alertabonnementen vanaf $5 per maand",
   itemList: (cc: CountryCode) => `Apple Stores ${inC(cc)}`,
-  restockTimesChip: "Wanneer er voorraad komt",
+  restockTimesChip: "Aanvultijden",
   storesByRegion: (cc: CountryCode) => `Winkels per ${noun(cc)}`,
-  browse: (cc: CountryCode) => `Voorraad ${inC(cc)} bekijken`,
-  selloutH2: (cc: CountryCode) => `Hoe snel is nieuwe iPhone-voorraad ${inC(cc)} uitverkocht?`,
+  browse: (cc: CountryCode) => `Voorraad per plaats ${inC(cc)}`,
+  selloutH2: (cc: CountryCode) => `Hoe lang blijft een iPhone-aanvulling ${inC(cc)} beschikbaar?`,
   selloutLabel: (cc: CountryCode) => (storesOf(cc).length === 1 ? `in de Apple Store ${inC(cc)}` : `in de Apple Stores ${inC(cc)}`),
   last24Label: (cc: CountryCode) => inC(cc),
-  newsroom: "Apple Newsroom: iPhone Duo verkrijgbaar in Apple Stores wereldwijd (23 oktober 2026)",
+  newsroom: "Apple Newsroom: iPhone Duo komt naar Apple Stores wereldwijd (23 oktober 2026)",
 };
 
 /**
- * Store page <title> and H1: "Apple Den Haag: iPhone-voorraad, ophalen & openingstijden". People search the store's
+ * Store page <title> and H1: "Apple Den Haag: live iPhone-voorraad, aanvultijden, ophalen". People search the store's
  * name as they say it ("apple brussel"), so a store named after its city reads with the Dutch city name.
  */
 function storeTitle(s: Store, region?: string): string {
@@ -487,13 +491,13 @@ function storeTitle(s: Store, region?: string): string {
   const shown = region && !name.toLowerCase().includes(region.toLowerCase()) && !s.name.toLowerCase().includes(region.toLowerCase()) ? region : null;
   const r = shown ? ` (${shown})` : "";
   return fitT([
-    `${name}${r}: iPhone-voorraad vandaag, ophalen & openingstijden`,
-    `${name}${r}: iPhone-voorraad, ophalen & openingstijden`,
-    `${name}${r}: iPhone-voorraad vandaag & openingstijden`,
-    `${name}: iPhone-voorraad, ophalen & openingstijden`,
-    `${name}: iPhone-voorraad & openingstijden`,
-    `${name}: iPhone-voorraad`,
-    `${name} – voorraad`,
+    `${name}${r}: live iPhone-voorraad, aanvultijden, ophalen`,
+    `${name}${r}: live iPhone-voorraad & aanvultijden`,
+    `${name}${r}: live iPhone-voorraad & openingstijden`,
+    `${name}: live iPhone-voorraad, aanvultijden, ophalen`,
+    `${name}: live iPhone-voorraad & openingstijden`,
+    `${name}: live iPhone-voorraad`,
+    `${name} – live voorraad`,
   ]);
 }
 

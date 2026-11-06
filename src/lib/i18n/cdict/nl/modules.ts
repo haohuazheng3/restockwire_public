@@ -3,16 +3,16 @@ import type { CDict } from "../en";
 
 export const modules: CDict["modules"] = {
   minimap: {
-    aria: "{label} openen op de live kaart",
-    cta: "Openen op de live kaart →",
+    aria: "Bekijk {label} op de live kaart",
+    cta: "Bekijk op de live kaart →",
   },
   reports: {
     legend: "Gemeld door andere trackers ({sources}), {range}",
-    note: "{mark}: {what} gepubliceerd door {links} voor {range}. Het zijn waarnemingen van die sites, geen aanvullingen die RestockWire heeft bevestigd, en geen van onze cijfers telt ze mee.",
+    note: "{mark}: {what} die {links} voor {range} publiceerde. Dit zijn waarnemingen van die sites; RestockWire heeft ze niet bevestigd en ze zitten in geen van onze cijfers.",
     what: "aanvullingen van de {models}",
     whatAny: "aanvullingen",
-    markDashed: "Gestippeld",
-    markDashedRings: "Gestippelde ringen",
+    markDashed: "Gestreept",
+    markDashedRings: "Gestreepte ringen",
     markHollowDots: "Holle stippen",
   },
 };

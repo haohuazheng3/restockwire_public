@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import type { Dict } from "../en";
 
-/** Swedish strings: chrome — footer, 404 page. */
+/** Swedish strings: chrome — footer, 404 page, the language-version note. */
 export const chrome: Dict["chrome"] = {
   footer: {
-    blurb: "Notis när iPhone finns att hämta i alla 269 Apple Store-butiker i USA: varje butik kollas var 15:e sekund, butikerna du bevakar var 5:e.",
-    blurbIn: (allStores: string) => `Notis när iPhone finns att hämta i ${allStores}: varje butik kollas var 15:e sekund, butikerna du bevakar var 5:e.`,
-    trademark: "Inte knutet till eller godkänt av Apple Inc. Apple, iPhone och Apple Store är varumärken som tillhör Apple Inc.",
+    blurb: "Lager för hämtning i butik live och notiser om påfyllning för alla 269 Apple Store-butiker i USA. Hela landet läses var 15:e sekund; butikerna i dina bevakningar var 5:e.",
+    blurbIn: (allStores: string) => `Lager för hämtning i butik live och notiser om påfyllning för ${allStores}. Varje butik läses var 15:e sekund; butikerna i dina bevakningar var 5:e.`,
+    trademark: "RestockWire är en fristående tjänst utan koppling till eller stöd från Apple Inc. Apple, iPhone och Apple Store är varumärken som tillhör Apple Inc.",
     product: "Produkt",
     duoStock: "iPhone Duo i lager",
     proStock: "iPhone 18 Pro i lager",
@@ -16,7 +16,7 @@ export const chrome: Dict["chrome"] = {
     storesByState: "Butiker per delstat",
     pricing: "Priser",
     company: "Företaget",
-    howItWorks: "Så funkar det",
+    howItWorks: "Så fungerar det",
     getApp: "Skaffa appen",
     about: "Om oss",
     contact: "Kontakt",
@@ -27,16 +27,16 @@ export const chrome: Dict["chrome"] = {
     privacy: "Integritet",
     terms: "Villkor",
     refunds: "Återbetalning",
-    englishOnly: "På engelska",
+    englishOnly: "Endast på engelska",
     questions: "Frågor om iPhone Duo",
-    restockTimes: "När fyller Apple på iPhone Duo?",
+    restockTimes: "Vilken tid fyller Apple på iPhone Duo?",
     countries: "Länder",
     status: "Driftstatus",
   },
   notFound: {
-    title: "Här finns inget",
-    body: (stores: ReactNode, map: ReactNode) => <>Sidan finns inte. Testa {stores} eller {map}.</>,
-    stores: "butikslistan",
+    title: "Ingen sida på den här adressen",
+    body: (stores: ReactNode, map: ReactNode) => <>Här finns inget publicerat. {stores} eller {map} tar dig tillbaka på rätt spår.</>,
+    stores: "Butikslistan per delstat",
     map: "livekartan",
     home: "Till startsidan",
   },

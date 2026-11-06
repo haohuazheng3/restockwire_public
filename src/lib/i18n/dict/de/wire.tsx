@@ -1,113 +1,105 @@
-// TODO(translate): English placeholder — see docs/voice.md §6
-import type { Dict } from "../en";
+/**
+ * German strings: wire — the four restock-log modules (RestockHeatmap, RestockStreak, SellOutRanking,
+ * RestockLeaderboard). `label` arrives with its preposition ("in Bayern", "bei Apple Rosenstraße", "hier",
+ * "in den USA"); `what` is a phone or configuration name and stays untranslated. Weekdays arrive as "Dienstag".
+ */
 import type { ReactNode } from "react";
+import type { Dict } from "../en";
+import { REGION_FORMS, plural } from "./util";
 
-const s = (n: number) => (n === 1 ? "" : "s");
+const restocks = (k: number) => plural(k, "Restock", "Restocks");
+const tage = (k: number) => plural(k, "Tag", "Tagen");
+/** "Dienstag" → "dienstags". */
+/** The region noun arrives in English ("state", "province"): Apple's regions in German. */
+const region = (noun: string) => REGION_FORMS[noun]?.one ?? noun;
+const weekdayAdv = (d: string) => `${d.toLowerCase()}s`;
 
 export const wire: Dict["wire"] = {
-  /** RestockHeatmap: a 7 × 24 grid of confirmed restocks by local weekday and hour. */
   heatmap: {
-    title: (what: string, label: string) => `When does the ${what} restock ${label}? Weekday × hour`,
-    unknown: "The weekday-by-hour grid could not be read just now; the live stock and the restock log on this page are unaffected.",
-    none: (label: string, days: number) => `No confirmed restock ${label} in the last ${days} days yet — the grid fills in from the first one.`,
-    /** Under 5 restocks or under 3 days with one. */
-    thin: (n: number, label: string, days: number, activeDays: number, min: number, minDays: number) =>
-      `${n} restock${s(n)} ${label} on ${activeDays} day${s(activeDays)} in the last ${days} — not enough data yet to call a pattern (RestockWire waits for ${min} restocks over ${minDays} days).`,
-    /** `weekday` "Tuesday", `window` "7–9 AM", `share` "34%". */
-    pattern: (label: string, weekday: string, window: string, share: string, n: number, days: number) => (
-      <>Most restocks {label} land on <b className="text-ink">{weekday}s</b>, between <b className="text-ink">{window}</b> local time ({share} of {n} in the last {days} days).</>
+    title: (what: string, label: string) => `Wann kommt das ${what} ${label} wieder? Wochentag × Uhrzeit`,
+    unknown: "Das Raster nach Wochentag und Uhrzeit ist gerade nicht lesbar; Live-Bestand und Restock-Protokoll auf dieser Seite sind davon nicht betroffen.",
+    none: (label: string, days: number) => `${label[0].toUpperCase()}${label.slice(1)} gab es in den letzten ${days} Tagen noch keinen bestätigten Restock; das Raster füllt sich ab dem ersten.`,
+    thin: (k: number, label: string, days: number, activeDays: number, min: number, minDays: number) =>
+      `${restocks(k)} ${label} an ${tage(activeDays)} in den letzten ${days}: noch zu wenig für ein Muster (RestockWire wartet auf ${min} Restocks an ${minDays} Tagen).`,
+    pattern: (label: string, weekday: string, window: string, share: string, k: number, days: number) => (
+      <>Die meisten Restocks {label} kommen <b className="text-ink">{weekdayAdv(weekday)}</b>, zwischen <b className="text-ink">{window}</b> Ortszeit ({share} von {k} in den letzten {days} Tagen).</>
     ),
-    /** Under 14 days of span: the hour, but no weekday claim. */
-    patternHours: (label: string, window: string, share: string, n: number, spanDays: number) => (
-      <>Most restocks {label} land between <b className="text-ink">{window}</b> local time ({share} of {n}); {spanDays} day{s(spanDays)} of data is too few to name a weekday yet.</>
+    patternHours: (label: string, window: string, share: string, k: number, spanDays: number) => (
+      <>Die meisten Restocks {label} kommen zwischen <b className="text-ink">{window}</b> Ortszeit ({share} von {k}); Daten aus {tage(spanDays)} reichen noch nicht, um einen Wochentag zu nennen.</>
     ),
-    caption: (what: string, label: string, days: number) => `Confirmed ${what} restocks ${label} by local weekday and hour, last ${days} days`,
-    /** Every cell's title and screen-reader text: `hours` "7–8 AM". */
-    cell: (weekday: string, hours: string, n: number) => `${weekday} ${hours}: ${n} restock${s(n)}`,
-    /** The busiest cell. */
-    busiest: (weekday: string, hours: string, n: number) => `busiest · ${weekday} ${hours} · ${n} restock${s(n)}`,
-    legendFewer: "fewer",
-    legendMore: "more",
-    /** Multi-zone sets (a state across two zones, a country): every store counted in its own zone. */
-    localTime: "each store's own local time",
-    measuredTitle: "How this is measured",
+    caption: (what: string, label: string, days: number) => `Bestätigte ${what}-Restocks ${label} nach Wochentag und Ortszeit, letzte ${days} Tage`,
+    cell: (weekday: string, hours: string, k: number) => `${weekday} ${hours}: ${restocks(k)}`,
+    busiest: (weekday: string, hours: string, k: number) => `am häufigsten · ${weekday} ${hours} · ${restocks(k)}`,
+    legendFewer: "weniger",
+    legendMore: "mehr",
+    localTime: "jeweils Ortszeit des Stores",
+    measuredTitle: "So wird gemessen",
     measured: (min: number, minDays: number, span: number) =>
-      `Each cell counts RestockWire's confirmed restocks (two checks agreeing; a store's first sighting never counted) that landed in that local hour of that weekday over the window, in the store's own time zone. A pattern is stated from ${min} restocks over ${minDays} different days, a weekday only once the data spans ${span} days — ten restocks in one burst are one event, not a habit.`,
+      `Jede Zelle zählt die bestätigten Restocks von RestockWire (zwei Prüfungen stimmen überein; die erste Sichtung in einem Store zählt nie), die im Zeitraum in diese Stunde dieses Wochentags fielen, in der Zeitzone des Stores. Ein Muster nennen wir ab ${min} Restocks an ${minDays} verschiedenen Tagen, einen Wochentag erst, wenn die Daten ${span} Tage umfassen: Zehn Restocks in einem Schwung sind ein Ereignis, keine Gewohnheit.`,
   },
 
-  /** RestockStreak: days since the last restock, the longest drought, this week against last, the typical gap. */
   streak: {
-    title: (what: string, label: string) => `${what} restock streaks and droughts ${label}`,
-    unknown: "The streak numbers could not be read just now; the live stock and the restock log on this page are unaffected.",
-    none: (label: string, days: number) => `No confirmed restock ${label} in the last ${days} days — the current quiet spell is the whole window.`,
-    /** `since` "2 days ago" / "today"; `longest` "5.2 days" or null under two drops; `trend` the arrow line below or null when both weeks are 0. */
+    title: (what: string, label: string) => `${what}: Restock-Serien und Flauten ${label}`,
+    unknown: "Die Serien-Zahlen sind gerade nicht lesbar; Live-Bestand und Restock-Protokoll auf dieser Seite sind davon nicht betroffen.",
+    none: (label: string, days: number) => `Kein bestätigter Restock ${label} in den letzten ${days} Tagen: Die aktuelle Flaute umfasst den ganzen Zeitraum.`,
     lead: (o: { label: string; since: ReactNode; longest: string | null; thisWeek: number; lastWeek: number; trend: string | null; days: number }) => (
-      <>Last confirmed restock {o.label}: <b className="text-ink">{o.since}</b>{o.longest && <>; the longest quiet spell in {o.days} days was <b className="text-ink">{o.longest}</b></>}{o.trend && <>; <b className="text-ink">{o.thisWeek}</b> restock{s(o.thisWeek)} this week against {o.lastWeek} last week ({o.trend})</>}.</>
+      <>Letzter bestätigter Restock {o.label}: <b className="text-ink">{o.since}</b>{o.longest && <>; die längste Flaute in {o.days} Tagen dauerte <b className="text-ink">{o.longest}</b></>}{o.trend && <>; diese Woche <b className="text-ink">{o.thisWeek}</b>, letzte Woche {o.lastWeek} ({o.trend})</>}.</>
     ),
-    today: "today",
-    daysAgo: (n: number) => `${n} day${s(n)} ago`,
-    hoursAgo: (n: number) => `${n} hour${s(n)} ago`,
-    tileSince: "since the last confirmed restock",
-    tileSinceNone: (days: number) => `no restock in ${days} days`,
-    tileLongest: (days: number) => `longest quiet spell between restocks · ${days} d`,
-    /** `prev` last week's count. */
-    tileWeek: (prev: number) => `restocks in the last 7 days · ${prev} the week before`,
-    tileMedian: "typical gap between restock drops",
-    up: "↑ up on last week",
-    down: "↓ down on last week",
-    flat: "→ same as last week",
+    today: "heute",
+    daysAgo: (k: number) => `vor ${tage(k)}`,
+    hoursAgo: (k: number) => `vor ${plural(k, "Stunde", "Stunden")}`,
+    tileSince: "seit dem letzten bestätigten Restock",
+    tileSinceNone: (days: number) => `kein Restock in ${days} Tagen`,
+    tileLongest: (days: number) => `längste Flaute zwischen Restocks · ${days} T.`,
+    tileWeek: (prev: number) => `Restocks in den letzten 7 Tagen · ${prev} in der Woche davor`,
+    tileMedian: "typischer Abstand zwischen Restock-Schüben",
+    up: "↑ mehr als letzte Woche",
+    down: "↓ weniger als letzte Woche",
+    flat: "→ wie letzte Woche",
     none2: "–",
-    measuredTitle: "How this is measured",
-    measured: "A restock drop is every confirmed restock within the same half hour at the stores counted here, so eight configurations landing together are one drop, not eight; gaps are measured between drops. “This week” is the last 7 days, “last week” the 7 before them. Confirmed means two of RestockWire's checks agreed (every store every 15 seconds, stores with alerts every 5); a store's first sighting is never counted.",
+    measuredTitle: "So wird gemessen",
+    measured: "Ein Restock-Schub umfasst alle bestätigten Restocks derselben halben Stunde in den hier gezählten Stores: Acht Konfigurationen, die zusammen kommen, sind ein Schub, nicht acht. Abstände messen wir zwischen Schüben. „Diese Woche“ sind die letzten 7 Tage, „letzte Woche“ die 7 davor. Bestätigt heißt, dass zwei Prüfungen von RestockWire übereinstimmen (jeder Store alle 15 Sekunden, Stores mit Alarm alle 5); die erste Sichtung in einem Store zählt nie.",
   },
 
-  /** SellOutRanking: the place's stores ranked by how fast their restocks sold out. */
   ranking: {
-    title: (what: string, label: string) => `Which stores sell out the ${what} fastest ${label}?`,
-    unknown: "The sell-out ranking could not be read just now; the live stock and the restock log on this page are unaffected.",
-    /** Fewer than two stores qualify. `k` stores qualified, `min` pairs needed. */
+    title: (what: string, label: string) => `Welche Stores ${label} sind beim ${what} am schnellsten ausverkauft?`,
+    unknown: "Die Ausverkaufs-Rangliste ist gerade nicht lesbar; Live-Bestand und Restock-Protokoll auf dieser Seite sind davon nicht betroffen.",
     thin: (label: string, k: number, min: number, days: number) =>
-      `Not enough timed sell-outs ${label} yet: ${k} store${s(k)} with ${min} or more restocks that sold out in the last ${days} days, and a ranking needs two.`,
-    /** `fastest`/`slowest` are store links; `fastSec`/`slowSec` formatted durations. */
+      `Noch zu wenige gemessene Ausverkäufe ${label}: ${plural(k, "Store", "Stores")} mit ${min} oder mehr ausverkauften Restocks in den letzten ${days} Tagen, und eine Rangliste braucht zwei.`,
     lead: (o: { label: string; fastest: ReactNode; fastSec: string; slowest: ReactNode; slowSec: string; days: number }) => (
-      <>Fastest {o.label}: <b className="text-ink">{o.fastest}</b>, half its restocks gone within <b className="text-ink">{o.fastSec}</b>; slowest: <b className="text-ink">{o.slowest}</b>, {o.slowSec} (last {o.days} days).</>
+      <>Am schnellsten {o.label}: <b className="text-ink">{o.fastest}</b>, die Hälfte der Restocks war binnen <b className="text-ink">{o.fastSec}</b> weg; am langsamsten: <b className="text-ink">{o.slowest}</b>, {o.slowSec} (letzte {o.days} Tage).</>
     ),
-    caption: (what: string, label: string, days: number, min: number) => `${what} restocks ${label} by how fast they sold out, last ${days} days; stores with ${min} or more timed sell-outs`,
+    caption: (what: string, label: string, days: number, min: number) => `${what}-Restocks ${label} nach Ausverkaufstempo, letzte ${days} Tage; Stores mit ${min} oder mehr gemessenen Ausverkäufen`,
     thRank: "#",
     thStore: "Store",
-    thMedian: "Half gone within",
-    thFastest: "Fastest",
-    thPairs: "Sold-out restocks",
-    /** The share of stores that made the table: "8 of 12 stores ranked". */
-    footnote: (ranked: number, total: number) => `${ranked} of ${total} store${s(total)} ranked`,
-    measuredTitle: "How this is measured",
+    thMedian: "Halb weg nach",
+    thFastest: "Am schnellsten",
+    thPairs: "Ausverkaufte Restocks",
+    footnote: (ranked: number, total: number) => `${ranked} von ${plural(total, "Store", "Stores")} in der Rangliste`,
+    measuredTitle: "So wird gemessen",
     measured: (min: number) =>
-      `“Half gone within” is the median time from RestockWire's check that first saw a restock to the check that first saw it gone — an upper bound: stores with alerts are checked every 5 seconds, every other store every 15. Only stores with ${min} or more restocks that sold out in the window are ranked; a listing shorter than one check can be missed, so very fast stores look a little slower than they are.`,
+      `„Halb weg nach“ ist der Median der Zeit von der Prüfung, die einen Restock zuerst sah, bis zu der, die ihn zuerst als weg sah – eine Obergrenze: Stores mit Alarm prüfen wir alle 5 Sekunden, alle anderen alle 15. In der Rangliste stehen nur Stores mit ${min} oder mehr ausverkauften Restocks im Zeitraum; ein Angebot, das kürzer als eine Prüfung hält, kann durchrutschen, sehr schnelle Stores wirken daher etwas langsamer, als sie sind.`,
   },
 
-  /** RestockLeaderboard: the stores with the most confirmed restocks in the last 7 days and their share. */
   leaderboard: {
-    title: (what: string, label: string, days: number) => `Which stores restocked the ${what} most ${label}? Last ${days} days`,
-    unknown: "The leaderboard could not be read just now; the live stock and the restock log on this page are unaffected.",
-    none: (what: string, label: string, days: number) => `No confirmed ${what} restock ${label} in the last ${days} days.`,
-    /** `store` a link, `share` "10%". */
+    title: (what: string, label: string, days: number) => `Welche Stores ${label} hatten die meisten ${what}-Restocks? Letzte ${days} Tage`,
+    unknown: "Die Rangliste ist gerade nicht lesbar; Live-Bestand und Restock-Protokoll auf dieser Seite sind davon nicht betroffen.",
+    none: (what: string, label: string, days: number) => `Kein bestätigter ${what}-Restock ${label} in den letzten ${days} Tagen.`,
     lead: (o: { store: ReactNode; n: number; total: number; share: string; label: string; days: number }) => (
-      <><b className="text-ink">{o.store}</b> led {o.label} with <b className="text-ink">{o.n}</b> of {o.total} confirmed restock{s(o.total)} (<b className="text-ink">{o.share}</b>) in the last {o.days} days.</>
+      <><b className="text-ink">{o.store}</b> liegt {o.label} vorn, mit <b className="text-ink">{o.n}</b> von {o.total} bestätigten {o.total === 1 ? "Restock" : "Restocks"} (<b className="text-ink">{o.share}</b>) in den letzten {o.days} Tagen.</>
     ),
-    caption: (what: string, label: string, days: number) => `Apple Stores ${label} by confirmed ${what} restocks, last ${days} days`,
+    caption: (what: string, label: string, days: number) => `Apple Stores ${label} nach bestätigten ${what}-Restocks, letzte ${days} Tage`,
     thRank: "#",
     thStore: "Store",
     thRestocks: "Restocks",
-    thShare: "Share",
-    /** Below the table: "10 of 41 stores with a restock · 212 restocks in all". */
-    footnote: (shown: number, stores: number, total: number) => `${shown} of ${stores} store${s(stores)} with a restock · ${total} restock${s(total)} in all`,
-    /** The same count by state (US) or region. `noun` "state" / "province" / "area". */
-    regionsTitle: (noun: string) => `By ${noun}`,
-    regionsCaption: (what: string, label: string, days: number, noun: string) => `Confirmed ${what} restocks ${label} by ${noun}, last ${days} days`,
-    thRegion: (noun: string) => noun.charAt(0).toUpperCase() + noun.slice(1),
+    thShare: "Anteil",
+    footnote: (shown: number, stores: number, total: number) => `${shown} von ${plural(stores, "Store", "Stores")} mit Restock · insgesamt ${restocks(total)}`,
+    regionsTitle: (noun: string) => `Nach ${region(noun)}`,
+    regionsCaption: (what: string, label: string, days: number, noun: string) => `Bestätigte ${what}-Restocks ${label} nach ${region(noun)}, letzte ${days} Tage`,
+    thRegion: (noun: string) => region(noun),
     thStores: "Stores",
-    measuredTitle: "How this is measured",
+    measuredTitle: "So wird gemessen",
     measured: (what: string) =>
-      `Confirmed ${what} restocks in the last 7 days from RestockWire's own checks of apple.com in-store pickup (every store every 15 seconds, stores with alerts every 5; two checks must agree; a store's first sighting is never counted). The share is of every confirmed restock in the same place and window.`,
+      `Bestätigte ${what}-Restocks der letzten 7 Tage aus RestockWires eigenen Prüfungen der Abholung im Store auf apple.com (jeder Store alle 15 Sekunden, Stores mit Alarm alle 5; zwei Prüfungen müssen übereinstimmen; die erste Sichtung in einem Store zählt nie). Der Anteil bezieht sich auf alle bestätigten Restocks am selben Ort im selben Zeitraum.`,
   },
 };

@@ -3,12 +3,12 @@ import type { CDict } from "../en";
 
 export const modules: CDict["modules"] = {
   minimap: {
-    aria: "{label} auf der Live-Karte öffnen",
-    cta: "Auf der Live-Karte öffnen →",
+    aria: "{label} auf der Live-Karte ansehen",
+    cta: "Auf der Live-Karte ansehen →",
   },
   reports: {
     legend: "Von anderen Trackern gemeldet ({sources}), {range}",
-    note: "{mark}: {what}, veröffentlicht von {links} für {range}. Das sind Beobachtungen dieser Seiten, keine von RestockWire bestätigten Restocks, und keine unserer Zahlen zählt sie mit.",
+    note: "{mark}: {what}, die {links} für {range} veröffentlicht hat. Das sind Beobachtungen dieser Seiten; RestockWire hat sie nicht bestätigt, und keine unserer Zahlen enthält sie.",
     what: "Restocks von {models}",
     whatAny: "Restocks",
     markDashed: "Gestrichelt",

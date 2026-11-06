@@ -3,12 +3,12 @@ import type { CDict } from "../en";
 /** Swedish client strings: modules (MiniMap, and the other-trackers footnote). */
 export const modules: CDict["modules"] = {
   minimap: {
-    aria: "Öppna {label} på livekartan",
-    cta: "Öppna på livekartan →",
+    aria: "Se {label} på livekartan",
+    cta: "Se den på livekartan →",
   },
   reports: {
     legend: "Rapporterat av andra bevakningstjänster ({sources}), {range}",
-    note: "{mark}: {what} publicerade av {links} för {range}. Det är de sajternas egna observationer, inte påfyllningar som RestockWire har bekräftat, och ingen av våra siffror räknar med dem.",
+    note: "{mark}: {what} som {links} publicerade för {range}. Det är observationer från de sajterna; RestockWire har inte bekräftat dem och ingen av våra siffror räknar med dem.",
     what: "påfyllningar av {models}",
     whatAny: "påfyllningar",
     markDashed: "Streckade",

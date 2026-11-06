@@ -2,5 +2,5 @@
 import type { Dict } from "../en";
 
 export const alerts: Dict["alerts"] = {
-  panelTitle: "Recevoir des alertes",
+  panelTitle: "Créer une alerte",
 };

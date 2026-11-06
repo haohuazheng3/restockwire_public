@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
 import type { Dict } from "../en";
 
-/** Spanish (Spain): chrome — footer, 404 page. */
+/** Spanish (Spain): chrome — footer, 404 page, the language-version note. */
 export const chrome: Dict["chrome"] = {
   footer: {
-    blurb: "Alertas de reposición de iPhone para recogida en los 269 Apple Store de EE. UU.: cada tienda se comprueba cada 15 segundos; las de tus alertas, cada 5.",
-    blurbIn: (allStores: string) => `Alertas de reposición de iPhone para recogida en ${allStores}: cada tienda se comprueba cada 15 segundos; las de tus alertas, cada 5.`,
-    trademark: "Sin relación con Apple Inc. ni respaldado por ella. Apple, iPhone y Apple Store son marcas comerciales de Apple Inc.",
+    blurb: "Stock en directo para recogida en tienda y alertas de reposición en cada uno de los 269 Apple Store de EE. UU. Todo el país se comprueba cada 15 segundos; las tiendas de tus alertas, cada 5 segundos.",
+    blurbIn: (allStores: string) => `Stock en directo para recogida en tienda y alertas de reposición en ${allStores}. Cada tienda se comprueba cada 15 segundos; las tiendas de tus alertas, cada 5 segundos.`,
+    trademark: "RestockWire es un servicio independiente, sin vínculo con Apple Inc. ni respaldo de su parte. Apple, iPhone y Apple Store son marcas comerciales de Apple Inc.",
     product: "Producto",
     duoStock: "Stock del iPhone Duo",
     proStock: "Stock del iPhone 18 Pro",
@@ -17,7 +17,7 @@ export const chrome: Dict["chrome"] = {
     pricing: "Precios",
     company: "Empresa",
     howItWorks: "Cómo funciona",
-    getApp: "Instala la app",
+    getApp: "Descarga la app",
     about: "Quiénes somos",
     contact: "Contacto",
     allStates: "Todos los estados y ciudades →",
@@ -27,17 +27,17 @@ export const chrome: Dict["chrome"] = {
     privacy: "Privacidad",
     terms: "Condiciones",
     refunds: "Reembolsos",
-    englishOnly: "En inglés",
+    englishOnly: "Solo en inglés",
     questions: "Preguntas sobre el iPhone Duo",
-    restockTimes: "¿Cuándo repone Apple el iPhone Duo?",
+    restockTimes: "¿A qué hora repone Apple el iPhone Duo?",
     countries: "Países",
     status: "Estado del servicio",
   },
   notFound: {
-    title: "Aquí no hay nada",
-    body: (stores: ReactNode, map: ReactNode) => <>Esa página no existe. Prueba con {stores} o con el {map}.</>,
-    stores: "la lista de tiendas",
-    map: "mapa en directo",
-    home: "Volver al inicio",
+    title: "No hay ninguna página en esta dirección",
+    body: (stores: ReactNode, map: ReactNode) => <>Aquí no hay nada publicado. Con {stores} o con el {map} volverás al buen camino.</>,
+    stores: "la lista de tiendas por estado",
+    map: "mapa de stock en directo",
+    home: "Ir a la página de inicio",
   },
 };

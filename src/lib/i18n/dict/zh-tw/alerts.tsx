@@ -2,5 +2,5 @@
 import type { Dict } from "../en";
 
 export const alerts: Dict["alerts"] = {
-  panelTitle: "設定補貨通知",
+  panelTitle: "建立補貨通知",
 };

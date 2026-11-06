@@ -52,12 +52,12 @@ function taxSentence(cc: CountryCode, region?: string): string {
   if (duo == null) return "";
   if (cc === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
-    if (t) return `256GBのiPhone DuoはAppleの価格${money(c, duo)}（税抜）で、${provinceJa(region!)}の${t.rate}%（${CA_PROVINCE_TAX[region!].label}）を加えると約${money(c, t.total)}です。`;
-    return `256GBのiPhone DuoはAppleの価格${money(c, duo)}（税抜）で、州に応じて5〜15%の税が上乗せされます。`;
+    if (t) return `256GBのiPhone Duoは${provinceJa(region!)}で約${money(c, t.total)}。Appleの税抜${money(c, duo)}に、${t.rate}%（${CA_PROVINCE_TAX[region!].label}）が加わります。`;
+    return `256GBのiPhone DuoはAppleの価格で${money(c, duo)}（税抜）。受け取る店舗の州に応じて5〜15%の税が加わります。`;
   }
   const r = includedRate(c);
-  if (r == null) return `256GBのiPhone Duoは${money(c, duo)}。香港には売上税がないため、受け取り時の支払いもこの金額です。`;
-  return `256GBのiPhone Duoは${country(cc)}で${money(c, duo)}（${taxJa(c)}${r}%込み）。apple.comの価格が、そのまま店頭受け取りでの支払額です。`;
+  if (r == null) return `256GBのiPhone Duoは受け取り時の支払いが${money(c, duo)}ですべて。香港には売上税がありません。`;
+  return `256GBのiPhone Duoは、${country(cc)}での受け取り時の支払いが${money(c, duo)}ですべて（${taxJa(c)}${r}%込み）。`;
 }
 
 const PRICE_ROWS: [ModelKey, string][] = [["duo", "256GB"], ["duo", "1TB"], ["18-pro-max", "256GB"], ["18-pro-max", "1TB"], ["18-pro", "256GB"]];
@@ -80,11 +80,11 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
       const pj = provinceJa(region!);
       return {
         id: "price-with-tax",
-        h2: `${placeName}での${m.name}の税込価格は？`,
-        lead: `256GBの${m.name}は**税抜${money(c, base)}**。${pj}の税（${t.label}、計${t.total}%）を加えると、${placeName}の店舗で約**${money(c, withProvinceTax(base, region!)!.total)}**です。`,
+        h2: `${placeName}で${m.name}は税込いくら？`,
+        lead: `${placeName}の店舗で256GBの${m.name}は**約${money(c, withProvinceTax(base, region!)!.total)}**。Appleの**税抜${money(c, base)}**に、${pj}の税（${t.label}、計${t.total}%）が加わります。`,
         blocks: [
-          { t: "note", text: "**税率は受け取る店舗の州で決まります。**住所の州ではありません。" },
-          { t: "table", head: ["iPhone", "apple.comの価格", `税込（${t.total}%）`], rows: rows.map(([label, p]) => [label, money(c, p), money(c, withProvinceTax(p, region!)!.total)]), caption: `${pj}：Appleのカナダ価格＋${t.label}（${t.total}%）`, source: `[${src.label}](${src.url})；価格は${shop}より` },
+          { t: "table", head: ["iPhone", "apple.comの価格", `税込（${t.label} ${t.total}%）`], rows: rows.map(([label, p]) => [label, money(c, p), money(c, withProvinceTax(p, region!)!.total)]), caption: `${pj}で各iPhoneにかかる金額（${t.label} ${t.total}%込み）`, source: `[${src.label}](${src.url})；価格は${shop}より` },
+          { t: "note", text: "**税率を決めるのは受け取る店舗：**課税は店舗のある州で決まり、自宅の住所は関係ありません。" },
         ],
       };
     }
@@ -93,13 +93,13 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
     const dearest = provinces.reduce((a, b) => (CA_PROVINCE_TAX[b].total > CA_PROVINCE_TAX[a].total ? b : a));
     return {
       id: "price-with-tax",
-      h2: `カナダでの${m.name}の税込価格は？州ごとに比較`,
-      lead: `256GBの${m.name}はAppleの価格で**${money(c, base)}**（税抜）。受け取る店舗の州の税が加わり、${provinceJa(cheapest)}の**${money(c, withProvinceTax(base, cheapest)!.total)}**（${CA_PROVINCE_TAX[cheapest].total}%）から${provinceJa(dearest)}の**${money(c, withProvinceTax(base, dearest)!.total)}**（${CA_PROVINCE_TAX[dearest].total}%）までです。`,
+      h2: `カナダで${m.name}は税込いくら？州ごとの比較`,
+      lead: `256GBの${m.name}は**${provinceJa(cheapest)}の${money(c, withProvinceTax(base, cheapest)!.total)}から${provinceJa(dearest)}の${money(c, withProvinceTax(base, dearest)!.total)}まで**。Appleの${money(c, base)}は税抜で、受け取る店舗の州が${CA_PROVINCE_TAX[cheapest].total}%〜${CA_PROVINCE_TAX[dearest].total}%を加えます。`,
       blocks: [{
         t: "table",
         head: ["州", "税", "税率", `${m.short} 256GB（税込）`],
         rows: provinces.map((p) => [provinceJa(p), CA_PROVINCE_TAX[p].label, `${CA_PROVINCE_TAX[p].total}%`, money(c, withProvinceTax(base, p)!.total)]),
-        caption: "アップルストアのある州：店頭受け取りにかかる税",
+        caption: "アップルストアのある全州：店頭受け取りにかかる売上税",
         source: `[${src.label}](${src.url})；価格は${shop}より`,
       }],
     };
@@ -108,15 +108,15 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
   const tn = taxJa(c);
   return {
     id: "price",
-    h2: r == null ? `${m.name}の価格は？${country(cc)}で${money(c, base)}から（税なし）` : `${m.name}の価格は？${country(cc)}で${money(c, base)}から（${tn}込み）`,
+    h2: r == null ? `${country(cc)}で${m.name}はいくら？${money(c, base)}から（税なし）` : `${country(cc)}で${m.name}はいくら？${money(c, base)}から（${tn}込み）`,
     lead: r == null
-      ? `256GBの${m.name}はapple.comで**${money(c, base)}**。香港には**売上税も付加価値税もない**ため、${placeName}での受け取り時の支払いもこの金額です。`
-      : `256GBの${m.name}は${country(cc)}のapple.comで**${money(c, base)}**、**${tn}${r}%込み**（税抜${money(c, beforeTax(c, base))}）です。${placeName}での店頭受け取り時に、追加で払うものはありません。`,
+      ? `${placeName}で受け取る256GBの${m.name}は**${money(c, base)}、apple.comの価格そのまま**。香港には**売上税も付加価値税もありません**。`
+      : `${placeName}で受け取る256GBの${m.name}は**${money(c, base)}**。**${tn}${r}%はすでに込み**（税抜${money(c, beforeTax(c, base))}）で、カウンターで追加されるものはありません。`,
     blocks: [{
       t: "table",
       head: r == null ? ["iPhone", "apple.comの価格"] : ["iPhone", "apple.comの価格", `税抜（${tn}${r}%）`],
       rows: rows.map(([label, p]) => (r == null ? [label, money(c, p)] : [label, money(c, p), money(c, beforeTax(c, p))])),
-      caption: `Appleの${country(cc)}価格${r == null ? "" : `（${tn}込み）`}`,
+      caption: `Appleの${country(cc)}価格＝受け取り時の支払額${r == null ? "" : `（${tn}込み）`}`,
       source: `[${src.label}](${src.url})；価格は${shop}より`,
     }],
   };
@@ -128,13 +128,13 @@ function taxFaq(cc: CountryCode, placeName: string, region?: string): FaqItem {
   if (cc === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
     return t
-      ? { q: `${placeName}でのiPhone Duoの税込価格は？`, a: `256GBで約${money(c, t.total)}です。Appleの価格${money(c, duo)}に${provinceJa(region!)}の${t.rate}%（${CA_PROVINCE_TAX[region!].label}）が加わり、受け取る店舗の州で課税されます。` }
-      : { q: "Appleのカナダ価格に税は含まれていますか？", a: `含まれていません。256GBのiPhone Duoは税抜${money(c, duo)}で、店舗の州に応じてGST、HST、州売上税が加わります（アルバータ州の5%からケベック州の14.975%まで）。` };
+      ? { q: `${placeName}でiPhone Duoは税込いくら？`, a: `256GBで約${money(c, t.total)}。Appleの${money(c, duo)}に${provinceJa(region!)}の${t.rate}%（${CA_PROVINCE_TAX[region!].label}）が上乗せされ、受け取る店舗が課税します。` }
+      : { q: "Appleのカナダ価格は税込ですか？", a: `いいえ。256GBのiPhone Duoは税抜${money(c, duo)}です。受け取る店舗の州がGST、HST、または州売上税を加え、アルバータ州の5%からケベック州の14.975%までです。` };
   }
   const r = includedRate(c);
   return r == null
-    ? { q: "香港ではiPhoneに売上税がかかりますか？", a: `かかりません。香港には売上税も付加価値税もないため、256GBのiPhone Duoは受け取り時も${money(c, duo)}で、apple.comの価格そのままです。` }
-    : { q: `${country(cc)}のapple.comの価格に${taxJa(c)}は含まれていますか？`, a: `はい。256GBのiPhone Duoの${money(c, duo)}には${taxJa(c)}${r}%が含まれており、店舗で受け取るときに追加で払うものはありません。` };
+    ? { q: "香港でiPhoneを買うと売上税はかかる？", a: `かかりません。香港には売上税も付加価値税もなく、256GBのiPhone Duoは受け取り時も${money(c, duo)}、apple.comの表示どおりです。` }
+    : { q: `${country(cc)}のAppleの価格に${taxJa(c)}は含まれている？`, a: `はい。256GBのiPhone Duoの${money(c, duo)}には${taxJa(c)}${r}%が含まれています。受け取りカウンターで追加されるものはありません。` };
 }
 
 /* ------------------------------------------------------------------ 地域・都市ページ */
@@ -143,8 +143,8 @@ function placeTitle(i: IntlPlaceInput): string {
   const n = N(i.stores.length);
   const w = placeJa(i);
   return fitTitleW([
-    `${w}のアップルストア（${n}店舗）：iPhone Duo在庫をライブ確認`,
-    `${w}のアップルストア（${n}店舗）：iPhone在庫・入荷`,
+    `${w}のアップルストア（${n}店舗）：iPhone Duo受け取り在庫をライブで`,
+    `${w}のアップルストア（${n}店舗）：iPhone在庫・再入荷`,
     `${w}のアップルストア：iPhone在庫`,
     `${w}のアップルストア`,
   ]);
@@ -163,15 +163,15 @@ function placeDescription(i: IntlPlaceInput): string {
   const n = N(i.stores.length);
   const w = placeJa(i);
   return fitTitleW([
-    `${w}のアップルストア${n}店舗のうち、いまiPhone Duoを店頭受け取りできるのは${N(i.stockNow.duo)}店舗、18 Pro Maxは${N(i.stockNow["18-pro-max"])}店舗。店舗別のライブ在庫と入荷時間${priceBit(i.cc, i.region)}。`,
-    `${w}のアップルストア${n}店舗：iPhone Duoの在庫は${N(i.stockNow.duo)}店舗、18 Pro Maxは${N(i.stockNow["18-pro-max"])}店舗。店舗別のライブ在庫と入荷時間。`,
+    `いま${w}のアップルストア${n}店舗中${N(i.stockNow.duo)}店舗でiPhone Duoを店頭受け取りでき、18 Pro Maxは${N(i.stockNow["18-pro-max"])}店舗。店舗ごとの在庫と再入荷の時間帯${priceBit(i.cc, i.region)}。`,
+    `いま${w}のアップルストア${n}店舗中${N(i.stockNow.duo)}店舗にiPhone Duo、${N(i.stockNow["18-pro-max"])}店舗に18 Pro Max。店舗別ライブ在庫と再入荷の時間帯。`,
   ], 155);
 }
 
 function placeIntro(i: IntlPlaceInput): string {
   const w = placeJa(i);
   const cities = i.kind === "state" && i.cities && i.cities > 1 ? `（${N(i.cities)}都市）` : "";
-  return `**${w}のアップルストア${N(i.stores.length)}店舗**${cities}のうち、いまiPhone Duoを店頭受け取りできるのは**${N(i.stockNow.duo)}店舗**、18 Pro Maxは**${N(i.stockNow["18-pro-max"])}店舗**、18 Proは**${N(i.stockNow["18-pro"])}店舗**です。`;
+  return `この瞬間、**${w}のアップルストア${N(i.stores.length)}店舗**${cities}のうち**${N(i.stockNow.duo)}店舗**でiPhone Duoを店頭受け取りできます。iPhone 18 Pro Maxは**${N(i.stockNow["18-pro-max"])}店舗**、iPhone 18 Proは**${N(i.stockNow["18-pro"])}店舗**です。`;
 }
 
 /** 「256GB Night Sky」→「256GB ナイトスカイ」。 */
@@ -181,9 +181,9 @@ function duoLead(i: IntlPlaceInput): string {
   const n = N(i.stores.length);
   const have = duoStoresNow(i);
   const st = i.duo;
-  if (have.length > 0) return `いまiPhone Duoの在庫があるのは**${n}店舗中${N(have.length)}店舗**：${listJa(have.map((s) => appleStoreLabel(s, L)), 4)}。`;
-  if (st.month > 0) return `いまiPhone Duoの在庫がある店舗は**${n}店舗中ゼロ**ですが、${sinceWhen()}に**${N(st.month)}回**入荷しています。`;
-  return `いまiPhone Duoの在庫がある店舗は**${n}店舗中ゼロ**で、${sinceWhen()}にDuoの入荷も記録されていません。`;
+  if (have.length > 0) return `**あります。${n}店舗中${N(have.length)}店舗**：${listJa(have.map((s) => appleStoreLabel(s, L)), 4)}で、いまiPhone Duoを店頭受け取りできます。`;
+  if (st.month > 0) return `**この瞬間はありません**。${n}店舗のどこにもiPhone Duoは並んでいませんが、${sinceWhen()}に合わせて**${N(st.month)}回**再入荷しています。`;
+  return `**この瞬間はありません**。${n}店舗のどこにもiPhone Duoは並んでおらず、${sinceWhen()}に確認されたDuoの再入荷もありません。`;
 }
 
 function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
@@ -192,13 +192,13 @@ function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
   const st = i.duo;
   const last = st.lastRestock ? i.stores.find((s) => s.storeNumber === st.lastRestock!.storeNumber) : undefined;
   const items: string[] = [];
-  if (have.length > 0 && st.month > 0) items.push(`**${sinceWhen()}の記録：**この地域の店舗でDuoが${N(st.month)}回入荷`);
-  if (st.lastRestock && last) items.push(`**最新の入荷：**${whenIn(i.cc, st.lastRestock.at)}、${appleStoreLabel(last, L)}`);
-  if (st.medianMs != null) items.push(`**在庫が出ている時間：**入荷したDuoは約${fmtDuration(st.medianMs, L)}で消えました（中央値）`);
-  items.push(`**いちばん早い方法：**行ける${n <= 3 ? `${N(n)}店舗` : `近い${N(Math.min(n, 5))}店舗`}に[${w}でiPhone Duoの入荷通知を設定](${alert})`);
-  items.push("**通知1件**＝1店舗 × 1構成。店舗で在庫が出てから数秒でプッシュ通知が届きます");
+  if (st.lastRestock && last) items.push(`**ここでの最新のDuo再入荷：**${whenIn(i.cc, st.lastRestock.at)}、${appleStoreLabel(last, L)}`);
+  if (have.length > 0 && st.month > 0) items.push(`**${sinceWhen()}に確認：**${w}の店舗でDuoの再入荷${N(st.month)}回`);
+  if (st.medianMs != null) items.push(`**在庫が並ぶ時間：**Duoは中央値で約${fmtDuration(st.medianMs, L)}で再び売り切れます`);
+  items.push(`**手に入れる最短ルート：**行ける${n <= 3 ? `${N(n)}店舗` : `近い${N(Math.min(n, 5))}店舗`}で[${w}のiPhone Duoを見張る](${alert})。通知を設定した店舗は5秒ごとにチェックします`);
+  items.push("**通知1件**＝1店舗 × 1つの構成。2回目のチェックで再入荷を確認してから約3秒でプッシュが届きます");
   const blocks: Block[] = [];
-  if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**状況は1分で変わります：**手に入れるいちばんの近道は、apple.comの再読み込みではなく入荷通知です。" });
+  if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**状況は1分で変わります：**次の再入荷は、apple.comを再読み込みするよりずっと早く通知が見つけます。" });
   blocks.push({ t: "ul", items });
   return blocks;
 }
@@ -212,19 +212,21 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
   return [
     {
       id: "iphone-duo",
-      h2: `${w}でいまiPhone Duoの在庫がある店舗は？`,
+      h2: `${w}でいまiPhone Duoの在庫があるアップルストアは？`,
       lead: duoLead(i),
       blocks: duoPoints(i, w, alert),
     },
     {
       id: "iphone-18-pro-max",
-      h2: `${w}のiPhone 18 Pro Max：店舗別の在庫は？`,
-      lead: `iPhone 18 Pro Maxの在庫があるのは**${N(n)}店舗中${N(i.stockNow["18-pro-max"])}店舗**。この地域の店舗×構成${N(n * pm)}通りのうち、**${pctJa(pairsPct(i, "18-pro-max"))}**が在庫ありです。`,
+      h2: `${w}にiPhone 18 Pro Maxの在庫はある？`,
+      lead: i.stockNow["18-pro-max"] > 0
+        ? `**あります。${N(n)}店舗中${N(i.stockNow["18-pro-max"])}店舗**。${w}の店舗×構成${N(n * pm)}通りのうち、いま**${pctJa(pairsPct(i, "18-pro-max"))}**に在庫があります。`
+        : `**この瞬間はありません**。${w}の${N(n)}店舗のどこにも、店頭受け取りできるiPhone 18 Pro Maxは並んでいません。`,
       blocks: [{ t: "ul", items: [
-        ...(scarce.length ? [`**いま最も品薄：**${listJa(scarce.map((x) => `${cfgJa(x.label)}（${N(n)}店舗中${N(x.stores)}店舗）`))}`] : []),
-        `**iPhone 18 Pro：**${N(n)}店舗中${N(i.stockNow["18-pro"])}店舗、組み合わせの${pctJa(pairsPct(i, "18-pro"))}が在庫あり`,
-        `**${sinceWhen()}の記録：**${i.max.month ? `18 Pro Maxが${N(i.max.month)}回入荷` : "18 Pro Maxの入荷はまだなし"}`,
-        ...(i.max.medianMs != null ? [`**在庫が出ている時間：**入荷したPro Maxは約${fmtDuration(i.max.medianMs, L)}で消えました（中央値）`] : []),
+        ...(scarce.length ? [`**いま最も見つけにくい構成：**${listJa(scarce.map((x) => `${cfgJa(x.label)}（${N(n)}店舗中${N(x.stores)}店舗）`))}`] : []),
+        `**iPhone 18 Pro：**${N(n)}店舗中${N(i.stockNow["18-pro"])}店舗、組み合わせの${pctJa(pairsPct(i, "18-pro"))}に在庫`,
+        `**${sinceWhen()}に確認：**${i.max.month ? `18 Pro Maxの再入荷${N(i.max.month)}回` : "18 Pro Maxの再入荷はまだなし"}`,
+        ...(i.max.medianMs != null ? [`**在庫が並ぶ時間：**Pro Maxは中央値で約${fmtDuration(i.max.medianMs, L)}で再び売り切れます`] : []),
       ] }],
     },
     priceSection(i.cc, w, i.cc === "ca" ? i.region : undefined),
@@ -236,18 +238,18 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
 function storesIndexTitle(cc: CountryCode): string {
   const n = N(storesOf(cc).length);
   const head = cc === "jp" ? "アップルストア店舗一覧" : `${country(cc)}のアップルストア一覧`;
-  return fitTitleW([`${head}（全${n}店舗）：iPhone Duo在庫をライブ確認`, `${head}（全${n}店舗）：iPhone在庫`, `${country(cc)}のアップルストア：iPhone在庫`], 70);
+  return fitTitleW([`${head}（全${n}店舗）：iPhone Duo受け取り在庫をライブで`, `${head}（全${n}店舗）：iPhone在庫`, `${country(cc)}のアップルストア：iPhone在庫をライブで`], 70);
 }
 
 function homeTitle(cc: CountryCode): string {
   const n = N(storesOf(cc).length);
   const head = cc === "jp" ? "アップルストアの在庫確認" : `${country(cc)}のアップルストア在庫確認`;
-  return fitTitleW([`${head}｜iPhone在庫を全${n}店舗で15秒ごと`, `${head}｜全${n}店舗のiPhone在庫`, `${head}（全${n}店舗）`, head]);
+  return fitTitleW([`${head}｜全${n}店舗のiPhone受け取り在庫をライブで`, `${head}｜全${n}店舗のiPhone在庫`, `${head}（全${n}店舗）`, head]);
 }
 
 function homeH1(cc: CountryCode): string {
   const n = storesOf(cc).length;
-  return n === 1 ? `${country(cc)}のアップルストアのiPhone在庫をチェック` : `${country(cc)}のアップルストア全${N(n)}店舗のiPhone在庫をチェック`;
+  return n === 1 ? `${country(cc)}のアップルストア：iPhone受け取り在庫をライブで` : `${country(cc)}のアップルストア全${N(n)}店舗：iPhone受け取り在庫をライブで`;
 }
 
 function allStoresPhrase(cc: CountryCode): string {
@@ -272,8 +274,8 @@ function modelPageTitles(cc: CountryCode, model: ModelKey): { title: string; h2:
   const n = storesOf(cc).length;
   const all = n === 1 ? "アップルストア" : `アップルストア全${N(n)}店舗`;
   return {
-    title: fitTitleW([`${m.name}の在庫：${all}をライブ確認｜価格・入荷`, `${m.name}の在庫：${all}をライブ確認`, `${m.name}の在庫（${country(cc)}）`], 70),
-    h2: [`近くで${m.name}の在庫があるアップルストアは？`, priceSection(cc, country(cc), undefined, model).h2],
+    title: fitTitleW([`${country(cc)}で${m.name}の在庫はある？${all}をライブで`, `${country(cc)}で${m.name}の在庫はある？ライブ`, `${m.name}の在庫（${country(cc)}）`], 70),
+    h2: [`いま${m.name}の在庫がある${country(cc)}のアップルストアは？`, priceSection(cc, country(cc), undefined, model).h2],
   };
 }
 
@@ -288,9 +290,9 @@ function modelIntro(cc: CountryCode, model: ModelKey, inStock: number): string {
   const m = modelByKey(model)!;
   const n = N(storesOf(cc).length);
   const now = inStock === 0
-    ? `いま${m.name}を店頭受け取りできる${country(cc)}のアップルストアは**${n}店舗中ゼロ**です`
-    : `いま${m.name}を店頭受け取りできるのは、${country(cc)}のアップルストア**${n}店舗中${N(inStock)}店舗**です`;
-  return `${now}（**15秒ごと**にチェック）。価格は${priceFrom(cc, model)}から。`;
+    ? `この瞬間、${m.name}を店頭受け取りできる${country(cc)}のアップルストアは**${n}店舗中ゼロ**です`
+    : `この瞬間、${country(cc)}のアップルストア**${n}店舗中${N(inStock)}店舗**で${m.name}を店頭受け取りできます`;
+  return `${now}（全店舗を**15秒ごと**にチェック）。価格は${priceFrom(cc, model)}から。`;
 }
 
 function modelDescription(cc: CountryCode, model: ModelKey, inStock: number): string {
@@ -300,8 +302,8 @@ function modelDescription(cc: CountryCode, model: ModelKey, inStock: number): st
   const r = priceRange(cc, model);
   const p = `${money(c, r.low)}${cc === "ca" ? "（税抜）" : includedRate(c) == null ? "" : "（税込）"}`;
   return fitTitleW([
-    `${m.name}の在庫は？いま${country(cc)}のアップルストア${n}店舗中${N(inStock)}店舗で店頭受け取りできます。店舗・構成別のライブ在庫、価格は${p}から、入荷時間も。`,
-    `${m.name}の在庫：${country(cc)}のアップルストア${n}店舗中${N(inStock)}店舗にあり。店舗・構成別のライブ在庫、入荷時間、入荷通知。`,
+    `この瞬間、${country(cc)}のアップルストア${n}店舗中${N(inStock)}店舗で${m.name}を店頭受け取りできます。店舗別・構成別に、価格は${p}から、再入荷の時間帯も。`,
+    `いま${country(cc)}のアップルストア${n}店舗中${N(inStock)}店舗に${m.name}。店舗・構成別のライブ受け取り在庫、再入荷の時間帯、通知。`,
   ], 155);
 }
 
@@ -315,14 +317,14 @@ function homeDescription(cc: CountryCode): string {
   const n = storesOf(cc).length;
   const cur = c.currency === "JPY" ? "円" : c.currency;
   return fitTitleW([
-    `${allStoresPhrase(cc)}のiPhone Duo・18 Pro・Pro Max店頭受け取り在庫を15秒ごとにライブ確認。${n === 1 ? "価格" : "入荷時間と価格"}（${cur}）も掲載、入荷したらプッシュ通知。`,
-    `${allStoresPhrase(cc)}のiPhone店頭受け取り在庫を15秒ごとにライブ確認。${n === 1 ? "価格" : "入荷時間と価格"}も掲載、入荷したらプッシュ通知。`,
+    `${allStoresPhrase(cc)}のiPhone Duo・18 Pro・18 Pro Max受け取り在庫をライブで。15秒ごとに読み取り。${n === 1 ? "価格" : "再入荷の時間帯と価格"}（${cur}）、店舗に再入荷した瞬間にプッシュ。`,
+    `${allStoresPhrase(cc)}のiPhone受け取り在庫を15秒ごとにライブで。${n === 1 ? "価格" : "再入荷の時間帯と価格"}も、再入荷した瞬間にプッシュ。`,
   ], 155);
 }
 
 function homeIntro(cc: CountryCode): string {
   const n = N(storesOf(cc).length);
-  return `いまiPhone Duoを店頭受け取りできるのは${country(cc)}のアップルストア**${n}店舗中{{duo.storesNow}}店舗**、iPhone 18 Proは**{{pro.storesNow}}店舗**、iPhone 18 Pro Maxは**{{pm.storesNow}}店舗**です。`;
+  return `${country(cc)}で確認された最新のiPhone Duo再入荷：**{{duo.lastRestock}}**。この瞬間、アップルストア**${n}店舗中{{duo.storesNow}}店舗**でDuoを店頭受け取りでき、iPhone 18 Pro Maxは**{{pm.storesNow}}店舗**、iPhone 18 Proは**{{pro.storesNow}}店舗**です。`;
 }
 
 function homeSections(i: HomeCopyInput): KeywordSection[] {
@@ -333,15 +335,15 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
   return [
     {
       id: "iphone-stock",
-      h2: `iPhoneの在庫確認：${country(cc)}のDuo・18 Pro・Pro Maxを店舗別に`,
-      lead: `RestockWireは、${allStoresPhrase(cc)}のapple.com店頭受け取り在庫を全構成について15秒ごとに読み取り、店舗別${n > 1 ? `・${c.regionNoun ? noun(c) : "都市"}別` : ""}・構成別に表示しています。`,
+      h2: `iPhoneの在庫確認：いま${country(cc)}で在庫があるiPhoneは？`,
+      lead: `答えは下の表にライブで出ています。${allStoresPhrase(cc)}について、apple.com自身の店頭受け取り在庫を全構成ぶん15秒ごとに読み取り${n > 1 ? `、店舗別・${c.regionNoun ? noun(c) : "都市"}別・構成別に分けて` : ""}表示しています。`,
       blocks: [
-        { t: "table", head: ["機種", "構成", "いま在庫のある店舗", "記録した入荷"], rows: modelRows(cc, i.storesNow, i.restocks), caption: `${country(cc)}でのチェック範囲（{{asOf}}時点）` },
+        { t: "table", head: ["機種", "構成", "いま在庫のある店舗", "確認済みの再入荷"], rows: modelRows(cc, i.storesNow, i.restocks), caption: `${country(cc)}の状況（{{asOf}}時点）` },
         { t: "ul", items: [
-          `**対象：**${N(n)}店舗（${spreadPhrase(cc)}） · 価格と型番はAppleの${country(cc)}版`,
-          "**全店舗を15秒ごと**、通知を設定した店舗は5秒ごとにチェック",
-          "**2回の確認で記録：**apple.comの一時的な誤表示が、偽の入荷や完売として出ることはありません",
-          `**確認した変化はすべて**[入荷履歴](${i.restocksPath})に記録し、${i.index?.indexable ? `[各店舗ページ](${i.index.path})` : "店舗ページ"}の入荷グラフに反映`,
+          "**確認は2回：**2回目のチェックが一致して初めて公開するので、apple.comの一時的な誤表示が再入荷や完売として出ることはありません",
+          "**初めて見た在庫は再入荷ではない：**初めて確認した構成は基準になるだけです",
+          `**出典は記録：**確認した変化はすべて[再入荷の記録](${i.restocksPath})に入り、${i.index?.indexable ? `[各店舗ページ](${i.index.path})` : "店舗ページ"}の再入荷グラフになります`,
+          `**対象：**${N(n)}店舗（${spreadPhrase(cc)}）、価格と型番はAppleの${country(cc)}版。通知を設定した店舗は5秒ごとにチェック`,
         ] },
         { t: "img", id: "phone-notification" },
       ],
@@ -349,17 +351,16 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
     priceSection(cc, country(cc)),
     {
       id: "alerts",
-      h2: "アップルストアの在庫確認を、入荷通知で自動化するには？",
-      lead: `在庫の確認は無料。有料なのは「確認しなくて済む」ことです。行けるアップルストアと欲しい構成を選んでおけば、${n === 1 ? "その店舗" : "どれかの店舗"}で店頭受け取りが可能になってから数秒で、スマートフォンにプッシュ通知が届きます。`,
+      h2: `${country(cc)}で再入荷通知はどう届く？`,
+      lead: `店舗とiPhoneを正確に選ぶだけ。${n === 1 ? "その店舗" : "どれかの店舗"}で店頭受け取りに並ぶと、再入荷を確認してから約3秒でスマートフォンにプッシュが届きます。`,
       blocks: [
         { t: "ol", items: [
-          "**入荷通知**をタップし、iPhone、容量、カラーを選ぶ。",
-          n === 1 ? `店舗にチェック：${appleStoreLabel(stores[0], L)}（${cityLabel(cc, stores[0].city, L)}）。` : "行ける店舗にチェック。近い順に、道のりのkmと所要時間つきで並びます。",
-          "iPhoneなら、RestockWireをホーム画面に追加して通知を許可（[設定方法](/phone-alerts)）。",
-          "通知が届いたらそこからapple.comを開き、その店舗の店頭受け取りで購入。",
+          n === 1 ? `**通知を設定**でiPhone、容量、カラーを選びます。店舗は${appleStoreLabel(stores[0], L)}（${cityLabel(cc, stores[0].city, L)}）です。` : "**通知を設定**でiPhone、容量、カラーを選び、行ける店舗にチェック。近い順に、道のりのkmと所要時間つきで並びます。",
+          "iPhoneでは、RestockWireをホーム画面に追加して通知を許可します。iOSはインストールしたアプリにしかWebプッシュを届けません（[追加の方法](/phone-alerts)）。",
+          "プッシュが届いたらそこからapple.comを開き、その店舗の店頭受け取りで購入します。",
         ] },
-        { t: "table", head: ["プラン", "料金（米ドル）", "通知"], rows: [["Plus", "$5 / 月", "10件"], ["Pro", "$10 / 月", "20件"], ["Max", "$20 / 月", "50件"]], caption: "通知1件＝1店舗 × 1構成 · 閲覧は無料（[料金](/pricing)）" },
-        { t: "note", text: "**私たちの結論：**Duoなら、行ける店舗すべてに通知を。18 Proと18 Pro Maxは、まずライブの数字を見てから決めれば十分です。" },
+        { t: "table", head: ["プラン", "月額（米ドル）", "通知"], rows: [["Plus", "$5", "10件"], ["Pro", "$10", "20件"], ["Max", "$20", "50件"]], caption: "通知1件＝1店舗 × 1つの構成 · 閲覧は無料、速さはどのプランも同じ（[料金](/pricing)）" },
+        { t: "note", text: "**私たちの見立て：**Duoは行ける店舗すべてに通知する価値があります。18 Proと18 Pro Maxは、まずライブの数字を確認してから。" },
         { t: "img", id: "apple-store-pickup-counter" },
       ],
     },
@@ -370,31 +371,31 @@ function homeFaq(cc: CountryCode, rt: RestockTimesBrief): Faq[] {
   const n = N(storesOf(cc).length);
   const p = cc === "us" ? "" : `/${cc}`;
   const when = rt.n === 0
-    ? `11月2日の計測開始以来、確認された入荷はまだありません。[${country(cc)}でiPhone Duoが再入荷するのはいつ？](${rt.path})で、入荷があるたびに現地時間の時間帯・曜日ごとに集計します。`
+    ? `11月2日の計測開始以来、確認された再入荷はまだありません。[${country(cc)}でiPhone Duoが再入荷するのはいつ？](${rt.path})で、再入荷があるたびに現地時間の時間帯・曜日ごとに数えます。`
     : rt.peakHour != null
-      ? `多くは**現地時間の${hour(L, rt.peakHour, true)}ごろ**です。11月2日以降、${N(rt.storesTotal)}店舗中${N(rt.stores)}店舗で確認された入荷は${N(rt.n)}回。[時間帯別・日別の詳細](${rt.path})。`
-      : `11月2日以降、${N(rt.storesTotal)}店舗中${N(rt.stores)}店舗で${N(rt.n)}回の入荷を確認しましたが、いつもの時間帯を言えるほどの日数はまだありません。[時間帯別・日別の詳細](${rt.path})。`;
+      ? `多くは**現地時間の${hour(L, rt.peakHour, true)}ごろ**。11月2日以降、${N(rt.storesTotal)}店舗中${N(rt.stores)}店舗で確認済みの再入荷が${N(rt.n)}回です。[時間帯別・日別の詳細](${rt.path})。`
+      : `11月2日以降、${N(rt.storesTotal)}店舗中${N(rt.stores)}店舗で確認済みの再入荷が${N(rt.n)}回。ただし日数が少なく、いつもの時間帯はまだ言えません。[時間帯別・日別の詳細](${rt.path})。`;
   return [
-    { q: `いまiPhone Duoの在庫がある${country(cc)}のアップルストアは？`, a: `前回のチェック（{{asOf}}）では${n}店舗中{{duo.storesNow}}店舗。[${country(cc)}のiPhone Duo在庫](${p}/in-stock/iphone-duo)で店舗と構成ごとに確認でき、15秒ごとに更新されます。` },
+    { q: `この瞬間、iPhone Duoの在庫がある${country(cc)}のアップルストアは？`, a: `前回の読み取り（{{asOf}}）で${n}店舗中{{duo.storesNow}}店舗。[${country(cc)}のiPhone Duo在庫](${p}/in-stock/iphone-duo)で店舗と構成を一つずつ確認でき、15秒ごとに更新されます。` },
     { q: `${country(cc)}でiPhone Duoが再入荷するのはいつ？`, a: when },
-    { q: "通知はどれくらい速い？", a: `通知を設定した店舗は5秒ごと、${country(cc)}の全アップルストアは15秒ごとにチェックします。最初の「在庫あり」は1秒以内にもう一度確かめるので、Apple側の不具合が通知になることはありません。プッシュ通知はその約3秒後にスマートフォンに届きます。` },
-    { q: "料金は？", a: "ライブ在庫、地図、入荷履歴は無料。通知はPlusが月額$5で10件、Proが$10で20件、Maxが$20で50件（米ドルで請求）。いつでも解約できます（[料金](/pricing)）。" },
+    { q: `RestockWireは${country(cc)}の再入荷をどれくらい速く捉える？`, a: `通知を設定した店舗は5秒ごと、${country(cc)}の全アップルストアは15秒ごとに読み取ります。最初の「在庫あり」は1秒以内に読み直し、確認済みの再入荷は約3秒後にスマートフォンに届きます。` },
+    { q: "在庫を見るのにプランは必要？", a: "いいえ。ライブ在庫、地図、再入荷の記録は無料です。プランで通知が使え、米ドルで請求：Plusは月$5で10件、Proは$10で20件、Maxは$20で50件。いつでも解約できます（[料金](/pricing)）。" },
     taxFaq(cc, country(cc)),
-    { q: "代わりに予約してもらえますか？", a: `いいえ。私たちは店舗に在庫が出た瞬間をお知らせするだけです。購入はapple.comで店頭受け取りを選んで行い、商品はAppleが確保します（[Appleの配送と受取](${pickupHelp(cc).url})）。` },
+    { q: "通知でiPhoneを確保してもらえる？", a: `いいえ。確保できるのはapple.comの店頭受け取り注文だけです。通知はあなたを誰よりも先に購入画面へ送り、支払いが済めばAppleが商品を確保します（[Appleの受け取りヘルプ](${pickupHelp(cc).url})）。` },
   ];
 }
 
 const homeLabels: Dict["place"]["home"] = {
   appName: (cc: CountryCode) => `RestockWire iPhone在庫確認（${country(cc)}）`,
-  offer: "ライブ在庫・地図・入荷履歴は無料、通知は月額$5から",
+  offer: "ライブ在庫・地図・再入荷の記録は無料、通知プランは月$5から",
   itemList: (cc: CountryCode) => `${country(cc)}のアップルストア`,
-  restockTimesChip: "入荷する時間",
+  restockTimesChip: "再入荷の時間帯",
   storesByRegion: (cc: CountryCode) => `${noun(COUNTRIES[cc])}別の店舗`,
-  browse: (cc: CountryCode) => `${country(cc)}の在庫を見る`,
-  selloutH2: (cc: CountryCode) => `${country(cc)}では、iPhoneの入荷はどれくらいで完売する？`,
+  browse: (cc: CountryCode) => `${country(cc)}の場所別の在庫`,
+  selloutH2: (cc: CountryCode) => `${country(cc)}のiPhone再入荷はどれくらい持つ？`,
   selloutLabel: (cc: CountryCode) => `${country(cc)}のアップルストア`,
   last24Label: (cc: CountryCode) => country(cc),
-  newsroom: "Apple Newsroom：iPhone Duoが世界のApple Storeに登場（2026年10月23日、英語）",
+  newsroom: "Apple Newsroom：iPhone Duoが世界のApple Storeに登場（2026年10月23日・英語）",
 };
 
 /** 店舗ページの <title> と H1：「Apple 銀座：iPhone在庫・店頭受け取り・営業時間」。`region` はその都市・地域で唯一の店舗のとき。 */

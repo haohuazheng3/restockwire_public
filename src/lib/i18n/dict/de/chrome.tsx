@@ -1,17 +1,16 @@
-/** German strings: chrome — footer, 404 page. (Header labels are client strings: cdict chrome.nav.) */
+/** German strings: chrome — footer, 404 page, the language-version note. (Header labels are client strings: cdict chrome.nav.) */
 import type { ReactNode } from "react";
 import type { Dict } from "../en";
-import { cap } from "./util";
 
 export const chrome: Dict["chrome"] = {
   footer: {
-    blurb: "iPhone-Alarme zur Abholung für alle 269 Apple Stores in den USA: jeder Store alle 15 Sekunden geprüft, die Stores Ihrer Alarme alle 5.",
-    blurbIn: (allStores: string) => `${cap(allStores)}: iPhone-Alarme zur Abholung, jeder Store alle 15 Sekunden geprüft, die Stores Ihrer Alarme alle 5.`,
-    trademark: "Nicht mit Apple Inc. verbunden oder von Apple unterstützt. Apple, iPhone und Apple Store sind Marken der Apple Inc.",
+    blurb: "Live-Bestand zur Abholung und Restock-Alarme für alle 269 Apple Stores in den USA. Das ganze Land läuft im 15-Sekunden-Takt, die Stores Ihrer Alarme im 5-Sekunden-Takt.",
+    blurbIn: (allStores: string) => `Live-Bestand zur Abholung und Restock-Alarme für ${allStores}. Jeder Store läuft im 15-Sekunden-Takt, die Stores Ihrer Alarme im 5-Sekunden-Takt.`,
+    trademark: "RestockWire ist ein unabhängiger Dienst, weder mit Apple Inc. verbunden noch von Apple unterstützt. Apple, iPhone und Apple Store sind Marken der Apple Inc.",
     product: "Produkt",
-    duoStock: "iPhone Duo Verfügbarkeit",
-    proStock: "iPhone 18 Pro Verfügbarkeit",
-    proMaxStock: "iPhone 18 Pro Max Verfügbarkeit",
+    duoStock: "iPhone Duo Bestand",
+    proStock: "iPhone 18 Pro Bestand",
+    proMaxStock: "iPhone 18 Pro Max Bestand",
     restockLog: "Restock-Protokoll",
     liveMap: "Live-Karte",
     storesByState: "Stores nach Bundesstaat",
@@ -19,26 +18,26 @@ export const chrome: Dict["chrome"] = {
     company: "Unternehmen",
     howItWorks: "So funktioniert’s",
     getApp: "App holen",
-    about: "Über uns",
+    about: "Über RestockWire",
     contact: "Kontakt",
-    allStates: "Alle Bundesstaaten & Städte →",
+    allStates: "Alle Bundesstaaten und Städte →",
     storesIn: "Apple Stores",
     allStores: "Alle Stores →",
     legal: "Rechtliches",
     privacy: "Datenschutz",
     terms: "Nutzungsbedingungen",
     refunds: "Rückerstattung",
-    englishOnly: "Auf Englisch",
+    englishOnly: "nur auf Englisch",
     questions: "Fragen zum iPhone Duo",
-    restockTimes: "Wann ist das iPhone Duo wieder verfügbar?",
+    restockTimes: "Wann füllt Apple das iPhone Duo auf?",
     countries: "Länder",
     status: "Status",
   },
   notFound: {
-    title: "Hier ist nichts",
-    body: (stores: ReactNode, map: ReactNode) => <>Diese Seite gibt es nicht. Weiter zur {stores} oder zur {map}?</>,
-    stores: "Store-Übersicht",
-    map: "Live-Karte",
+    title: "Unter dieser Adresse gibt es keine Seite",
+    body: (stores: ReactNode, map: ReactNode) => <>Hier ist nichts veröffentlicht. Die {stores} oder die {map} bringen Sie zurück.</>,
+    stores: "Store-Liste nach Bundesstaat",
+    map: "Live-Bestandskarte",
     home: "Zur Startseite",
   },
 };

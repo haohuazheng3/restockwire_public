@@ -405,7 +405,7 @@ export function homeSections(i: HomeCopyInput): KeywordSection[] {
       lead: `You pick the store${n === 1 ? "" : "s"} and the exact phone; when ${n === 1 ? "the store" : "one of them"} lists it for in-store pickup, a push lands on your phone about 3 seconds after the restock is confirmed.`,
       blocks: [
         { t: "ol", items: [
-          n === 1 ? `Choose the iPhone, storage and color under **Alert me**; the store is ${stores[0].name} in ${stores[0].city}.` : `Choose the iPhone, storage and color under **Alert me**, then tick the stores you can reach; the nearest come first, with ${unit} by road and drive time.`,
+          n === 1 ? `Choose the iPhone, storage and color under **Get alerts**; the store is ${stores[0].name} in ${stores[0].city}.` : `Choose the iPhone, storage and color under **Get alerts**, then tick the stores you can reach; the nearest come first, with ${unit} by road and drive time.`,
           "On an iPhone, add RestockWire to your Home Screen and allow notifications; iOS delivers web push only to an installed app ([how to install](/phone-alerts)).",
           "When the push lands, open apple.com from it and check out with in-store pickup at that store.",
         ] },

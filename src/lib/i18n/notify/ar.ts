@@ -1,6 +1,6 @@
 /**
  * نصوص الإشعارات بالعربية (الإشعار الفوري، بريد التنبيه، بريد «توقفت الإشعارات»، أسماء الأجهزة، سطر صفحة الدفع في Stripe).
- * يرسلها الـpoller أيضًا، لذا لا استيراد إلا للأنواع. الأرقام غربية.
+ * يرسلها الـpoller أيضًا، لذا لا استيراد إلا للأنواع. الأرقام غربية. (Stripe لا يدعم العربية، فتبقى صفحة الدفع بالإنجليزية.)
  */
 import type { NotifyText } from "./en";
 
@@ -10,13 +10,13 @@ const ar = (n: number, one: string, two: string, few: string, many: string): str
   return n === 1 ? one : n === 2 ? two : r >= 3 && r <= 10 ? `${n} ${few}` : r >= 11 ? `${n} ${many}` : `${n} ${one}`;
 };
 const secs = (n: number) => ar(n, "ثانية", "ثانيتين", "ثوانٍ", "ثانية");
-const alerts = (n: number) => ar(n, "تنبيه", "تنبيهان", "تنبيهات", "تنبيهًا");
+const alerts = (n: number) => ar(n, "تنبيه واحد", "تنبيهان", "تنبيهات", "تنبيهًا");
 
 export const notifyAr: NotifyText = {
   pushTitle: (cfg: string) => cfg,
-  pushBody: (where: string, quote: string | null) => `${where}${quote ? ` — ${quote}` : ""}. اضغط للحجز على apple.com.`,
-  testTitle: "إشعارات RestockWire مفعّلة",
-  testBody: (time: string, device: string) => `أُرسل الاختبار ${time} إلى ${device}. تنبيهات التوفر تصلك بالطريقة نفسها، خلال ثوانٍ.`,
+  pushBody: (where: string, quote: string | null) => `${where}${quote ? ` — ${quote}` : ""}. افتح apple.com لتحجزه.`,
+  testTitle: "اختبار RestockWire: الإشعارات تعمل",
+  testBody: (time: string, device: string) => `أُرسل ${time} إلى ${device}. تنبيه عودة التوفر الحقيقي يصل بهذه الطريقة تمامًا، بعد ثوانٍ من تأكيده.`,
   device: {
     iphoneApp: "iPhone (تطبيق الشاشة الرئيسية)",
     iphoneSafari: "iPhone (Safari)",
@@ -26,40 +26,40 @@ export const notifyAr: NotifyText = {
     other: "هذا الجهاز",
   },
   email: {
-    subject: (cfg: string, store: string, more: number) => `متوفر: ${cfg} في ${store}${more > 0 ? ` و${more} أخرى` : ""}`,
-    intro: "خبر سار — متوفر للاستلام من المتجر الآن:",
+    subject: (cfg: string, store: string, more: number) => `${cfg} · ${store}${more > 0 ? ` +${more} أخرى` : ""}`,
+    intro: "معروض للاستلام من المتجر في هذه اللحظة:",
     reserve: "احجز",
     store: "المتجر",
-    tip: "مخزون الاستلام ينفد بسرعة: افتح تطبيق Apple Store أو apple.com، واختر «Pick up» (الاستلام) ثم المتجر.",
-    manage: (url: string) => `إدارة هذا التنبيه أو إيقافه مؤقتًا: ${url}`,
-    htmlTitle: "متوفر للاستلام الآن",
+    tip: "عروض الاستلام نادرًا ما تدوم طويلًا. في تطبيق Apple Store أو على apple.com، اختر «Pick up» (الاستلام) ثم هذا المتجر.",
+    manage: (url: string) => `غيّر هذا التنبيه أو أوقفه مؤقتًا: ${url}`,
+    htmlTitle: "معروض للاستلام الآن",
     htmlReserve: "احجز على apple.com",
-    htmlStorePage: "صفحة المتجر ←",
-    htmlTip: "مخزون الاستلام ينفد بسرعة — احجز من تطبيق Apple Store أو apple.com، واختر <b>Pick up</b> (الاستلام) ثم المتجر.",
-    htmlManage: "إدارة هذا التنبيه أو إيقافه مؤقتًا",
-    cancel: (url: string) => `حصلت على iPhone؟ يمكنك الإلغاء في أي وقت: ${url}`,
-    htmlGotIt: "حصلت على iPhone؟",
+    htmlStorePage: "افتح صفحة المتجر ←",
+    htmlTip: "عروض الاستلام نادرًا ما تدوم طويلًا. في تطبيق Apple Store أو على apple.com، اختر <b>Pick up</b> (الاستلام) ثم هذا المتجر.",
+    htmlManage: "غيّر هذا التنبيه أو أوقفه مؤقتًا",
+    cancel: (url: string) => `حصلت على iPhone الآن؟ ألغِ في أي وقت: ${url}`,
+    htmlGotIt: "حصلت على iPhone الآن؟",
     htmlCancel: "ألغِ في أي وقت",
-    nudge: (url: string) => `وصلتك هذه الرسالة بالبريد لأنه لا يوجد هاتف مفعّل عليه الإشعارات في حسابك. إشعار الهاتف يصل بعد نحو 3 ثوانٍ من توفر المخزون — افتح RestockWire من الشاشة الرئيسية واضغط «تفعيل الإشعارات»: ${url}`,
-    htmlNudge: (url: string) => `وصلتك هذه الرسالة بالبريد لأنه لا يوجد هاتف مفعّل عليه الإشعارات في حسابك. <b>إشعار الهاتف يصل بعد نحو 3 ثوانٍ</b> من توفر المخزون — افتح RestockWire من الشاشة الرئيسية واضغط <b>تفعيل الإشعارات</b>. <a href="${url}" style="color:#0a7f3f">طريقة الإعداد ←</a>`,
-  },
-  checkoutSubmit: (plan: string, limit: number, fastSec: number, checkSec: number, alertSec: number) => `${plan}: ${alerts(limit)}. نفحص متاجرك كل ${secs(fastSec)} (وكل المتاجر كل ${secs(checkSec)})، ويصلك إشعار بعد نحو ${secs(alertSec)} من تأكيد التوفر. اشتراك شهري، ألغِ في أي وقت.`,
-  stopped: {
-    deviceWord: { ios: "iPhone", android: "هاتف Android", desktop: "الكمبيوتر", other: "الجهاز" },
-    subject: (device: string) => `توقفت الإشعارات على ${device} — افتح RestockWire من الشاشة الرئيسية`,
-    gone: (device: string) => `توقف ${device} عن استقبال إشعارات RestockWire (أبلغت خدمة الإشعارات أن الاشتراك لم يعد موجودًا).`,
-    byEmail: "تصلك تنبيهات التوفر الآن عبر البريد الإلكتروني حتى تعيد تفعيل الإشعارات.",
-    reopenIos: "افتح RestockWire من الشاشة الرئيسية (لا من Safari)، واضغط «تفعيل الإشعارات» في صفحة «تنبيهاتي».",
-    reopenOther: "افتح RestockWire، وانتقل إلى «تنبيهاتي» واضغط «تفعيل الإشعارات».",
-    causes: "أسباب شائعة: حُذف التطبيق من الشاشة الرئيسية، أو أُوقفت الإشعارات من الإعدادات، أو استُعيد الهاتف.",
+    nudge: (url: string) => `البريد هو الطريق الاحتياطي: لا يوجد في حسابك هاتف مفعّل عليه الإشعارات. الإشعار يصل بعد نحو 3 ثوانٍ من تأكيد عودة التوفر. للتحويل، افتح RestockWire من الشاشة الرئيسية واضغط «تفعيل الإشعارات»: ${url}`,
+    htmlNudge: (url: string) => `البريد هو الطريق الاحتياطي: لا يوجد في حسابك هاتف مفعّل عليه الإشعارات. <b>الإشعار يصل بعد نحو 3 ثوانٍ</b> من تأكيد عودة التوفر. افتح RestockWire من الشاشة الرئيسية واضغط <b>تفعيل الإشعارات</b>. <a href="${url}" style="color:#0a7f3f">خطوات الإعداد ←</a>`,
   },
   nudge: {
-    subject: "استلم تنبيهات توفر iPhone Duo على هاتفك بعد نحو 3 ثوانٍ من حدوثها",
-    intro: "تصلك تنبيهات RestockWire بالبريد لأنه لا يوجد هاتف مفعّل عليه الإشعارات في حسابك. البريد هو المسار البطيء: دفعة iPhone Duo النموذجية تنفد خلال دقيقة تقريبًا، بينما يصل إشعار الهاتف بعد نحو 3 ثوانٍ من تأكيدنا للتوفر.",
-    howTitle: "فعّلها في أقل من دقيقة:",
-    stepsIos: ["على iPhone افتح restockwire.com في Safari، اضغط «مشاركة» ثم «إضافة إلى الشاشة الرئيسية».", "افتح RestockWire من الشاشة الرئيسية (وليس من Safari) وسجّل الدخول.", "في صفحة الحساب اضغط «تفعيل الإشعارات» ثم «السماح»."],
-    stepsOther: "على Android أو الحاسوب: افتح restockwire.com/account واضغط «تفعيل الإشعارات».",
-    after: "إلى أن يُفعَّل جهاز، تستمر تنبيهاتك بالبريد؛ وبعدها تصل كإشعارات ويتوقف البريد.",
-    cta: (url: string) => `دليل الإعداد بالصور: ${url}`,
+    subject: "يمكن أن تصل تنبيهات RestockWire إلى هاتفك خلال 3 ثوانٍ تقريبًا",
+    intro: "نحو 3 ثوانٍ: هذا هو الوقت الذي يحتاجه الإشعار ليصل إلى الهاتف بعد أن يؤكد RestockWire عودة التوفر. عودة توفر iPhone Duo المعتادة تنفد خلال دقيقة تقريبًا، والبريد أبطأ. تصلك تنبيهاتك الآن بالبريد لأنه لا يوجد في حسابك هاتف مفعّل عليه الإشعارات.",
+    howTitle: "التحويل يستغرق أقل من دقيقة:",
+    stepsIos: ["على iPhone: افتح restockwire.com في Safari، واضغط «مشاركة» ثم «إضافة إلى الشاشة الرئيسية».", "شغّل RestockWire من الشاشة الرئيسية، لا من Safari، وسجّل الدخول.", "في صفحة الحساب، اضغط «تفعيل الإشعارات» ثم «سماح»."],
+    stepsOther: "على Android أو الكمبيوتر: افتح restockwire.com/account واضغط «تفعيل الإشعارات».",
+    after: "يستمر البريد إلى أن يُفعَّل جهاز. بعدها تصل التنبيهات كإشعارات ويتوقف البريد.",
+    cta: (url: string) => `خطوات الإعداد بالصور: ${url}`,
+  },
+  checkoutSubmit: (plan: string, limit: number, fastSec: number, checkSec: number, alertSec: number) => `${plan}: ${alerts(limit)}. تُفحص متاجرك كل ${secs(fastSec)} وكل متجر آخر كل ${secs(checkSec)}؛ وتصل عودة التوفر المؤكدة إلى هاتفك خلال ${secs(alertSec)} تقريبًا. فوترة شهرية، ألغِ في أي وقت.`,
+  stopped: {
+    deviceWord: { ios: "iPhone", android: "هاتف Android", desktop: "الكمبيوتر", other: "الجهاز" },
+    subject: (device: string) => `لم يعد ${device} يستقبل إشعارات RestockWire`,
+    gone: (device: string) => `تفيد خدمة الإشعارات بأن ${device} ألغى اشتراكه في RestockWire، لذا لم تعد الإشعارات تصل إليه.`,
+    byEmail: "إلى أن تعود الإشعارات، تصلك تنبيهات عودة التوفر بالبريد الإلكتروني.",
+    reopenIos: "لإصلاح ذلك، شغّل RestockWire من الشاشة الرئيسية، لا من Safari، واضغط «تفعيل الإشعارات» في صفحة الحساب.",
+    reopenOther: "لإصلاح ذلك، افتح RestockWire، وانتقل إلى الحساب واضغط «تفعيل الإشعارات».",
+    causes: "يحدث هذا عادةً حين يُحذف التطبيق من الشاشة الرئيسية، أو تُوقف الإشعارات من الإعدادات، أو يُستعاد الهاتف من نسخة احتياطية.",
   },
 };
