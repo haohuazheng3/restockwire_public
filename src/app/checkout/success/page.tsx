@@ -27,12 +27,15 @@ export default async function Success({ searchParams }: PageProps<"/checkout/suc
   const sessionId = typeof sp.session_id === "string" ? sp.session_id : null;
   let plan: PaidPlanKey | null = isPaidPlan(sp.plan) ? sp.plan : null;
   let synced = false;
+  // What was actually paid (a 100%-off code is $0): FlowGlance revenue must match Stripe, not the list price.
+  let paidUsd: number | null = null;
   if (u && sessionId) {
     try {
       const s = await stripe().checkout.sessions.retrieve(sessionId, { expand: ["subscription"] });
       if (s.metadata?.userId === u.id && s.subscription && typeof s.subscription !== "string") {
         await syncSubscription(s.subscription); // webhook may still be in flight — make the page truthful now
         if (isPaidPlan(s.metadata?.plan)) plan = s.metadata.plan;
+        if (typeof s.amount_total === "number") paidUsd = s.amount_total / 100;
         synced = true;
       }
     } catch { /* webhook will reconcile */ }
@@ -43,7 +46,7 @@ export default async function Success({ searchParams }: PageProps<"/checkout/suc
   return (
     <div className="mx-auto max-w-2xl px-4 pt-16">
       {/* FlowGlance's purchase shape: amount in dollars; the Checkout session id makes a reload count once. */}
-      {sessionId && <TrackOnce event="purchase" props={{ amount: def?.priceUsd ?? 5, currency: "usd", item: plan ?? "plus", id: sessionId }} />}
+      {sessionId && <TrackOnce event="purchase" props={{ amount: paidUsd ?? def?.priceUsd ?? 5, currency: "usd", item: plan ?? "plus", id: sessionId }} />}
       <div className="pane p-8 text-center">
         <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-ok text-2xl text-[var(--ok-ink)]">✓</div>
         <h1 className="display text-3xl">{synced ? d.isOn(def?.name ?? d.yourPlan) : d.received}</h1>
