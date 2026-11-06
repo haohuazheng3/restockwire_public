@@ -126,10 +126,10 @@ async function mirrorStatus(): Promise<void> {
       on conflict (store_number, part_number) do update set
         status = excluded.status, quote = excluded.quote, since = excluded.since, last_checked_at = excluded.last_checked_at, last_changed_at = excluded.last_changed_at,
         last_available_at = excluded.last_available_at, pending_status = excluded.pending_status, pending_since = excluded.pending_since, pending_seen = excluded.pending_seen
-      where store_sku_status.last_checked_at is distinct from excluded.last_checked_at
-         or store_sku_status.status is distinct from excluded.status
-         or store_sku_status.last_changed_at is distinct from excluded.last_changed_at
-         or store_sku_status.pending_status is distinct from excluded.pending_status`, [c.map((r) => r.store_number), c.map((r) => r.part_number), c.map((r) => r.status), c.map((r) => r.quote), c.map((r) => r.since), c.map((r) => r.last_checked_at), c.map((r) => r.last_changed_at), c.map((r) => r.last_available_at), c.map((r) => r.pending_status), c.map((r) => r.pending_since), c.map((r) => r.pending_seen)]);
+      -- Only a newer check replaces a row: this site's own fast lane (poller/fast.ts) may hold a fresher one.
+      where store_sku_status.last_checked_at is null
+         or excluded.last_checked_at > store_sku_status.last_checked_at
+         or (excluded.last_checked_at = store_sku_status.last_checked_at and excluded.status is distinct from store_sku_status.status)`, [c.map((r) => r.store_number), c.map((r) => r.part_number), c.map((r) => r.status), c.map((r) => r.quote), c.map((r) => r.since), c.map((r) => r.last_checked_at), c.map((r) => r.last_changed_at), c.map((r) => r.last_available_at), c.map((r) => r.pending_status), c.map((r) => r.pending_since), c.map((r) => r.pending_seen)]);
   }
   // One second of overlap: rows stamped in the same instant as the newest one are read again (the upsert is idempotent).
   statusCursor = new Date(newest - 1_000);
@@ -162,8 +162,7 @@ async function mirrorEvents(): Promise<void> {
   stats.events += fresh.length;
   stats.eventTicks++;
   if (fresh.length) stats.lastEventAt = fresh[fresh.length - 1].at.toISOString();
-  // The id sequence follows the mirrored ids so a local insert (none expected) could never collide.
-  await local().query(`select setval('availability_events_id_seq', greatest((select last_value from availability_events_id_seq), $1::bigint))`, [eventCursor]);
+  // Local events (this site's fast lane) take ids from 5,000,000,000 up (migration 0015): no collision with mirrored ids.
 
   const now = new Date();
   const alertable = fresh.filter((r) => r.kind === "restock" && !r.first_seen && now.getTime() - r.at.getTime() <= NOTIFY_MAX_AGE_MS);
@@ -267,7 +266,7 @@ async function main(): Promise<void> {
   if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL missing");
   const d = db();
   // Start after what is already here: nothing before this moment is alerted, whatever the notifications table says.
-  const maxId = (await d.execute(sql`select coalesce(max(id), 0)::bigint as id from availability_events`)).rows[0] as { id: string | number };
+  const maxId = (await d.execute(sql`select coalesce(max(id), 0)::bigint as id from availability_events where id < 5000000000`)).rows[0] as { id: string | number };
   eventCursor = Number(maxId.id);
   const prev = await readState<{ cursors?: { eventId?: number } }>("relay:alive").catch(() => null);
   // A restart keeps alerting from where the previous process stopped, if that is more recent than the table's max.
