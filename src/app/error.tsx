@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLang, useLocale, useT } from "@/components/i18n/LangProvider";
 import { fill, plural } from "@/lib/i18n/format";
+import { reportClientError } from "@/components/site/ErrorReporter";
 
 const BACKOFF_S = [4, 8, 15, 30];
 
@@ -20,6 +21,8 @@ export default function RouteError({ error, retry }: { error: Error & { digest?:
   const [left, setLeft] = useState(BACKOFF_S[0]);
   const retryRef = useRef(retry);
   useEffect(() => { retryRef.current = retry; }, [retry]);
+  // Into the error inbox once per error (the digest ties it to the server log line).
+  useEffect(() => { reportClientError(Object.assign(new Error(`${error.message}${error.digest ? ` (digest ${error.digest})` : ""}`), { name: error.name, stack: error.stack }), "boundary"); }, [error]);
 
   useEffect(() => {
     const wait = BACKOFF_S[Math.min(tries, BACKOFF_S.length - 1)];

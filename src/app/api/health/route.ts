@@ -62,6 +62,23 @@ export async function GET(req: Request) {
       checks.database = { ok: false, detail: e instanceof Error ? e.message : String(e) };
     }
   }
+  // Stripe key mode (never the key itself): an org key or account key, live or test.
+  const sk = process.env.STRIPE_SECRET_KEY ?? "";
+  const stripeMode = /_live_/.test(sk) ? "live" : /_test_/.test(sk) ? "test" : sk ? "unknown" : "missing";
+  checks.stripe = { ok: stripeMode === "live" || process.env.VERCEL_ENV !== "production", detail: stripeMode };
+  if (!shallow && hasDatabase()) {
+    try {
+      // Error inbox: unresolved groups seen in the last 24 h fail the check until someone marks them resolved.
+      const r = (await db().execute(sql`select count(*)::int as n, coalesce(sum(count),0)::int as hits from error_groups where resolved_at is null and last_seen_at > now() - interval '24 hours'`)).rows[0] as { n: number; hits: number };
+      checks.errors = { ok: r.n === 0, detail: `${r.n} unresolved group(s), ${r.hits} hit(s) in 24 h` };
+      // This site's stock arrives through the relay (poller/relay.ts) from the poller cluster.
+      const relay = await readState<{ at?: string; lagSec?: number | null; source?: string }>("relay:alive");
+      const relayAge = relay ? Date.now() - new Date(relay.value.at ?? relay.updatedAt).getTime() : Infinity;
+      checks.relay = { ok: relayAge < 60_000 && (relay?.value.lagSec ?? 0) < 120, detail: relay ? `${Math.round(relayAge / 1000)} s ago from ${relay.value.source ?? "?"}, data lag ${relay.value.lagSec ?? "?"} s` : "no relay heartbeat" };
+    } catch (e) {
+      checks.errors = { ok: false, detail: e instanceof Error ? e.message : String(e) };
+    }
+  }
   const ok = Object.values(checks).every((c) => c.ok);
   return NextResponse.json(
     {

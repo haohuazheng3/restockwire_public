@@ -11,6 +11,7 @@ import { Consent } from "@/components/site/Consent";
 import { PwaBoot } from "@/components/pwa/PwaBoot";
 import { NavSkeleton } from "@/components/ui/NavSkeleton";
 import { FreshOnReturn } from "@/components/site/FreshOnReturn";
+import { ErrorReporter } from "@/components/site/ErrorReporter";
 import { siteLd } from "@/lib/seo/siteLd";
 import { headers } from "next/headers";
 import { LangProvider } from "@/components/i18n/LangProvider";
@@ -82,6 +83,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <AlertBar />
           <AlertLinkHost />
           <FreshOnReturn />
+          <ErrorReporter />
         </ClerkProvider>
         <Consent />
         <PwaBoot />
