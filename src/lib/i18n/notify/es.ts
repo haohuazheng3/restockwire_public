@@ -10,12 +10,12 @@ export const notifyEs: NotifyText = {
   testTitle: "Prueba de RestockWire: las notificaciones funcionan",
   testBody: (time: string, device: string) => `Enviada a las ${time} a tu ${device}. Una alerta de reposición real llega exactamente así, segundos después de confirmarse.`,
   device: {
-    iphoneApp: "iPhone (app de la pantalla de inicio)",
+    iphoneApp: "iPhone (app en pantalla de inicio)",
     iphoneSafari: "iPhone (Safari)",
     androidApp: "Android (app instalada)",
     android: (browser: string) => `Android${browser ? ` (${browser})` : ""}`,
     computer: (browser: string) => `ordenador${browser ? ` (${browser})` : ""}`,
-    // Always follows "tu" ("a tu dispositivo").
+    // Used after the possessive tu, so no article here.
     other: "dispositivo",
   },
   email: {
@@ -30,11 +30,11 @@ export const notifyEs: NotifyText = {
     htmlStorePage: "Abrir la página de la tienda →",
     htmlTip: "El stock para recogida rara vez dura mucho. En la app Apple Store o en apple.com, elige <b>Recogida</b> y después esta tienda.",
     htmlManage: "Cambia o pausa esta alerta",
-    cancel: (url: string) => `¿Ya tienes tu iPhone? Cancela cuando quieras: ${url}`,
-    htmlGotIt: "¿Ya tienes tu iPhone?",
-    htmlCancel: "Cancela cuando quieras",
+    cancel: (url: string) => `¿Conseguiste el iPhone? Date de baja en un clic: ${url}`,
+    htmlGotIt: "¿Conseguiste el iPhone?",
+    htmlCancel: "Date de baja en un clic",
     nudge: (url: string) => `El correo es la vía de reserva: ningún móvil de tu cuenta tiene las notificaciones activadas. Una notificación llega unos 3 segundos después de una reposición confirmada. Para cambiar, abre RestockWire desde tu pantalla de inicio y toca «Activar notificaciones»: ${url}`,
-    htmlNudge: (url: string) => `El correo es la vía de reserva: ningún móvil de tu cuenta tiene las notificaciones activadas. Una <b>notificación llega unos 3 segundos</b> después de una reposición confirmada. Abre RestockWire desde tu pantalla de inicio y toca <b>Activar notificaciones</b>. <a href="${url}" style="color:#0a7f3f">Pasos de configuración →</a>`,
+    htmlNudge: (url: string) => `El correo es la vía de reserva: ningún móvil de tu cuenta tiene las notificaciones activadas. Con ellas, el aviso entra <b>unos 3 segundos</b> después de confirmarse la reposición. Abre RestockWire desde tu pantalla de inicio y toca <b>Activar notificaciones</b>. <a href="${url}" style="color:#0a7f3f">Pasos de configuración →</a>`,
   },
   nudge: {
     subject: "Tus alertas de RestockWire pueden llegar a tu móvil en unos 3 segundos",
@@ -47,7 +47,7 @@ export const notifyEs: NotifyText = {
   },
   checkoutSubmit: (plan: string, limit: number, fastSec: number, checkSec: number, alertSec: number) => `${plan}: ${limit} alertas. Tus tiendas se comprueban cada ${fastSec} s y el resto cada ${checkSec} s; una reposición confirmada llega a tu móvil en unos ${alertSec} s. Cobro mensual, cancela cuando quieras.`,
   stopped: {
-    deviceWord: { ios: "iPhone", android: "móvil Android", desktop: "ordenador", other: "dispositivo" },
+    deviceWord: { ios: "iPhone", android: "teléfono Android", desktop: "ordenador", other: "dispositivo" },
     subject: (device: string) => `Tu ${device} ya no recibe las notificaciones de RestockWire`,
     gone: (device: string) => `El servicio de notificaciones indica que tu ${device} ha dado de baja su suscripción a RestockWire, así que las notificaciones ya no le llegan.`,
     byEmail: "Hasta que vuelvas a activar las notificaciones, tus alertas de reposición te llegarán por correo.",

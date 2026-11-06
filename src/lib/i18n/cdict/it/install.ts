@@ -6,25 +6,25 @@ import type { CDict } from "../en";
  */
 export const install: CDict["install"] = {
   hero: {
-    eyebrow: "App nella schermata Home · niente da scaricare",
+    eyebrow: "Nessun download · un'icona sulla Home e basta",
     title: "I rifornimenti, direttamente sulla schermata di blocco.",
     lead: "Un rifornimento confermato arriva sulla schermata di blocco in pochi secondi. Servono due cose: RestockWire nella schermata Home e le notifiche consentite.",
     seeSteps: "Mostra i passaggi",
     sendTest: "Invia una notifica di prova",
-    turnOn: "Attiva le notifiche",
+    turnOn: "Accendi le notifiche",
     already: "**✓ Già configurato.** I tuoi avvisi arrivano su: {label}. Segui i passaggi qui sotto per aggiungere anche questo dispositivo. {link}",
-    myAlerts: "I miei avvisi",
+    myAlerts: "Apri i miei avvisi",
   },
   progress: {
     homeScreen: "Aggiunta alla schermata Home",
-    signedIn: "Accesso effettuato",
+    signedIn: "Sei dentro con la tua email",
     on: "Notifiche consentite",
-    blocked: "Bloccate nelle impostazioni: il passaggio {n} risolve.",
+    blocked: "Notifiche bloccate nelle impostazioni: si sistema al passaggio {n}.",
   },
   steps: {
     title: "Attivare le notifiche",
     intro: {
-      ios: "iPhone e iPad consegnano le notifiche solo all'app nella schermata Home.",
+      ios: "Su iPhone e iPad serve l'icona sulla Home: Safari da solo non riceve notifiche.",
       android: "Su Android Chrome può inviare notifiche da solo; installare è facoltativo.",
       desktop: "Funziona nel browser, niente da installare.",
     },
@@ -33,22 +33,22 @@ export const install: CDict["install"] = {
     ios: {
       safari: { title: "Vai su restockwire.com in Safari", text: "Deve essere Safari; Chrome e i browser interni delle app non possono farlo." },
       share: { title: "Tocca Condividi", text: "iPhone: barra in basso. iPad: barra in alto." },
-      choose: { title: "Scegli «Aggiungi alla schermata Home»", text: "Non lo vedi? Scorri il pannello verso il basso." },
+      choose: { title: "Nel pannello, la voce «Aggiungi alla schermata Home»", text: "Manca? Fai scorrere il pannello più giù." },
       add: { title: "Tocca Aggiungi", text: "Lascia il nome RestockWire." },
-      open: { title: "Avviala dalla schermata Home e accedi", text: "L'app ha un accesso separato; usa la stessa email e i tuoi avvisi sono lì." },
-      allow: { title: "Tocca «Attiva le notifiche», poi Consenti", text: "Trovi il pulsante nella pagina dei tuoi avvisi. iPhone lo chiede una volta sola." },
+      open: { title: "Apri l'icona sulla Home ed entra", text: "Nell'app l'accesso è a parte: stessa email, stessi avvisi." },
+      allow: { title: "«Accendi le notifiche» e poi Consenti", text: "Il pulsante sta nella pagina dei tuoi avvisi. La domanda di iPhone arriva una volta sola." },
     },
     android: {
-      chrome: { title: "Vai su restockwire.com in Chrome", text: "Funzionano anche Samsung Internet ed Edge; i browser interni delle app no." },
+      chrome: { title: "Apri restockwire.com con Chrome", text: "Vanno bene anche Samsung Internet ed Edge, non i browser dentro le app." },
       install: { title: "Installa l'app", text: "Un solo tocco, senza passare da un app store." },
-      menu: { title: "Menu ⋮ → «Aggiungi a schermata Home»", text: "Su alcuni telefoni si chiama **Installa app**." },
+      menu: { title: "Dal menu ⋮, la voce «Aggiungi a schermata Home»", text: "Alcuni telefoni la chiamano **Installa app**." },
       open: { title: "Avvia RestockWire e accedi", text: "La trovi nella schermata Home o nell'elenco delle app; la stessa email porta con sé i tuoi avvisi." },
-      allow: { title: "Tocca «Attiva le notifiche», poi Consenti", text: "Android lo chiede una volta sola. Funziona anche una scheda di Chrome." },
+      allow: { title: "«Accendi le notifiche», quindi Consenti", text: "Android lo domanda una sola volta. Va bene anche una normale scheda di Chrome." },
     },
     desktop: {
-      allow: { title: "Fai clic su «Attiva le notifiche»", text: "Funziona in Chrome, Edge, Firefox e Safari 16+; il browser lo chiede una volta sola." },
-      install: { title: "Facoltativo: usala come app", text: "In Chrome o Edge usa l'icona di installazione nella barra degli indirizzi; così le notifiche arrivano anche con il browser chiuso." },
-      phone: { title: "Aggiungi anche il telefono", text: "Accedi lì con la stessa email. Ogni dispositivo con le notifiche attive riceve ogni avviso." },
+      allow: { title: "Un clic su «Accendi le notifiche»", text: "Chrome, Edge, Firefox e Safari 16+ vanno tutti bene; il browser fa la domanda una volta sola." },
+      install: { title: "Se vuoi, come app", text: "Chrome ed Edge hanno un'icona di installazione nella barra degli indirizzi: le notifiche arrivano anche a browser chiuso." },
+      phone: { title: "Poi anche il telefono", text: "Entra con la stessa email. Ogni dispositivo con le notifiche accese riceve tutti gli avvisi." },
     },
   },
   action: {
@@ -58,7 +58,7 @@ export const install: CDict["install"] = {
     needsInstall: "Si sblocca dentro l'app nella schermata Home.",
     signInFirst: "Accedi per iniziare",
     signInThenOn: "Accedi e attiva",
-    turnOn: "Attiva le notifiche",
+    turnOn: "Accendi le notifiche",
     denied: "Bloccate: consenti RestockWire in Impostazioni, poi ricarica.",
   },
   notes: [
@@ -78,7 +78,7 @@ export const install: CDict["install"] = {
     chromeMenu: { before: ["Nuova scheda", "Cronologia", "Download", "Preferiti", "Condividi…"], add: "Aggiungi a schermata Home", after: ["Sito desktop"] },
     androidAlert: { title: "Consentire a RestockWire di inviarti notifiche?", dontAllow: "Non consentire", allow: "Consenti" },
     desktopAlert: { wantsTo: "restockwire.com vuole", show: "Mostrare notifiche", block: "Blocca", allow: "Consenti" },
-    desktopInstall: { callout: "Installa", title: "Installa RestockWire", text: "Si apre in una finestra dedicata", cancel: "Annulla", install: "Installa" },
-    lockScreen: { date: "giovedì 29 ottobre", now: "ora", title: "iPhone 18 Pro 256GB Nero", body: "Apple Via del Corso · Roma — Disponibile oggi. Apri apple.com per prenotarlo." },
+    desktopInstall: { callout: "Installa", title: "Installa RestockWire", text: "Gira in una finestra tutta sua", cancel: "Annulla", install: "Installa" },
+    lockScreen: { date: "giovedì 29 ottobre", now: "ora", title: "iPhone 18 Pro 512GB Nero", body: "Apple Via del Corso · Roma — Disponibile oggi. Apri apple.com per prenotarlo." },
   },
 };

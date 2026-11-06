@@ -11,9 +11,9 @@ import { baseLang, localeFromSegment, localesOf, pathInLocale, type Lang, type L
 
 /** The offer, written in the language it offers. */
 const OFFER: Partial<Record<string, string>> = {
-  ja: "このページを日本語で見る", ko: "이 페이지를 한국어로 보기", "zh-TW": "以繁體中文閱讀本頁", "zh-HK": "以繁體中文閱讀本頁",
-  de: "Diese Seite auf Deutsch lesen", "de-CH": "Diese Seite auf Deutsch lesen", fr: "Lire cette page en français", "fr-CA": "Lire cette page en français",
-  it: "Leggi questa pagina in italiano", es: "Leer esta página en español", nl: "Deze pagina in het Nederlands lezen", sv: "Läs sidan på svenska", ar: "اقرأ هذه الصفحة بالعربية",
+  ja: "日本語版はこちら", ko: "한국어판으로 이동", "zh-TW": "切換至繁體中文版", "zh-HK": "切換至繁體中文版",
+  de: "Zur deutschen Version", "de-CH": "Zur deutschen Version", fr: "Version française", "fr-CA": "Version française",
+  it: "Versione italiana", es: "Versión en español", nl: "Naar de Nederlandse versie", sv: "Till den svenska versionen", ar: "النسخة العربية",
 };
 const KEY = "rw_lang_offer_off";
 

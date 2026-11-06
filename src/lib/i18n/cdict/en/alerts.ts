@@ -103,7 +103,7 @@ export const alerts = {
     noLocationRegion: "Location unavailable: enter a city or store, or choose a {noun}",
     promptUs: "Enter a ZIP or city, or tap Near me",
     prompt: "Enter a city or store, or tap Near me",
-    /** {unit}: `miles` or `km` (every language but English: km); {from}: `you` or a ZIP. */
+    /** {unit}: `miles` or `km` (English pages say miles, all other languages km). {from}: `you` or a ZIP. */
     byRoad: "estimated {unit} by road from {from}",
     miles: "miles",
     km: "km",
@@ -114,7 +114,7 @@ export const alerts = {
     alreadyOn: "{n} running already",
     preticked: "closest {n} pre-ticked",
     pickRegion: "Choose a {noun}",
-    /** What a country's regions are called (the store list's level between country and city). */
+    /** Name of the level between country and city in a store list (state, prefecture, canton…). */
     regionNoun: {
       us: "state", ca: "province", au: "state", uk: "area", de: "state", fr: "department", it: "province", es: "province", jp: "prefecture",
       sg: "area", hk: "area", ae: "emirate", ch: "canton", nl: "province", se: "county", at: "state", be: "region", kr: "province", tw: "city",
@@ -157,7 +157,7 @@ export const alerts = {
     termsLink: "Terms",
     privacyLink: "Privacy Policy",
     /**
-     * Clerk's errors by code, for every language but English (English shows Clerk's own message, as always).
+     * Clerk error codes mapped to local wording. English pages skip this and print Clerk's message unchanged.
      * A code missing here shows Clerk's message.
      */
     clerk: {
@@ -199,7 +199,7 @@ export const alerts = {
     newestOff: "; your {n} newest pause",
     paidWith: "Paid with",
     exactNote: "Stripe bills the exact amount for the remaining time, which can differ by a few cents.",
-    confirmPay: "Confirm and pay {amount}",
+    confirmPay: "Pay {amount} now",
     confirmUpgrade: "Confirm the upgrade",
     confirmSwitch: "Confirm the change",
     cancel: "Cancel",
@@ -233,7 +233,7 @@ export const alerts = {
     /** After savedOff / startNow. */
     monthly: " Billed monthly, cancel anytime.",
     /** After the plan's name. */
-    row: " · {limit} alerts · {price}/month",
+    row: " · {price}/month for {limit} alerts",
     fitsYour: "covers your {n}",
     yourPlan: "Your plan",
     upgrade: "Move up",

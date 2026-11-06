@@ -1,4 +1,4 @@
-/** "Keep exploring" rows for another country's pages: its models, regions and cities, never another country's stores. */
+/** Link rows for a non-US country's pages: its own models, regions and cities only, never stores from elsewhere. */
 import { PendingLink as Link } from "@/components/ui/PendingLink";
 import { bidi } from "@/lib/i18n/format";
 import { MODELS, DEFAULT_MODEL, mapPath, restocksPath, placeTarget } from "@/lib/apple/catalog";

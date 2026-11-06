@@ -19,10 +19,10 @@ export const modules: Dict["modules"] = {
   daily: {
     empty: (label: string, days: number) => `Nog niets in beeld ${label}: geen aanvulling of uitverkoop in de afgelopen ${n$(days)} dagen. De eerste tekent de eerste balk.`,
     summary: (restocks: number, soldouts: number, label: string, days: number, activeDays: number) =>
-      `${cnt(restocks, "aanvulling", "aanvullingen")} en ${cnt(soldouts, "uitverkoop", "uitverkopen")} ${label} in de afgelopen ${n$(days)} dagen, verspreid over ${cnt(activeDays, "dag", "dagen")}.`,
+      `${n$(days)} dagen ${label}: ${cnt(restocks, "keer terug", "keer terug")}, ${cnt(soldouts, "keer uitverkocht", "keer uitverkocht")}, op ${cnt(activeDays, "actieve dag", "actieve dagen")}.`,
     busiest: (day: string, restocks: number) => <> De grootste dag, <b className="text-ink">{day}</b>, bracht er {n$(restocks)}.</>,
     barAria: (day: string, restocks: number, soldouts: number) => `${day}: ${cnt(restocks, "aanvulling", "aanvullingen")} en ${cnt(soldouts, "uitverkoop", "uitverkopen")}`,
-    barTitle: (day: string, restocks: number, soldouts: number) => `${day} · ${cnt(restocks, "aanvulling", "aanvullingen")} · ${cnt(soldouts, "uitverkoop", "uitverkopen")}`,
+    barTitle: (day: string, restocks: number, soldouts: number) => `${day} · terug ${n$(restocks)}× · weg ${n$(soldouts)}×`,
     legendRestocks: "aanvullingen",
     legendSoldouts: "uitverkopen",
   },
@@ -35,7 +35,7 @@ export const modules: Dict["modules"] = {
     unknown: "Het aantal van de afgelopen 24 uur is op dit moment niet beschikbaar; de live voorraad en het voorraadlogboek op deze pagina werken gewoon.",
     none: (label: string, asOf: string) => <><b className="text-ink">Geen enkele iPhone Duo-aanvulling {label} in de afgelopen 24 uur</b> (gelezen om {asOf}).</>,
     some: (o: { restocks: number; one: boolean; label: string; withStores: number; allStores: number; config: string; store: ReactNode | null; when: string }) => (
-      <><b className="text-ink">{`${cnt(o.restocks, "iPhone Duo-aanvulling", "iPhone Duo-aanvullingen")}`} {o.one ? o.label : `bij ${n$(o.withStores)} van de ${n$(o.allStores)} Apple Store${o.allStores === 1 ? "" : "s"} ${o.label}`}</b> in de afgelopen 24 uur; de nieuwste was een <b className="text-ink">{o.config}</b>{o.store != null && <> bij {o.store}</>}, {o.when} lokale tijd.</>
+      <>Laatste 24 uur: <b className="text-ink">{`${n$(o.restocks)}× iPhone Duo terug`} {o.one ? o.label : `in ${n$(o.withStores)} van ${n$(o.allStores)} Apple Store${o.allStores === 1 ? "" : "s"} ${o.label}`}</b>. Meest recent: <b className="text-ink">{o.config}</b>{o.store != null && <> bij {o.store}</>}, om {o.when} ter plaatse.</>
     ),
     tileRestocks: "bevestigde aanvullingen in 24 u",
     tileConfigsBack: "configuraties die terugkwamen",
@@ -59,16 +59,16 @@ export const modules: Dict["modules"] = {
   },
 
   clock: {
-    none: (label: string, days: number) => `Nog geen aanvulling ${label} in de afgelopen ${n$(days)} dagen.`,
+    none: (label: string, days: number) => `${n$(days)} dagen gevolgd ${label}, nog geen enkele keer terug.`,
     thin: (total: number, label: string, days: number, dates: number | null) =>
       `${cnt(total, "aanvulling", "aanvullingen")} ${label} in de afgelopen ${n$(days)} dagen${dates != null ? ` (op ${cnt(dates, "dag", "dagen")})` : ""}: nog niet genoeg om een vast uur te noemen.`,
     pattern: (total: number, label: string, days: number, hour: string, day: string | null) => (
       <>{cnt(total, "aanvulling", "aanvullingen")} {label} in de afgelopen {n$(days)} dagen. Het gebruikelijke uur is <b className="text-ink">{hour}</b> lokale tijd{day ? <>; <b className="text-ink">{day}</b> brengt de meeste</> : null}.</>
     ),
     byHour: (zone: string) => `Per uur · ${zone}`,
-    byWeekday: "Per weekdag",
-    barReported: (n: number) => ` (+${n$(n)} gemeld door andere trackers)`,
-    barReportedTitle: (bar: string, n: number) => `${bar}: ${n$(n)} gemeld door andere trackers`,
+    byWeekday: "Weekdag voor weekdag",
+    barReported: (n: number) => ` (+${n$(n)} via andere trackers)`,
+    barReportedTitle: (bar: string, n: number) => `${bar} · ${n$(n)} via andere trackers`,
     legendOurs: "Bevestigd door RestockWire",
   },
 
@@ -80,22 +80,22 @@ export const modules: Dict["modules"] = {
     since: (time: ReactNode) => <>beschikbaar sinds {time}</>,
     restockedAt: (time: ReactNode) => <>terug {time}</>,
     mapAria: (store: string) => `Zoek ${store} op de kaart`,
-    map: "Kaart",
-    buyAria: (model: string, config: string) => `Bestel de ${model} ${config} op apple.com`,
+    map: "Op kaart",
+    buyAria: (model: string, config: string) => `${model} ${config} kopen op apple.com`,
     buy: "Bestel op apple.com",
   },
 
   byConfig: {
     empty: (label: string, days: number) => `Nog geen ranglijst: er is ${label} niets aangevuld in de afgelopen ${n$(days)} dagen.`,
-    intro: (label: string, days: number) => `De configuraties die ${label} terugkwamen in de afgelopen ${n$(days)} dagen, gerangschikt op hoe vaak.`,
+    intro: (label: string, days: number) => `Wat ${label} het vaakst terugkwam, ${n$(days)} dagen, meeste eerst.`,
     times: (n: number) => `${n$(n)}×`,
     alert: "Alerts instellen",
   },
 
   sellout: {
     typical: (label: string, band: string) => `Een gewone iPhone Duo-aanvulling ${label} bleef zo'n ${band} beschikbaar voordat hij uitverkocht was.`,
-    half: (label: string, duration: string) => `${duration}: zo lang duurde het voordat de helft van de aanvullingen ${label} uitverkocht was.`,
-    none: (label: string, days: number) => `Er is ${label} in de afgelopen ${n$(days)} dagen niets aangevuld en daarna uitverkocht.`,
+    half: (label: string, duration: string) => `Na ${duration} was de helft van de aanvullingen ${label} alweer op.`,
+    none: (label: string, days: number) => `Geen meetbare uitverkoop ${label}: ${n$(days)} dagen zonder aanvulling die weer opraakte.`,
     whatDuo: "iPhone Duo",
     whatAll: "alle iPhones",
     tileHalf: (what: string) => <>helft weg binnen · {what}</>,
@@ -140,16 +140,16 @@ export const modules: Dict["modules"] = {
   matrix: {
     store: "Winkel",
     checked: "Gecheckt",
-    cellTitle: (model: string, n: number, total: number) => `${model}: ${n$(n)} van ${n$(total)} configuraties beschikbaar`,
+    cellTitle: (model: string, n: number, total: number) => `${model} · ${n$(n)}/${n$(total)} configuraties klaar`,
   },
 
   nearby: {
-    duo: (short: string, n: number) => `${short} · ${n$(n)}`,
+    duo: (short: string, n: number) => `${n$(n)}× ${short}`,
     noDuo: (short: string) => `geen ${short}`,
   },
 
   stockByModel: {
-    availableNow: (n: number, total: number) => `${n$(n)} van ${n$(total)} configuraties nu beschikbaar`,
+    availableNow: (n: number, total: number) => `Nu ${n$(n)}/${n$(total)} configuraties te halen`,
     noneNow: (total: number) => `0 van ${n$(total)} configuraties op dit moment`,
     lookupOff: "Apple heeft het opvragen van ophaalvoorraad voor deze winkel op dit moment uitgezet",
     notChecked: "nog niet gecheckt",
@@ -163,25 +163,25 @@ export const modules: Dict["modules"] = {
     map: "Bekijk op de kaart",
     alert: "Volg deze winkel",
     alsoIn: (region: string) => `Meer in ${region}`,
-    acrossLine: "Dichtstbijzijnde winkels over de staatsgrens",
+    acrossLine: "Net over de staatsgrens",
     elsewhere: "Dichtstbijzijnde winkels verder weg",
   },
 
   hours: {
     title: "Openingstijden",
     local: (zone: string) => `Lokale tijd · ${zone}`,
-    today: (hours: string, week: string) => ` · vandaag ${hours} · ${week}`,
+    today: (hours: string, week: string) => ` · ${hours} vandaag · ${week}`,
     directions: "Route",
     applePage: "deze winkel op apple.com",
     liveMap: "Live kaart",
     storePage: "Winkelpagina",
     closed: "Gesloten",
     everyDay: (hours: string) => `Elke dag ${hours}`,
-    openNow: (closes: string) => `Nu open · sluit om ${closes}`,
+    openNow: (closes: string) => `Open tot ${closes}`,
     opensAt: (opens: string) => `Open vanaf ${opens}`,
-    closedToday: (next: string | null) => (next ? `Vandaag gesloten · open ${next}` : "Vandaag gesloten"),
-    closedNow: (next: string | null) => (next ? `Nu gesloten · open ${next}` : "Nu gesloten"),
-    nextOpen: (day: string | null, time: string) => `${day ?? "morgen"} om ${time}`,
+    closedToday: (next: string | null) => (next ? `Dicht vandaag · weer open ${next}` : "Dicht vandaag"),
+    closedNow: (next: string | null) => (next ? `Nu dicht · weer open ${next}` : "Nu dicht"),
+    nextOpen: (day: string | null, time: string) => `${day ?? "morgen"}, ${time}`,
   },
 
   liveStats: {

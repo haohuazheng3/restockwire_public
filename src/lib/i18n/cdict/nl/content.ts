@@ -4,7 +4,7 @@ import type { CDict } from "../en";
 export const content: CDict["content"] = {
   quickCheck: {
     model: "iPhone-model",
-    search: "ZIP-code, stad of Apple Store",
+    search: "Apple Store, stad of ZIP-code",
     useLocation: "Zoek mijn locatie",
     nearMe: "📍 In de buurt",
     locationOff: "Deze site heeft geen toegang tot je locatie. Typ een ZIP-code.",

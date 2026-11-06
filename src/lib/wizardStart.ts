@@ -1,5 +1,5 @@
 /**
- * The wizard's starting state from an "Alert me" link's query: ?model ?storage ?color ?store ?state ?city.
+ * Where the wizard starts when opened from an alert link's query: ?model ?storage ?color ?store ?state ?city.
  * Used by the home page (deep links) and by the alert dialog (every in-site "Alert me" opens it).
  */
 import { DEFAULT_MODEL, STORES, cityBySlug, colorsFor, modelByKey, statesWithStores, storagesFor, storeInCountry, type ModelKey } from "./apple/catalog-us";

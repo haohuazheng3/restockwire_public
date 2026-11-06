@@ -1,15 +1,15 @@
 /**
  * German client strings: map (the live pickup-stock map). {model} is a model's short name ("Duo") or "iPhone".
- * {in} is the bare country name here ("Schweiz" needs an article after "in", which plain data cannot add), so the
- * sentences put the country first: "Schweiz: alle 4 Apple Stores, live aktualisiert."
+ * {in} is the bare country name here (plain data cannot add the article German puts before "Schweiz"), so the
+ * sentences put the country first (Schweiz: …).
  */
 import type { CDict } from "../en";
 
 export const map: CDict["map"] = {
   title: "Live-Karte des Abhol-Bestands",
-  leadUs: "Alle {n} Apple Stores in den USA",
-  leadOne: "{in}: der Apple Store",
-  leadAll: "{in}: alle {n} Apple Stores",
+  leadUs: "{n} Apple Stores in den USA auf einen Blick",
+  leadOne: "{in}: der einzige Apple Store des Landes",
+  leadAll: "{in}: {n} Apple Stores auf einen Blick",
   leadTail: ", live aktualisiert. Je größer der Punkt, desto mehr {model}-Konfigurationen sind gelistet.",
   inCountry: "{country}",
   updated: "Aktualisiert {ago}",
@@ -19,8 +19,8 @@ export const map: CDict["map"] = {
   anyStorage: "Jeder Speicher",
   color: "Farbe",
   anyColor: "Jede Farbe",
-  mapLabelUs: "Karte der Apple Stores in den USA",
-  mapLabel: "Karte der Apple Stores – {in}",
+  mapLabelUs: "Apple Stores in den USA auf der Karte",
+  mapLabel: "Apple Stores auf der Karte – {in}",
   loading: "Karte wird geladen…",
   errors: {
     library: "Die Kartenbibliothek ließ sich nicht laden.",
@@ -41,7 +41,7 @@ export const map: CDict["map"] = {
   firstSweep: "Erste Runde läuft.",
   selected: "Gewählter Store",
   close: "Schließen",
-  checked: "{city}, {region} · geprüft {ago}",
+  checked: "{city}, {region} · abgefragt {ago}",
   openStore: "Zur Store-Seite →",
   alertHere: "Diesen Store beobachten",
   withStock: "Stores mit Bestand",

@@ -25,7 +25,7 @@ function range(lang: Lang, r: Pick<ReportText, "from" | "to">): string {
   return r.from === r.to ? d(r.from) : `${d(r.from)} – ${d(r.to)}`;
 }
 
-/** "Reported by other trackers (Apple Pickup Live, DuoReady), Oct 26 – Nov 1". */
+/** "Reports from other trackers (Apple Pickup Live, DuoReady), Oct 26 – Nov 1". */
 export function ReportLegendText({ reports }: { reports: ReportText }) {
   const s = useT().modules.reports;
   const lang = useLang();

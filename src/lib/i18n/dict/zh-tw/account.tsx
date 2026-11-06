@@ -39,11 +39,11 @@ export const account: Dict["account"] = {
       { title: "掌握你的時段", hint: "你的門市平常補貨的時段在下方 · 提前 10 分鐘就位" },
       { title: "先把 Apple 結帳頁準備好", hint: "確切容量與顏色 → 送貨與取貨" },
       { title: "先同意條款 · 或改買空機", hint: "空機一次付清，根本沒有勾選框" },
-      { title: "別讓螢幕自動鎖定", hint: "自動鎖定 → 永不 · 每 10–15 分鐘碰一下" },
+      { title: "別讓螢幕自動鎖定", hint: "自動鎖定設成「永不」· 隔 10–15 分鐘點一下螢幕" },
       { title: "通知響了：先看清楚再動手", hint: "取貨 → 通知寫的那家門市 → 第一個時段 → Apple Pay" },
     ],
     guide: "兩分鐘教學",
-    window: "你的補貨時段",
+    window: "你那幾家店的補貨時段",
   },
 
   restock: {
@@ -63,9 +63,9 @@ export const account: Dict["account"] = {
     byWeekday: (busiest: string | null) => `逐日${busiest ? ` · 高峰在${busiest}` : ""}`,
     hourChart: (yours: string, zone: string, items: string) => `${yours}依小時的補貨（${zone}）：${items}`,
     weekdayChart: (yours: string, items: string) => `${yours}依星期的補貨：${items}`,
-    chartItem: (label: string, k: number, reported: number) => `${label} ${k}${reported ? `（另有 ${reported} 次為其他追蹤網站回報）` : ""}`,
+    chartItem: (label: string, k: number, reported: number) => `${label} ${k}${reported ? `（另 ${reported} 次來自第三方追蹤站）` : ""}`,
     barTitle: (label: string, k: number, yours: string, area: { n: number; zone: string } | null, reported: number) =>
-      `${label}：${yours}補貨 ${n(k)} 次${area ? ` · ${area.zone}合計 ${area.n} 次` : ""}${reported ? ` · 其他追蹤網站回報 ${reported} 次` : ""}`,
+      `${label}：${yours}補貨 ${n(k)} 次${area ? ` · ${area.zone}合計 ${area.n} 次` : ""}${reported ? ` · 第三方追蹤站通報 ${reported} 次` : ""}`,
     now: "現在",
     allZone: (stores: number, zone: string) => `${zone}的全部 ${stores} 家門市`,
     reportMarkBars: "虛線",
@@ -96,8 +96,8 @@ export const account: Dict["account"] = {
   },
 
   pricing: {
-    metaTitle: "價格方案：10 則通知 $5、20 則 $10、50 則 $20",
-    metaDescription: "全美 Apple Store 的 iPhone 門市取貨補貨通知：你選的門市每 5 秒檢查一次，補貨確認後約 3 秒推播到手機。Plus 每月 $5 可設 10 則、Pro $10 可設 20 則、Max $20 可設 50 則，隨時可取消。",
+    metaTitle: "方案：$5 設 10 則、$10 設 20 則、$20 設 50 則通知",
+    metaDescription: "iPhone 門市取貨補貨通知，涵蓋全美 Apple Store：你挑的門市 5 秒讀一次，補貨一確認約 3 秒推到手機。方案按月付：Plus $5 設 10 則、Pro $10 設 20 則、Max $20 設 50 則，想停就停。",
     title: "價格方案",
     lead: "**一則通知 = 一家門市 × 一款確切的 iPhone。**網站上其他內容都可免費瀏覽。",
     chips: ["全美 269 家 Apple Store 全部涵蓋", "隨時可取消", "信用卡或 Link"],
@@ -113,7 +113,7 @@ export const account: Dict["account"] = {
     note: { plus: "1 款 iPhone × 10 家門市", pro: "2 款 iPhone × 10 家門市", max: "5 款 iPhone × 10 家門市" } as Record<string, string>,
     month: "/ 月",
     alerts: (k: number) => `${k} 則通知`,
-    perks: ["你的門市每 5 秒檢查一次，全部 269 家每 15 秒一次", "補貨確認後約 3 秒推播到手機"],
+    perks: ["你挑的門市走 5 秒快線，其餘 269 家 15 秒一輪", "補貨確認後約 3 秒推播到手機"],
     cancel: "隨時可取消",
     get: (plan: string) => `選擇 ${plan}`,
     billing: "透過 Stripe 計費 · 信用卡或 Link · 變更方案按比例計算",

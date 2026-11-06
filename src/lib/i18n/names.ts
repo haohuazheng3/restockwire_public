@@ -1,6 +1,6 @@
 /**
- * Names on a page in its language: English keeps the catalog's own (appleName, the region and city as stored,
- * the country's short/long name); another language uses Apple's names in that language (places.ts).
+ * Localised names for a page. English keeps what the catalog stores (appleName, stored region and city, the country's
+ * short or long name); every other language takes Apple's localised names from places.ts.
  */
 import { appleName, type Store } from "@/lib/apple/catalog";
 import { COUNTRIES, theName, type CountryCode } from "@/lib/apple/countries";

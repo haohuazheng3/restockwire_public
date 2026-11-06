@@ -95,7 +95,7 @@ export default async function PickupAvailabilityExplained() {
     : "A pickup listing is a small allocation chased by many people at once: it appears, is reserved within minutes, and the store reads unavailable again. Exact lifetimes show here once ten confirmed restocks have sold out.";
   const oftenLead = `Every **${SPEED.checkSec} seconds** for each US Apple Store and every **${SPEED.fastSec} seconds** for stores with alerts, from our side; apple.com itself only answers at the moment you ask, and RestockWire shows a change only once two answers agree.`;
   const afterLead = "You wait for Apple's ready e-mail, which states the pickup window, then show **the order number or QR code and a government-issued photo ID** at the Pickup counter, or send the designated contact you named at checkout.";
-  const staffLead = `No: Apple publishes no restock schedule and staff have none to share${bw ? `. The nearest thing is the observed pattern: **${pct(bw.share)}** of the ${n(rt.n)} confirmed US iPhone Duo restocks since ${since} landed between ${hl(bw.from)} and ${hl(bw.to)} local time` : ". The nearest thing is the observed pattern on each store page, once a store has enough restocks to state one"}.`;
+  const staffLead = `No: Apple publishes no restock schedule and staff have none to share${bw ? `. The nearest thing is the observed pattern: **${pct(bw.share)}** of the ${n(rt.n)} US iPhone Duo restocks we have confirmed since ${since} landed between ${hl(bw.from)} and ${hl(bw.to)} local time` : ". The nearest thing is the observed pattern on each store page, once a store has enough restocks to state one"}.`;
 
   const nav = [
     { id: "how-it-works", label: "The two states" },
@@ -109,7 +109,7 @@ export default async function PickupAvailabilityExplained() {
   const faq: Faq[] = [
     { q: "My store has said unavailable for a week. Will it ever restock?", a: so ? `Very likely: since ${since}, ${n(rt.n)} confirmed iPhone Duo restocks reached ${n(rt.stores)} US Apple Stores, and the median one was gone within ${so.medianSec} seconds. A store can restock often and still read unavailable nearly every time you look.` : "Very likely: restocks appear and sell out within minutes, so a store can restock often and still read unavailable nearly every time you look ([restock log](/restock-log))." },
     { q: "Can I hold an iPhone Duo for pickup and pay later?", a: "No: a pickup reservation is a completed apple.com order with in-store pickup chosen; there is no hold without checkout. If you change your mind, cancel the order." },
-    { q: "How many days do I have to collect a pickup order?", a: `Apple states the window per order in the ready-for-pickup e-mail, so RestockWire quotes no number. If you cannot make it, cancel the order ([Apple: Shipping & Pickup help](${APPLE_HELP})).` },
+    { q: "How many days do I have to collect a pickup order?", a: `Apple states the window per order in the ready-for-pickup e-mail, so RestockWire quotes no number. If you cannot make it, cancel the order ([Apple pickup help](${APPLE_HELP})).` },
     { q: "Why do two people searching different ZIP codes see different stores?", a: so ? `Each ZIP gets its own short list of nearby stores, and a listing can appear and sell out between two looks, since the median Duo listing lasts ${so.medianSec} seconds. The stores around you are on [iPhone Duo near me](/iphone-duo-in-stock-near-me).` : "Each ZIP gets its own short list of nearby stores, and a listing can appear and sell out between two looks. The stores around you are on [iPhone Duo near me](/iphone-duo-in-stock-near-me)." },
   ];
 
@@ -232,7 +232,7 @@ export default async function PickupAvailabilityExplained() {
         <Section id="after-reserve" h2="What happens once your pickup order is placed?" lead={afterLead} facts={facts}>
           <StepStrip className="mt-5 lg:grid-cols-4!" steps={[
             { title: "Apple confirms, then says it is ready", hint: "two e-mails; the ready one gives the pickup window for your order, so we quote no number" },
-            { title: "Have the right things with you", hint: <Inline text={`the order number or QR code from that e-mail and a government-issued photo ID ([Apple: Shipping & Pickup help](${APPLE_HELP})); a designated contact brings their own ID`} facts={facts} /> },
+            { title: "Have the right things with you", hint: <Inline text={`the order number or QR code from that e-mail and a government-issued photo ID ([Apple pickup help](${APPLE_HELP})); a designated contact brings their own ID`} facts={facts} /> },
             { title: "Head to the Pickup counter", hint: "not the line at the door; pickup orders are handed over apart from walk-in sales" },
             { title: "Cannot make it? Cancel", hint: "from your order page instead of letting the hold run out; the phone returns to the page for someone else" },
           ]} />

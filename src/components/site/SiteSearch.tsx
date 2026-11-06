@@ -88,7 +88,7 @@ export function SiteSearch() {
 
   return (
     <>
-      <button type="button" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line-2 bg-ink/4 text-ink transition hover:bg-ink/10 active:scale-95" aria-label={d.open} title="Search (⌘K)" onClick={show}><SearchIcon /></button>
+      <button type="button" className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-line-2 bg-ink/4 text-ink transition hover:bg-ink/10 active:scale-95" aria-label={d.open} title="Find a store or page (⌘K)" onClick={show}><SearchIcon /></button>
       <dialog ref={ref} className="search-dialog" aria-label={d.label} onClose={onClose} onClick={(e) => { if (e.target === e.currentTarget) hide(); }}>
         <div className="flex items-center gap-2 border-b border-line px-3 py-3 sm:px-4">
           {/* Ink on the label: the global `input { color: inherit }` is unlayered and beats a text-* utility on the input. */}

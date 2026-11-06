@@ -14,8 +14,8 @@ import { cityLabel, regionLabel, storeLabel } from "@/lib/i18n/places";
 export function mapMetadata(c: Country, loc: Locale = englishLocale(c.cc)): Metadata {
   if (c.cc === "us") {
     return {
-      title: "iPhone Duo pickup stock map — every US Apple Store, live",
-      description: "Live map of all 269 US Apple Stores with iPhone Duo, 18 Pro and Pro Max in-store pickup stock right now, by storage and color.",
+      title: "Live iPhone Duo stock map: all US Apple Stores",
+      description: "269 US Apple Stores on one map, colored by live iPhone Duo, 18 Pro and Pro Max pickup stock. Filter by storage and color; each store is read every 15 seconds.",
       alternates: { canonical: "/live-map" },
     };
   }
@@ -34,7 +34,7 @@ export async function MapPage({ country: c, searchParams: sp }: { country: Count
   const D = t().views;
   const V = D.map;
   const all = storesOf(cc);
-  // Names in the page's language (English: as they are); paths stay English, links move them to the reader's language.
+  // Labels follow the page language (unchanged in English); paths stay English and links carry the reader's language.
   const stores: MapStore[] = all.map((s) => ({ n: s.storeNumber, name: storeLabel(s, lang), city: cityLabel(cc, s.city, lang), state: regionLabel(cc, s.state, lang), code: stateCodeOf(s), path: storePath(s), cityHref: cityPath(s.state, s.city, cc), stateHref: statePath(s.state, cc), lat: s.lat, lng: s.lng }));
   const modelParam = typeof sp.model === "string" ? sp.model : "";
   const codes = new Set(stores.map((s) => s.code));

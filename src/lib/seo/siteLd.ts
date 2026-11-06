@@ -13,18 +13,18 @@ export const ORG_ID = `${SITE}/#organization`;
 export const WEBSITE_ID = `${SITE}/#website`;
 
 export const SITE_DESCRIPTION =
-  `RestockWire is the wire service for iPhone restocks: live in-store pickup stock for the iPhone Duo, iPhone 18 Pro and iPhone 18 Pro Max at ${ALL_STORES.length} Apple Stores in ${INTL_CODES.length + 1} countries, ` +
-  `the hours each store usually restocks, and a phone alert about ${SPEED.alertSec} seconds after a restock is confirmed. ` +
-  `Stores with alerts are read every ${SPEED.fastSec} seconds, the fastest published check interval of any iPhone stock tracker (others publish ${OTHER_TRACKERS}); every other store every ${SPEED.checkSec} seconds. ` +
-  `A change counts only once a second read confirms it, and every confirmed restock goes into the log that gives each store page its restock hours.`;
+  `RestockWire is the wire service for iPhone restocks. It logs every confirmed restock of the iPhone Duo, iPhone 18 Pro and iPhone 18 Pro Max ` +
+  `at ${ALL_STORES.length} Apple Stores across ${INTL_CODES.length + 1} countries, shows live in-store pickup stock, and names the hour each store tends to restock. ` +
+  `Alert stores sit on a ${SPEED.fastSec}-second read — RestockWire's fastest published check interval among iPhone stock trackers, whose own figures run ${OTHER_TRACKERS} — and the rest on a ${SPEED.checkSec}-second read. ` +
+  `Nothing is published until a second read agrees; the push follows the confirmation by about ${SPEED.alertSec} seconds.`;
 
 export const SITE_FEATURES = [
-  `Stores with alerts read every ${SPEED.fastSec} seconds, every other Apple Store every ${SPEED.checkSec} seconds`,
-  `Push on the phone about ${SPEED.alertSec} seconds after a second read confirms a restock`,
-  "A change counts only when a second read agrees; first sightings are never restocks",
-  "Restock hours per Apple Store: usual local hour, busiest weekday, the last 30 days",
-  "A log of every confirmed restock and sell-out, with store, exact configuration and time",
-  `Live in-store pickup stock for every storage and color at ${ALL_STORES.length} Apple Stores in ${INTL_CODES.length + 1} countries`,
+  `${SPEED.fastSec}-second reads on alert stores; ${SPEED.checkSec}-second reads on all other Apple Stores`,
+  `Phone push roughly ${SPEED.alertSec} seconds after the confirming read`,
+  "Two reads must agree before a change counts; a first sighting is a baseline, not a restock",
+  "Per-store restock hours: typical local hour, busiest weekday, 30-day count",
+  "Running log of confirmed restocks and sell-outs: minute, store, exact configuration",
+  `Pickup stock by storage and color, live, at ${ALL_STORES.length} Apple Stores in ${INTL_CODES.length + 1} countries`,
 ];
 
 export const siteLd = {

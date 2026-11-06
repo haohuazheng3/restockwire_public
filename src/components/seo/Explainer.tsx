@@ -9,7 +9,7 @@ import { Points } from "@/components/ui/Viz";
  */
 export function Explainer({ kind, place, alertHref }: { kind: "state" | "city" | "store" | "model"; place: string; alertHref: string }) {
   const title = kind === "model" ? `How does in-store pickup work for the ${place}?` : `How does in-store pickup work ${kind === "store" ? "at" : "in"} ${place}?`;
-  const at = kind === "store" ? place : kind === "model" ? "every US Apple Store" : `Apple Stores in ${place}`;
+  const at = kind === "store" ? place : kind === "model" ? "each Apple Store in the US" : `Apple Stores in ${place}`;
   const cards: { title: string; items: { text: React.ReactNode; no?: boolean }[] }[] = [
     { title: "Pickup stock is sold on apple.com", items: [
       { text: <>Choose the store at checkout on <b className="text-ink">apple.com</b>, pay online</> },

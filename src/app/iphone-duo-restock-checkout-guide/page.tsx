@@ -35,7 +35,7 @@ const n = (x: number) => x.toLocaleString("en-US");
 const pct = (x: number) => (x > 0 && x < 0.005 ? "<1%" : `${Math.round(x * 100)}%`);
 const longDate = (ymd: string) => new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" }).format(new Date(`${ymd}T12:00:00Z`));
 
-/** The reader's own budget, in seconds: push, four taps, and the listing. */
+/** Seconds the reader spends: four taps after the push lands. */
 const YOU_SEC = 20;
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -50,7 +50,7 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-/** A keyword line on a step card; `plain` is the sentence the HowTo schema carries. */
+/** One keyword line per step card; `plain` is its full sentence for the HowTo schema. */
 type GuidePoint = Point & { plain: string };
 interface Step { title: string; points: GuidePoint[]; art: React.ReactNode }
 
@@ -129,7 +129,7 @@ export default async function GrabRestockGuide() {
     {
       title: "Terms ticked · screen awake",
       points: [
-        { text: <>Simplest: <b className="text-ink">Unlocked, paid in full</b>, so there is no box</>, plain: "Unlocked and paid in full shows no agreement box" },
+        { text: <>Fastest: <b className="text-ink">unlocked, one full payment</b>, no box at all</>, plain: "Unlocked and paid in full shows no agreement box" },
         { text: <>Carrier plan or financing? Tick <b className="text-ink">I agree</b> now</>, plain: "With a carrier plan or financing, tick I agree to the above terms now" },
         { text: <>Auto-Lock → <b className="text-ink">Never</b>; touch the sheet every 10–15 min</>, plain: "Set Auto-Lock to Never for the window and touch the sheet every 10–15 minutes" },
       ],
@@ -185,7 +185,7 @@ export default async function GrabRestockGuide() {
   ];
 
   const faq: Faq[] = [
-    { q: "What if the restock is a different color or storage from the one I staged?", a: `Switching on the sheet costs about ten seconds, so decide beforehand whether you would take it. Better: stage the configuration that returns most${topShare ? ` (${topName}, ${pct(topShare)} of US Duo restocks since ${longDate(t.since)})` : ""} and put your alerts on exactly that one ([most-restocked configurations](/iphone-duo-most-restocked-stores)).` },
+    { q: "What if the restock is a different color or storage from the one I staged?", a: `Switching on the sheet costs about ten seconds, so decide beforehand whether you would take it. Better: stage the configuration that returns most${topShare ? ` (${topName}: ${pct(topShare)} of all US Duo restocks from ${longDate(t.since)} on)` : ""} and put your alerts on exactly that one ([most-restocked configurations](/iphone-duo-most-restocked-stores)).` },
     { q: "Should I buy unlocked or through a carrier for a faster checkout?", a: "Unlocked and paid in full: no agreement box, no eligibility check, fewer things to fail at the last second. A carrier plan works if you tick the agreement before the window and again whenever the sheet reloads." },
     { q: "Can I stage the checkout in Safari or on a Mac instead of the app?", a: "Yes: apple.com has the same Delivery & Pickup sheet, so Safari on an iPhone, iPad or a Mac with Apple Pay works. A second device staged as backup is fine as long as you finish only one order." },
     { q: "Will RestockWire place the order for me?", a: `No: RestockWire tells you within seconds that a store lists your configuration, and you make the reservation on apple.com. It reads the same public pickup availability anyone can, every ${SPEED.fastSec} seconds at the stores in your alerts, and is independent of Apple.` },
@@ -200,12 +200,12 @@ export default async function GrabRestockGuide() {
   const ld = {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "WebPage", "@id": `${SITE}${PATH}`, url: `${SITE}${PATH}`, name: TITLE, isPartOf: { "@id": `${SITE}/#website` }, about: { "@id": `${SITE}/#organization` }, dateModified: t.at },
+      { "@type": "WebPage", "@id": `${SITE}${PATH}`, url: `${SITE}${PATH}`, name: TITLE, about: { "@id": `${SITE}/#organization` }, isPartOf: { "@id": `${SITE}/#website` }, dateModified: t.at },
       {
         "@type": "HowTo", name: "Reserving an iPhone Duo restock for Apple Store pickup in about 20 seconds", totalTime: "PT20S",
         description: `Stage Apple's checkout on the exact configuration ahead of the restock window, then answer the push in four taps: Pickup – In-Store, the store it named, the first time slot, Apple Pay. A typical iPhone Duo listing lasts ${band}.`,
         supply: [{ "@type": "HowToSupply", name: "The Apple Store app or apple.com, signed in, Apple Pay set up" }, { "@type": "HowToSupply", name: "A RestockWire alert on that configuration at the stores you can reach" }],
-        step: steps.map((s, i) => ({ "@type": "HowToStep", position: i + 1, name: s.title, text: s.points.map((p) => (p.no ? `Do not: ${p.plain}` : p.plain)).join(". ") + ".", url: `${SITE}${PATH}#step-${i + 1}` })),
+        step: steps.map((s, i) => ({ "@type": "HowToStep", position: i + 1, name: s.title, url: `${SITE}${PATH}#step-${i + 1}`, text: `${s.points.map((p) => (p.no ? `Do not: ${p.plain}` : p.plain)).join(". ")}.` })),
       },
     ],
   };
@@ -215,14 +215,14 @@ export default async function GrabRestockGuide() {
       <JsonLd data={ld} />
 
       {/* hero */}
-      <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="grid items-center lg:grid-cols-[1.1fr_0.9fr] gap-10">
         <div>
           <div className="eyebrow mb-4">Checkout drill · about {YOU_SEC} seconds</div>
-          <h1 className="display text-4xl sm:text-6xl">How do I check out an iPhone Duo restock in the {h1Band} before it sells out?</h1>
+          <h1 className="text-4xl sm:text-6xl display">How do I check out an iPhone Duo restock in the {h1Band} before it sells out?</h1>
           <p className="mt-5 max-w-xl text-lg text-ink-2"><b className="text-ink">Four taps after the push</b>, because Apple&apos;s checkout is already staged before the restock.</p>
           <div className="mt-5"><TapFlow taps={taps} /></div>
           {sell && <p className="mt-5 max-w-xl text-sm text-ink-3"><b className="text-ink">{sell.medianSec} s</b> is the median across {n(sell.n)} timed US restocks. The drill takes about <b className="text-ink">{YOU_SEC}</b>.</p>}
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-7 flex gap-3 flex-wrap">
             <a href="#before" className="btn btn-primary btn-lg">Go to the steps</a>
             <Link href={alert} className="btn btn-ghost btn-lg">Start an alert</Link>
           </div>
@@ -232,7 +232,7 @@ export default async function GrabRestockGuide() {
 
       {/* budget */}
       <section className="pane mt-14 p-6 sm:p-8" aria-labelledby="budget-h">
-        <h2 id="budget-h" className="display text-2xl sm:text-4xl">How many seconds does a restock give you?</h2>
+        <h2 id="budget-h" className="text-2xl sm:text-4xl display">How many seconds does a restock give you?</h2>
         <p className="mt-3 text-ink-2"><b className="text-ink">{sell ? `About ${band}.` : "About a minute."}</b> {sell ? <>{pct(sell.within2min)} were gone inside two minutes; median of {n(sell.n)} timed US restocks since {longDate(t.since)}.</> : <>Going by every restock timed so far.</>}</p>
         <StatGrid cols={3} className="mt-5">
           <Stat value={sell ? `${sell.medianSec}` : "~60"} unit="s" label="Median listing before sell-out" />
@@ -242,21 +242,21 @@ export default async function GrabRestockGuide() {
         <div className="mt-5 flex h-10 w-full overflow-hidden rounded-full border border-line-2" role="img" aria-label={budget.map((b) => `${b.label}: ${b.sec} seconds`).join("; ")}>
           {budget.map((b) => <div key={b.label} className={`${b.tone} flex items-center justify-center px-2 text-[11px] font-semibold text-ink`} style={{ width: `${(b.sec / total) * 100}%` }} title={`${b.label}: ${b.sec} s`}><span className="truncate">{b.sec} s</span></div>)}
         </div>
-        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-3">{budget.map((b) => <span key={b.label} className="inline-flex items-center gap-1.5"><span className={`h-2 w-2 rounded-sm ${b.tone}`} />{b.label}</span>)}</div>
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <div className="flex items-start gap-2 text-sm text-ink-2"><Do /><span>From the staged sheet: reserved by <b className="text-ink">second {reserveAt}</b>{ds ? <>, before <b className="text-ink">~{pct(1 - ds.within30)}</b> of last week&apos;s sell-outs</> : null}</span></div>
+        <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-ink-3">{budget.map((b) => <span key={b.label} className="inline-flex items-center gap-1.5"><span className={`rounded-sm h-2 w-2 ${b.tone}`} />{b.label}</span>)}</div>
+        <div className="mt-5 grid sm:grid-cols-2 gap-3">
+          <div className="flex items-start gap-2 text-sm text-ink-2"><Do /><span>From the staged sheet: reserved by <b className="text-ink">second {reserveAt}</b>{ds ? <>, ahead of <b className="text-ink">~{pct(1 - ds.within30)}</b> of sell-outs logged last week</> : null}</span></div>
           <div className="flex items-start gap-2 text-sm text-ink-3"><Dont /><span>From the app&apos;s home screen: model, storage, colour, address, <b>second 90</b>, too late</span></div>
         </div>
-        <p className="mt-4 text-xs text-ink-3">Each lifetime falls between two of our checks ({SPEED.fastSec} s apart at alert stores), so it is an upper bound. <Link href="/how-fast-does-iphone-duo-sell-out" className="underline-offset-2 hover:underline">Seconds per restock, every one</Link>.</p>
+        <p className="mt-4 text-xs text-ink-3">Each lifetime falls between two of our checks ({SPEED.fastSec} s apart at alert stores), so it is an upper bound. <Link href="/how-fast-does-iphone-duo-sell-out" className="hover:underline underline-offset-2">Seconds per restock, every one</Link>.</p>
       </section>
 
       {/* steps: before */}
       <section id="before" className="mt-16 scroll-mt-24">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <h2 className="display text-2xl sm:text-4xl">Ten minutes before</h2>
+          <h2 className="text-2xl sm:text-4xl display">Ten minutes before</h2>
           <span className="text-sm text-ink-3">Three set-ups · ahead of your stores&apos; hour</span>
         </div>
-        <ol className="mt-6 grid gap-4 md:grid-cols-3">
+        <ol className="mt-6 grid md:grid-cols-3 gap-4">
           {before.map((s, i) => <StepCard key={s.title} step={s} index={i + 1} />)}
         </ol>
       </section>
@@ -264,37 +264,37 @@ export default async function GrabRestockGuide() {
       {/* steps: during */}
       <section id="during" className="mt-14 scroll-mt-24">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <h2 className="display text-2xl sm:text-4xl">The moment the push lands</h2>
+          <h2 className="text-2xl sm:text-4xl display">The moment the push lands</h2>
           <span className="text-sm text-ink-3">Four taps · nothing else until Apple confirms on screen</span>
         </div>
-        <ol className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <ol className="mt-6 grid md:grid-cols-2 xl:grid-cols-4 gap-4">
           {during.map((s, i) => <StepCard key={s.title} step={s} index={before.length + i + 1} />)}
         </ol>
       </section>
 
       {/* our view */}
-      <section className="mt-16 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+      <section className="mt-16 grid lg:grid-cols-[1.15fr_0.85fr] gap-6">
         <div className="pane p-6 sm:p-8">
-          <h2 className="display text-2xl sm:text-3xl">Three swaps that save seconds</h2>
+          <h2 className="text-2xl sm:text-3xl display">Three swaps that save seconds</h2>
           <p className="mt-2 text-sm text-ink-2">Stage everything, leave four taps. These changes cut the most time.</p>
-          <ol className="mt-5 grid gap-3 sm:grid-cols-3">
+          <ol className="mt-5 grid sm:grid-cols-3 gap-3">
             <Swap no="Staging any configuration" yes="Staging the one your alerts watch" why={topShare ? <>{topName} is {pct(topShare)} of US Duo restocks; a mismatch costs ~10 s.</> : <>Alerts on the staged configuration at two or three stores; a mismatch costs ~10 s.</>} />
             <Swap no="Tapping the notification" yes="Reading it and swiping to the app" why="The push opens a fresh apple.com in Safari; your staged sheet is in the app." />
-            <Swap no="Carrier plan with installments" yes="Unlocked, paid in full" why="No agreement box and no eligibility check at the last step." />
+            <Swap no="Carrier plan with installments" yes="Unlocked, one full payment" why="No agreement box and no eligibility check at the last step." />
           </ol>
-          <div className="mt-4 flex flex-wrap gap-2 text-xs">
+          <div className="mt-4 flex flex-wrap text-xs gap-2">
             <span className="chip chip-sm pointer-events-none">Auto-Lock → Never saves 3–4 s</span>
             <span className="chip chip-sm pointer-events-none">Backup device staged · finish only one order</span>
           </div>
         </div>
         <div className="pane p-6 sm:p-8">
-          <h2 className="display text-2xl sm:text-3xl">When something breaks</h2>
+          <h2 className="text-2xl sm:text-3xl display">When something breaks</h2>
           <table className="mt-4 w-full text-sm">
             <thead><tr className="text-start text-xs uppercase tracking-wide text-ink-3"><th className="pb-2 font-semibold">Problem</th><th className="pb-2 font-semibold">Fix</th></tr></thead>
             <tbody>
               {wrong.map(([a, b]) => (
                 <tr key={a} className="border-t border-line align-top">
-                  <td className="py-2.5 pe-3 text-ink-3">{a}</td>
+                  <td className="pe-3 py-2.5 text-ink-3">{a}</td>
                   <td className="py-2.5 font-medium text-ink">{b}</td>
                 </tr>
               ))}
@@ -304,8 +304,8 @@ export default async function GrabRestockGuide() {
       </section>
 
       {/* faster? */}
-      <section className="pane mt-6 p-6 sm:p-8">
-        <h2 className="display text-2xl sm:text-3xl">Can a person go any faster?</h2>
+      <section className="pane p-6 sm:p-8 mt-6">
+        <h2 className="text-2xl sm:text-3xl display">Can a person go any faster?</h2>
         <p className="mt-2 text-sm text-ink-2"><b className="text-ink">Barely.</b> The push is the earliest honest signal; everything after it is practice.</p>
         <StatGrid cols={3} className="mt-5">
           <Stat value={`~${YOU_SEC}`} unit="s" label="This drill, after one practice run" tone="accent" />

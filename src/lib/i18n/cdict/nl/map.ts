@@ -3,9 +3,9 @@ import type { CDict } from "../en";
 
 export const map: CDict["map"] = {
   title: "Live kaart van ophaalvoorraad",
-  leadUs: "Alle {n} Apple Stores in de VS",
-  leadOne: "De Apple Store {in}",
-  leadAll: "Alle {n} Apple Stores {in}",
+  leadUs: "{n} Apple Stores, heel de VS",
+  leadOne: "De enige Apple Store {in}",
+  leadAll: "{n} Apple Stores, allemaal {in}",
   leadTail: ", live bijgewerkt. Hoe groter de stip, hoe meer {model}-configuraties beschikbaar zijn.",
   inCountry: "in {country}",
   updated: "Bijgewerkt {ago}",
@@ -15,8 +15,8 @@ export const map: CDict["map"] = {
   anyStorage: "Elke opslag",
   color: "Kleur",
   anyColor: "Elke kleur",
-  mapLabelUs: "Kaart van Apple Stores in de VS",
-  mapLabel: "Kaart van Apple Stores {in}",
+  mapLabelUs: "Apple Stores in de VS op de kaart",
+  mapLabel: "Apple Stores {in} op de kaart",
   loading: "Kaart wordt geladen…",
   errors: {
     library: "De kaartbibliotheek kon niet laden.",
@@ -37,7 +37,7 @@ export const map: CDict["map"] = {
   firstSweep: "Eerste ronde loopt.",
   selected: "Gekozen winkel",
   close: "Sluiten",
-  checked: "{city}, {region} · gecheckt {ago}",
+  checked: "{city}, {region} · laatste check {ago}",
   openStore: "Naar de winkelpagina →",
   alertHere: "Volg deze winkel",
   withStock: "Winkels met voorraad",

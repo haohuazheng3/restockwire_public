@@ -1,8 +1,8 @@
 /**
  * Dutch strings: views — the product × place pages, the restock log, the live map, the iPhone Duo restock-times
  * answer page and the store index, as the Dutch versions (/nl-nl, /nl-be) print them. Same keys, arguments and
- * markup as English; `c: Country` is English data, named here in Dutch (places.countryLabel), and English place
- * or colour names inside product names are put into Dutch.
+ * markup as English. Country data arrives in English and gets its Dutch name via places.countryLabel; colour
+ * and place names in product names are swapped for the Dutch ones.
  */
 import type { ReactNode } from "react";
 import { PendingLink as Link } from "@/components/ui/PendingLink";
@@ -28,7 +28,7 @@ const n$ = (v: number) => num(L, v);
 const cnt = (n: number, one: string, many: string) => `${n$(n)} ${n === 1 ? one : many}`;
 const ARTICLE: Partial<Record<CountryCode, string>> = { us: "de ", uk: "het ", ae: "de " };
 const land = (cc: CountryCode) => countryLabel(cc, L);
-/** "in Nederland", "in de Verenigde Staten". */
+/** Country phrase with article where needed (in de VS). */
 const inC = (c: Country | CountryCode) => { const cc = typeof c === "string" ? c : c.cc; return `in ${ARTICLE[cc] ?? ""}${land(cc)}`; };
 const NOUN: Record<string, [string, string]> = {
   state: ["staat", "staten"], province: ["provincie", "provincies"], area: ["gebied", "gebieden"], department: ["departement", "departementen"],
@@ -42,10 +42,10 @@ const COLORS = ["Night Sky", "Star White", "Black", "Burgundy", "Glacier", "Silv
 const tc = (s: string) => COLORS.reduce((a, col) => a.replace(new RegExp(`\\b${col}\\b`), colorLabel(col, L)), s);
 const pname = (p: Product) => tc(p.name);
 const pshort = (p: Product) => tc(p.short);
-/** "2 dagen", "1 u 5 min", "minder dan een minuut". */
+/** Listing time: days, hours+minutes, or under a minute. */
 const dur = (ms: number) => {
   const s = Math.round(ms / 1000);
-  if (s < 60) return "minder dan een minuut";
+  if (s < 60) return "nog geen minuut";
   const m = Math.floor(s / 60);
   if (m < 60) return unit(L, m, "m");
   const h = Math.floor(m / 60);
@@ -67,7 +67,7 @@ function placeNl(place: Place): string {
 const atPlace = (place: Place) => (place.level === "store" ? `bij ${placeNl(place)}` : `in ${placeNl(place)}`);
 /** "€ 2.339" in the country's currency. */
 const money = (cc: CountryCode, v: number) => price(L, COUNTRIES[cc], v);
-/** "inclusief 21% btw", Canada and the US: "exclusief belasting", Hong Kong: "zonder btw". */
+/** Tax phrase: VAT included (most), excluded (CA, US), none (HK). */
 function taxNoteOf(c: Country): string {
   if (!c.pricesIncludeTax) return "exclusief belasting";
   const m = c.taxNote.match(/\((\d+(?:\.\d+)?)%\)/);
@@ -89,7 +89,7 @@ const localStamp = (iso: string, store: Parameters<typeof localStampIn>[1]) => l
 const hourLabel = (h: number) => hourLabelIn(h, L);
 /** "9:00–11:00" (tables, labels). */
 const rangeLabel = (from: number, to: number) => `${hour(L, from)}–${hour(L, to % 24)}`;
-/** "tussen 9:00 en 11:00" (sentences). */
+/** Hour window for sentences. */
 const between = (from: number, to: number) => `tussen ${hour(L, from)} en ${hour(L, to % 24)}`;
 /** One Apple Store in the country (Belgium). */
 const oneIn = (c: Country | CountryCode) => storesOf(typeof c === "string" ? c : c.cc).length === 1;
@@ -119,27 +119,26 @@ function productTitle(product: Product, place: Place, inStock: number): string {
 
 function productDescription(product: Product, place: Place, inStock: number, stats: PlaceStats): string {
   const name = pname(product);
-  const week = `${cnt(stats.week, "aanvulling", "aanvullingen")} deze week`;
+  const week = `deze week ${n$(stats.week)}× terug`;
   if (place.level === "store") {
     const s = place.store!;
     return fitT([
-      `${name} bij ${appleOf(s)}, ${cityLabel(ccOf(place), s.city, L)}: ${inStock > 0 ? "op te halen bij de laatste check" : "nu niet op te halen"}, ${week}. Wanneer deze winkel aanvult, hoe lang het duurt, en een alert voor de volgende keer.`,
-      `${name} bij ${appleOf(s)}: ${inStock > 0 ? "nu op voorraad" : "nu niet op voorraad"}, ${week}. Aanvultijden en alerts.`,
+      `${name} bij ${appleOf(s)} in ${cityLabel(ccOf(place), s.city, L)}: ${inStock > 0 ? "ligt klaar volgens de recentste check" : "ligt nu niet klaar"}, ${week}. Met aanvuluren, uitverkoopsnelheid en een alert voor de volgende ronde.`,
+      `${name}, ${appleOf(s)}: ${inStock > 0 ? "ligt nu klaar" : "ligt nu niet klaar"}, ${week}. Aanvuluren plus alerts.`,
     ], 155);
   }
   if (place.stores.length === 1) {
     // One store for the whole place (Belgium): name it instead of "1 of 1 Apple Stores".
     const s = place.stores[0];
     return fitT([
-      `${name} bij ${appleOf(s)}: ${inStock > 0 ? "op te halen bij de laatste check" : "nu niet op te halen"}, ${week}. Wanneer de winkel aanvult, hoe lang het duurt, en een alert voor de volgende keer.`,
-      `${name} bij ${appleOf(s)}: ${inStock > 0 ? "nu op voorraad" : "nu niet op voorraad"}, ${week}.`,
+      `${name} bij ${appleOf(s)}: ${inStock > 0 ? "ligt klaar volgens de recentste check" : "ligt nu niet klaar"}, ${week}. Met aanvuluren, uitverkoopsnelheid en een alert voor de volgende ronde.`,
+      `${name}, ${appleOf(s)}: ${inStock > 0 ? "ligt nu klaar" : "ligt nu niet klaar"}, ${week}.`,
     ], 155);
   }
-  const where = place.level === "country" ? (ccOf(place) === "us" ? "Apple Stores in de VS" : `Apple Stores ${inC(ccOf(place))}`) : `Apple Stores in ${placeNl(place)}`;
-  const verb = inStock === 1 ? "heeft" : "hebben";
+  const where = place.level === "country" ? (ccOf(place) === "us" ? "Amerikaanse Apple Stores" : `Apple Stores ${inC(ccOf(place))}`) : `Apple Stores in ${placeNl(place)}`;
   return fitT([
-    `${n$(inStock)} van de ${n$(place.stores.length)} ${where} ${verb} de ${name} op dit moment om op te halen, ${week}. Per winkel, met aanvultijden en een telefoonalert voor de volgende keer.`,
-    `${name}: ${n$(inStock)} van de ${n$(place.stores.length)} ${where} ${verb} hem nu, ${week}. Live per winkel, aanvultijden, alerts.`,
+    `Bij ${n$(inStock)} van de ${n$(place.stores.length)} ${where} ligt de ${name} nu klaar, ${week}. Winkel voor winkel, met aanvuluren en een push voor de volgende ronde.`,
+    `${name}: nu klaar bij ${n$(inStock)}/${n$(place.stores.length)} ${where}, ${week}. Live per winkel, met aanvuluren en alerts.`,
   ], 155);
 }
 
@@ -149,35 +148,35 @@ function productFaq(product: Product, place: Place, lines: StoreLine[], stats: P
   const name = pname(product);
   const at = atPlace(place);
   const inStock = lines.filter((l) => l.available.length > 0);
-  const nearestBit = nearest ? `; de dichtstbijzijnde winkel die hem heeft is ${/^apple\b/i.test(nearest.name) ? nearest.name : `Apple ${nearest.name}`} in ${nearest.city}, op ${distance(L, ccOf(place), nearest.distance)}` : "";
+  const nearestBit = nearest ? `; dichtstbij met voorraad: ${/^apple\b/i.test(nearest.name) ? nearest.name : `Apple ${nearest.name}`} in ${nearest.city}, op ${distance(L, ccOf(place), nearest.distance)}` : "";
   if (place.level === "store") {
     const l = lines[0];
     out.push({
       q: `Is de ${name} nu op voorraad ${at}?`,
       a: l && l.available.length > 0
-        ? `Ja${product.parts.length > 1 ? `: ${list(L, l.available.map((i) => `${i.storage} ${colorLabel(i.color, L)}`), 4, (k) => `nog ${n$(k)}`)}` : ""}, op te halen bij de laatste check.`
-        : `Niet bij de laatste check${nearestBit}.`,
+        ? `Volgens de recentste check wel${product.parts.length > 1 ? `: ${list(L, l.available.map((i) => `${i.storage} ${colorLabel(i.color, L)}`), 4, (k) => `nog ${n$(k)}`)}` : ""}.`
+        : `Volgens de recentste check niet${nearestBit}.`,
     });
   } else if (place.stores.length === 1) {
     const s = place.stores[0];
     out.push({
       q: `Heeft ${appleOf(s)} de ${name} op dit moment?`,
-      a: inStock.length > 0 ? "Ja, op te halen bij de laatste check." : `Niet bij de laatste check${nearestBit}.`,
+      a: inStock.length > 0 ? "Volgens de recentste check wel." : `Volgens de recentste check niet${nearestBit}.`,
     });
   } else {
     out.push({
       q: `Welke Apple Stores ${at} hebben de ${name} op dit moment?`,
       a: inStock.length === 0
-        ? `Geen bij de laatste check${nearestBit}.`
-        : `${cnt(inStock.length, "winkel", "winkels")} bij de laatste check: ${list(L, inStock.map((l) => appleOf(l.store)), 4, (k) => `nog ${n$(k)}`)}.`,
+        ? `Volgens de recentste check geen enkele${nearestBit}.`
+        : `Volgens de recentste check ${cnt(inStock.length, "winkel", "winkels")}: ${list(L, inStock.map((l) => appleOf(l.store)), 4, (k) => `+${n$(k)}`)}.`,
     });
   }
   const peak = peakOf(clock, L);
   out.push({
     q: `Hoe vaak komt de ${name} terug ${at}?`,
-    a: stats.month === 0 ? `Geen bevestigde aanvulling ${at} in de afgelopen ${n$(stats.days)} dagen.` : `${cnt(stats.month, "bevestigde aanvulling", "bevestigde aanvullingen")} in de afgelopen ${n$(stats.days)} dagen, ${n$(stats.week)} daarvan deze week${peak ? `, vooral rond ${peak.hour} lokale tijd` : ""}.`,
+    a: stats.month === 0 ? `${n$(stats.days)} dagen lang geen bevestigde aanvulling ${at}.` : `${n$(stats.month)}× bevestigd over ${n$(stats.days)} dagen, deze week ${n$(stats.week)}×${peak ? `; piek rond ${peak.hour} (tijd ter plaatse)` : ""}.`,
   });
-  if (stats.medianMs != null) out.push({ q: `Hoe lang duurt een aanvulling van de ${name} ${at}?`, a: `Zo'n ${dur(stats.medianMs)} (mediaan) voordat hij weer uitverkocht is.` });
+  if (stats.medianMs != null) out.push({ q: `Hoe lang duurt een aanvulling van de ${name} ${at}?`, a: `Mediaan: ${dur(stats.medianMs)} tussen terugkomst en uitverkocht.` });
   return out;
 }
 
@@ -199,8 +198,8 @@ export const views: Dict["views"] = {
     alertMe: "Alerts aanzetten",
     lastDays: (days: number) => <>{n$(days)} dagen, dag voor dag</>,
     since: "2 november 2026",
-    sourcesWhere: (n: number, c: Country) => (n === 1 ? `de Apple Store ${inC(c)}` : `alle ${n$(n)} Apple Stores ${inC(c)}`),
-    checker: (c: Country) => `iPhone-voorraadchecker ${land(c.cc)}`,
+    sourcesWhere: (n: number, c: Country) => (n === 1 ? `de ene Apple Store ${inC(c)}` : `de ${n$(n)} Apple Stores ${inC(c)}, allemaal`),
+    checker: (c: Country) => `iPhone-voorraad ${land(c.cc)}, live`,
     appleStoresIn: (c: Country) => `Apple Stores ${inC(c)}`,
     storesWithIt: "winkels die hem hebben",
     more: "Meer zien",
@@ -213,8 +212,8 @@ export const views: Dict["views"] = {
     faq: productFaq,
     priceLabel,
     inPlace: (name: string, level: PlaceLevel) => (level === "store" ? `bij ${name}` : `in ${name}`),
-    h1Country: (model: string, c: Country) => `${tc(model)}: ophaalvoorraad ${inC(c)}`,
-    h1Place: (model: string, where: string) => `${tc(model)} ${where}`,
+    h1Country: (model: string, c: Country) => `${tc(model)} ophalen ${inC(c)}: live voorraad`,
+    h1Place: (model: string, where: string) => `${tc(model)} ${where}: live`,
     inStockNow: "Nu beschikbaar",
     yes: "Ja",
     no: "Nee",
@@ -222,7 +221,7 @@ export const views: Dict["views"] = {
     configurations: "configuraties",
     ofStores: (n: number) => `van ${cnt(n, "winkel", "winkels")}`,
     restocks24h: "Aanvullingen, 24 u",
-    restocksHint: (week: number, month: number, days: number) => `${n$(week)} in 7 d · ${n$(month)} in ${n$(days)} d`,
+    restocksHint: (week: number, month: number, days: number) => `7 d: ${n$(week)} · ${n$(days)} d: ${n$(month)}`,
     sellOuts: (days: number) => `Uitverkocht, ${n$(days)} d`,
     stays: (ms: number) => `blijft ~${dur(ms)}`,
     noPairs: "nog geen uitverkoop gemeten",
@@ -240,7 +239,7 @@ export const views: Dict["views"] = {
     allStoresIn: (c: Country) => `Elke winkel ${inC(c)}`,
     everyIphoneHere: "Alle iPhones op deze plek",
     everyIphone: (where: string) => `Alle iPhones ${where}`,
-    panel: (model: string, where: string | null) => `${tc(model)}${where ? ` ${where}` : ""}: kies de configuraties, dan de winkels`,
+    panel: (model: string, where: string | null) => `${tc(model)}${where ? ` ${where}` : ""}: eerst configuraties, daarna winkels aanvinken`,
     unitConfigs: "configuraties",
     unitStores: "winkels",
     otherConfigsHere: "Meer configuraties op deze plek",
@@ -265,31 +264,31 @@ export const views: Dict["views"] = {
     howFast: "Hoe lang een aanvulling duurt",
     restocksByConfig: "Welke configuraties terugkomen",
     faqTitleCountry: (model: string, c: Country) => `${tc(model)} ${inC(c)}: vragen`,
-    faqTitle: (model: string, where: string) => `${tc(model)} ${where}`,
-    buySource: (model: string, c: Country) => `Apple: bestelpagina ${tc(model)} (${land(c.cc)})`,
+    faqTitle: (model: string, where: string) => `${tc(model)} ${where}: vraag en antwoord`,
+    buySource: (model: string, c: Country) => `${tc(model)} kopen bij Apple ${land(c.cc)}`,
     nearby: "Dichtbij",
     otherRegions: (c: Country) => `Andere ${noun(c, true)}`,
     elsewhereIn: (region: string) => `Verder weg in ${region}`,
     everyAppleStoreIn: (c: Country) => `Apple Stores ${inC(c)}, volledige lijst`,
-    across: (model: string, c: Country) => `${tc(model)} in ${c.cc === "us" ? "de hele VS" : `heel ${land(c.cc)}`}`,
-    itemList: (model: string, where: string) => `${tc(model)} ${where}`,
+    across: (model: string, c: Country) => `${tc(model)}: ${c.cc === "us" ? "alle VS-winkels" : `alle winkels ${inC(c)}`}`,
+    itemList: (model: string, where: string) => `Winkels voor de ${tc(model)} ${where}`,
     nearLead: (c: Country, model: string, inStock: number, n: number, have: { store: string; city: string; configs: number }[]) =>
       inStock === 0
-        ? `Op dit moment heeft ${n === 1 ? `de Apple Store ${inC(c)} de ${tc(model)} niet` : `geen enkele Apple Store ${inC(c)} de ${tc(model)}`} om op te halen, dus "bij mij in de buurt" komt neer op welke winkel dichtbij als eerste aanvult. Met een alert op elke winkel die je kunt bereiken, staat de push seconden nadat er een hem aanbiedt op je telefoon.`
-        : `${cnt(inStock, "winkel", "winkels")} van de ${n$(n)} ${inStock === 1 ? "heeft" : "hebben"} de ${tc(model)} op dit moment: ${list(L, have.slice(0, 5).map((l) => `${l.store} in ${l.city} (${cnt(l.configs, "configuratie", "configuraties")})`), 5)}.`,
+        ? `Nul treffers: ${n === 1 ? `de Apple Store ${inC(c)} heeft de ${tc(model)} nu niet` : `geen Apple Store ${inC(c)} heeft de ${tc(model)} nu`} klaarliggen. "In de buurt" wordt dus: welke winkel dichtbij vult als eerste aan? Zet een alert op elke winkel binnen bereik en de push volgt seconden na de aanvulling.`
+        : `Nu klaar in ${n$(inStock)} van ${cnt(n, "winkel", "winkels")}: ${list(L, have.slice(0, 5).map((l) => `${l.store}, ${l.city} (${cnt(l.configs, "configuratie", "configuraties")})`), 5)}.`,
     nearHead: (c: Country) => [cap(noun(c)), "Winkels die hem nu hebben"],
     nearCaption: (c: Country, model: string) => `Ophaalvoorraad ${tc(model)} per ${noun(c)}, laatste check`,
-    nearMe: (c: Country, model: string, alert: string) => `Tik op In de buurt in de alert-instellingen op deze pagina en elke winkel wordt gerangschikt vanaf waar je staat, op geschatte afstand over de weg in ${c.unit === "mi" ? "mijlen" : "kilometers"}, elk met een link voor de route. [Stel een ${tc(model)}-alert in](${alert}).`,
+    nearMe: (c: Country, model: string, alert: string) => `In de alert-instellingen hieronder zet In de buurt alle winkels op volgorde vanaf jouw plek: geschatte afstand over de weg in ${c.unit === "mi" ? "mijlen" : "kilometers"}, met een routelink per winkel. [${tc(model)}-alert instellen](${alert}).`,
     modelFaq: (c: Country, model: string, low: number, high: number, inStock: number): { price: FaqItem; reserve: FaqItem } => ({
-      price: { q: `Wat kost de ${tc(model)} ${inC(c)}?`, a: `${money(c.cc, low)} tot ${money(c.cc, high)} op apple.com (${taxNoteOf(c)}), afhankelijk van de opslag.` },
-      reserve: { q: `Kun je de ${tc(model)} reserveren om op te halen ${inC(c)}?`, a: `Niet vooraf: zodra een winkel je configuratie aanbiedt, bestel je hem op apple.com met ophalen in de winkel, en Apple houdt hem apart voor jouw tijdvak.${inStock === 0 ? " Op dit moment biedt geen winkel hem aan, dus met een alert ben je er als eerste bij." : ""}` },
+      price: { q: `Wat kost de ${tc(model)} ${inC(c)}?`, a: `Op apple.com van ${money(c.cc, low)} tot ${money(c.cc, high)} (${taxNoteOf(c)}); de opslag bepaalt de prijs.` },
+      reserve: { q: `Kan ik de ${tc(model)} ${inC(c)} vastleggen voor ophalen?`, a: `Niet vooraf: zodra een winkel je configuratie aanbiedt, bestel je hem op apple.com met ophalen in de winkel, en Apple houdt hem apart voor jouw tijdvak.${inStock === 0 ? " Op dit moment biedt geen winkel hem aan, dus met een alert ben je er als eerste bij." : ""}` },
     }),
   },
 
   /* ---------------------------------------------------------------- /restock-log */
   restocks: {
     metaTitle: (c: Country, n: number) => `iPhone-aanvullingen ${inC(c)}, live: ${n === 1 ? "de Apple Store" : `${n$(n)} Apple Stores`}`,
-    metaDescription: (c: Country, n: number) => `Elke bevestigde aanvulling van de iPhone Duo, 18 Pro en Pro Max om op te halen ${n === 1 ? "in de Apple Store" : "in de Apple Stores"} ${inC(c)}: tijd, exacte configuratie, kaart.`,
+    metaDescription: (c: Country, n: number) => `Logboek van ${n === 1 ? "de Apple Store" : "alle Apple Stores"} ${inC(c)}: elke bevestigde terugkeer van iPhone Duo, 18 Pro en Pro Max voor ophalen, met tijdstip, exacte configuratie en kaart.`,
     h1: (c: Country) => `iPhone-aanvullingen ${inC(c)}, live gelogd`,
     summary: (day: number, week: number, model?: string, region?: string) => <>{cnt(day, "aanvulling", "aanvullingen")} in de afgelopen 24 uur · {n$(week)} in 7 dagen{model ? ` · ${model}` : ""}{region ? ` · ${region}` : ""}. Tijden staan in je eigen tijdzone.</>,
     allModels: "Alle modellen",
@@ -305,8 +304,8 @@ export const views: Dict["views"] = {
     byPlace: "Aanvullingen, plaats voor plaats",
     byRegion: (c: Country) => `Per ${noun(c)}`,
     datasetName: (c: Country) => `iPhone-aanvullingen om op te halen in ${oneIn(c) ? "de Apple Store" : "Apple Stores"} ${inC(c)}`,
-    datasetDescription: (c: Country) => `Bevestigde aanvullingen en uitverkochte momenten van de iPhone Duo, iPhone 18 Pro en iPhone 18 Pro Max om op te halen in ${c.cc === "us" ? "alle 269 Apple Stores in de VS" : oneIn(c) ? `de Apple Store ${inC(c)}` : `de Apple Stores ${inC(c)}`}: winkel, exacte configuratie, tijd. Winkels worden elke 15 seconden gelezen (elke 5 seconden waar een alert staat), en een aanvulling komt pas in het logboek als apple.com twee keer hetzelfde antwoord geeft.`,
-    datasetMeasured: ["Apple Store", "iPhone-model, opslag en kleur", "tijd van aanvulling", "tijd van uitverkoop"],
+    datasetDescription: (c: Country) => `Wanneer iPhone Duo, iPhone 18 Pro en iPhone 18 Pro Max terugkwamen voor ophalen en wanneer ze weer op waren, in ${c.cc === "us" ? "de 269 Amerikaanse Apple Stores" : oneIn(c) ? `de Apple Store ${inC(c)}` : `de Apple Stores ${inC(c)}`}: per winkel, configuratie en tijdstip. Elke winkel om de 15 seconden gelezen, alertwinkels om de 5 seconden; pas bij twee gelijke antwoorden van apple.com komt een regel in het logboek.`,
+    datasetMeasured: ["Apple Store", "model, opslag en kleur", "moment van terugkeer", "moment van uitverkocht"],
   },
 
   /* ---------------------------------------------------------------- /live-map */
@@ -323,23 +322,23 @@ export const views: Dict["views"] = {
   storesIndex: {
     metaDescription: (c: Country, n: number, regions: number, cities: number, duo: number, max: number) => {
       const by = c.regionNoun && regions > 1 ? ` per ${noun(c)} en stad` : cities > 1 ? " per stad" : "";
-      if (n === 1) return `${appleOf(storesOf(c.cc)[0])}, de enige Apple Store ${inC(c)}: iPhone Duo nu ${duo ? "beschikbaar" : "niet beschikbaar"}, Pro Max ${max ? "wel" : "niet"}. Live ophaalvoorraad, ook van de 18 Pro.`;
-      return `Nu ${duo === 1 ? "heeft" : "hebben"} ${n$(duo)} de iPhone Duo en ${n$(max)} de Pro Max: live ophaalvoorraad in alle ${n$(n)} Apple Stores ${inC(c)}${by}, ook van de 18 Pro.`;
+      if (n === 1) return `Eén Apple Store ${inC(c)}: ${appleOf(storesOf(c.cc)[0])}. Ligt de iPhone Duo er nu? ${duo ? "Ja" : "Nee"}. De Pro Max? ${max ? "Ja" : "Nee"}. Live ophaalstatus, de 18 Pro inbegrepen.`;
+      return `iPhone Duo nu klaar in ${n$(duo)}, Pro Max in ${n$(max)} van de ${n$(n)} Apple Stores ${inC(c)}. Live ophaalstatus${by}, de 18 Pro inbegrepen.`;
     },
     countAnswer: (n: number, spread: string, top: { name: string; count: number }[]) => `${n$(n)}, ${spread}${top.length ? `; ${top[0].name} staat bovenaan met ${n$(top[0].count)}${top[1] ? `, voor ${top[1].name} (${n$(top[1].count)})` : ""}` : ""}.`,
-    howMany: (c: Country) => <>Hoeveel Apple Stores zijn er {inC(c)}?</>,
+    howMany: (c: Country) => <>Hoeveel Apple Stores staan er {inC(c)}?</>,
     duoNow: (c: Country, n: number, have: Store[]): FaqItem => n === 1 ? ({
-      q: `Heeft de Apple Store ${inC(c)} de iPhone Duo op dit moment?`,
-      a: have.length === 0 ? "Niet bij de laatste check; deze pagina en de kaart passen zich aan zodra de winkel hem aanbiedt, en een alert bereikt je nog eerder." : `Ja, bij de laatste check: ${appleOf(have[0])}.`,
+      q: `Ligt de iPhone Duo nu klaar in de Apple Store ${inC(c)}?`,
+      a: have.length === 0 ? "Volgens de recentste check niet. Pagina en kaart springen om zodra hij terug is; een alert is nog sneller." : `Volgens de recentste check wel, bij ${appleOf(have[0])}.`,
     }) : ({
-      q: `Welke Apple Stores ${inC(c)} hebben de iPhone Duo op dit moment?`,
-      a: have.length === 0 ? `Geen van de ${n$(n)} bij de laatste check; deze pagina en de kaart passen zich aan zodra er een hem aanbiedt, en een alert bereikt je nog eerder.` : `${n$(have.length)} van de ${n$(n)} bij de laatste check: ${have.slice(0, 6).map(appleOf).join(", ")}${have.length > 6 ? " en meer" : ""}.`,
+      q: `Waar ${inC(c)} ligt de iPhone Duo nu klaar?`,
+      a: have.length === 0 ? `Volgens de recentste check in geen van de ${n$(n)}. Pagina en kaart springen om zodra er een terug is; een alert is nog sneller.` : `Volgens de recentste check in ${n$(have.length)} van de ${n$(n)}: ${have.slice(0, 6).map(appleOf).join(", ")}${have.length > 6 ? " en meer" : ""}.`,
     }),
     faq: (ctx: FaqContext) => placeFaq({ ...ctx, omit: [...(ctx.omit ?? []), "count", "stock", "lasts"] }, L),
     duoBlock: (alert: string) => `Een alert op de winkels waar je kunt komen is de snelste weg naar een exemplaar: [stel een iPhone Duo-alert in](${alert}). Eén alert dekt één winkel × één exacte configuratie, en je telefoon hoort het seconden nadat die winkel hem aanbiedt.`,
     intro: (c: Country, n: number, spread: string, now: { duo: number; max: number; pro: number }, tax: string) => n === 1
       ? `Nu op te halen: iPhone Duo **${now.duo ? "ja" : "nee"}**, iPhone 18 Pro Max **${now.max ? "ja" : "nee"}**, 18 Pro **${now.pro ? "ja" : "nee"}**. Er is **1 Apple Store** ${inC(c)}: ${appleOf(storesOf(c.cc)[0])}, ${spread}. ${tax}`
-      : `Op dit moment ${now.duo === 1 ? "heeft" : "hebben"} **${n$(now.duo)}** een iPhone Duo om op te halen, **${n$(now.max)}** de iPhone 18 Pro Max en **${n$(now.pro)}** de 18 Pro, van de **${cnt(n, "Apple Store", "Apple Stores")}** ${inC(c)}, ${spread}. ${tax}${c.cc === "nl" ? "\n\nRotterdam en Utrecht hebben geen Apple Store: vanuit Rotterdam is Apple Den Haag het dichtstbij, vanuit Utrecht Apple Amsterdam." : ""}`,
+      : `Nu klaar om op te halen: iPhone Duo in **${n$(now.duo)}**, iPhone 18 Pro Max in **${n$(now.max)}**, 18 Pro in **${n$(now.pro)}** van de **${cnt(n, "Apple Store", "Apple Stores")}** ${inC(c)}, ${spread}. ${tax}${c.cc === "nl" ? "\n\nIn Rotterdam en Utrecht zit geen Apple Store. Rotterdam wijkt uit naar Apple Den Haag, Utrecht naar Apple Amsterdam." : ""}`,
     crumb: "Apple Stores",
     panel: (c: Country) => `Kies je iPhones en vink dan de winkels ${inC(c)} aan die je kunt bereiken`,
     matrixLabel: "Voorraad per winkel",
@@ -381,17 +380,17 @@ export const views: Dict["views"] = {
       const { c, t, w, pattern } = x;
       const region = c.cc === "us" ? "staat" : c.regionNoun ? noun(c) : "winkel";
       const since = dateLabel(t.since, false);
-      const inStores = oneIn(c) ? `in de Apple Store ${inC(c)}` : `in Apple Stores ${inC(c)}`;
+      const inStores = oneIn(c) ? `bij de enige Apple Store ${inC(c)}` : `over alle Apple Stores ${inC(c)}`;
       return t.n > 0 && pattern
         ? fitT([
-          `${rtN(t.n)} aanvullingen van de iPhone Duo ${inStores} sinds ${since}: ${rtPct(w.share)} ${between(w.from, w.to)} lokale tijd${t.sellout ? `, ${rtPct(t.sellout.within2min)} binnen 2 minuten weg` : ""}. Tabellen per uur, dag, ${region}, winkel en configuratie.`,
-          `${rtN(t.n)} aanvullingen van de iPhone Duo ${inStores} sinds ${since}: ${rtPct(w.share)} ${between(w.from, w.to)} lokale tijd. Tabellen per uur, dag, ${region} en configuratie.`,
-          `Aanvultijden iPhone Duo ${inC(c)}: ${rtN(t.n)} aanvullingen sinds ${since}, per uur, dag, ${region} en configuratie.`,
+          `iPhone Duo ${inStores} sinds ${since}: ${rtN(t.n)}× terug, ${rtPct(w.share)} daarvan ${between(w.from, w.to)} (tijd ter plaatse)${t.sellout ? `; ${rtPct(t.sellout.within2min)} was binnen 2 minuten op` : ""}. Uitgesplitst naar uur, dag, ${region}, winkel en configuratie.`,
+          `iPhone Duo ${inStores} sinds ${since}: ${rtN(t.n)}× terug, ${rtPct(w.share)} daarvan ${between(w.from, w.to)} (tijd ter plaatse). Uitgesplitst naar uur, dag, ${region} en configuratie.`,
+          `Wanneer de iPhone Duo terugkomt ${inC(c)}: ${rtN(t.n)} keer sinds ${since}, naar uur, dag, ${region} en configuratie.`,
         ], 158)
         : t.n > 0
           ? fitT([
-            `${rtN(t.n)} bevestigde aanvullingen van de iPhone Duo ${inStores} sinds ${since}, uit checks elke ${SPEED.checkSec} seconden: per lokaal uur, dag voor dag, per ${region}, winkel en configuratie, en hoe lang elke duurde.`,
-            `Aanvultijden iPhone Duo ${inC(c)}: ${rtN(t.n)} bevestigde aanvullingen sinds ${since}, per uur, dag, ${region} en configuratie.`,
+            `Sinds ${since} ${rtN(t.n)}× een bevestigde iPhone Duo-aanvulling ${inStores}, gemeten met checks om de ${SPEED.checkSec} seconden: naar uur ter plaatse, dag, ${region}, winkel en configuratie, plus de duur van elk.`,
+            `Wanneer de iPhone Duo terugkomt ${inC(c)}: ${rtN(t.n)}× bevestigd sinds ${since}, naar uur, dag, ${region} en configuratie.`,
           ], 158)
           : `Aanvultijden van de iPhone Duo ${inStores}, uur voor uur, dag voor dag, per winkel en configuratie: RestockWire leest elke winkel elke ${SPEED.checkSec} seconden sinds ${longDate(t.since)}.`;
     },
@@ -399,21 +398,21 @@ export const views: Dict["views"] = {
       ? `Hoe laat vult Apple de iPhone Duo aan ${inC(x.c)}?`
       : x.t.n > 0
         ? `Hoe laat vult Apple de iPhone Duo aan ${inC(x.c)}? ${x.pattern ? `Meestal ${between(x.w.from, x.w.to)} lokale tijd` : "Onze eigen checks, uur voor uur"}`
-        : `Vult Apple de iPhone Duo aan ${inC(x.c)}? Tot nu toe niet, en dit is wat we volgen`,
+        : `Komt de iPhone Duo terug ${inC(x.c)}? Nog niet gezien, en zo houden we de wacht`,
     intro: (x: RestockTimesView) => {
       const { t, one, tracked, pattern, w } = x;
       const where = inC(x.c);
-      const inStores = one ? "in de Apple Store" : "in Apple Stores";
+      const inStores = one ? "bij de enige Apple Store" : "over alle Apple Stores";
       return t.unknown ? (
         <>Het voorraadlogboek is even niet beschikbaar. De winkels {where} worden nog steeds elke {SPEED.checkSec} seconden gelezen, en bij de volgende keer laden zijn de cijfers terug.</>
       ) : t.n > 0 && pattern ? (
         // The sentence an answer engine lifts whole: share, sample size, since-date, window, local time (docs/research.md §8).
         <>
-          <b className="text-ink">{rtPct(w.share)} van de {rtN(t.n)} aanvullingen van de iPhone Duo</b> die RestockWire sinds {longDate(t.since)} {inStores} {where} bevestigde, kwam <b className="text-ink">{between(w.from, w.to)}</b>, lokale tijd van de winkel{x.sell ? <>; een gemiddelde was na zo&apos;n {Math.round(x.sell.medianSec / 5) * 5} seconden weg</> : null}. <b className="text-ink">Er komen nog steeds aanvullingen</b>{tracked > 1 ? <>: {rtN(t.days)} van de {rtN(tracked)} gevolgde dagen hadden er een</> : <> (pas één gevolgde dag)</>}.
+          Van de {rtN(t.n)} iPhone Duo-aanvullingen die RestockWire sinds {longDate(t.since)} {inStores} {where} bevestigde, viel <b className="text-ink">{rtPct(w.share)} {between(w.from, w.to)}</b> (klok van de winkel){x.sell ? <>; een gemiddelde was na zo&apos;n {Math.round(x.sell.medianSec / 5) * 5} seconden weg</> : null}. <b className="text-ink">Er komen nog steeds aanvullingen</b>{tracked > 1 ? <>: {rtN(t.days)} van de {rtN(tracked)} gevolgde dagen hadden er een</> : <> (pas één gevolgde dag)</>}.
         </>
       ) : t.n > 0 ? (
         <>
-          <b className="text-ink">Ja.</b> <b className="text-ink">{cnt(t.n, "aanvulling", "aanvullingen")} van de iPhone Duo sinds {longDate(t.since)}</b> {inStores} {where}{tracked > 1 ? <>, op {rtN(t.days)} van de {rtN(tracked)} dagen</> : <> (pas één gevolgde dag)</>}; een gebruikelijk uur noemen we zodra er {PATTERN_MIN} aanvullingen op {PATTERN_MIN_DAYS} verschillende dagen zijn.
+          <b className="text-ink">Ja.</b> <b className="text-ink">Sinds {longDate(t.since)} {rtN(t.n)}× een iPhone Duo terug</b> {inStores} {where}{tracked > 1 ? <>, op {rtN(t.days)} van de {rtN(tracked)} dagen</> : <> (pas één gevolgde dag)</>}; een gebruikelijk uur noemen we zodra er {PATTERN_MIN} aanvullingen op {PATTERN_MIN_DAYS} verschillende dagen zijn.
         </>
       ) : (
         <>
@@ -423,11 +422,11 @@ export const views: Dict["views"] = {
     },
     hero: {
       restocks: (x: RestockTimesView) => `aanvullingen bevestigd sinds ${dateLabel(x.t.since, false)}`,
-      window: (x: RestockTimesView) => `viel ${between(x.w.from, x.w.to)}, lokale tijd van de winkel`,
+      window: (x: RestockTimesView) => `kwam ${between(x.w.from, x.w.to)} (klok van de winkel)`,
       days: "dagen met een aanvulling",
-      now: ((one: boolean): string => (one ? "winkel heeft er nu een om op te halen" : "winkels hebben er nu een om op te halen")) as RT["hero"]["now"],
+      now: ((one: boolean): string => (one ? "winkel met een Duo klaar, nu" : "winkels met een Duo klaar, nu")) as RT["hero"]["now"],
       today: (x: RestockTimesView, today: DayRow) => `tot nu toe vandaag (${dateLabel(today.date)})${x.one ? "" : `, in ${cnt(today.stores, "winkel", "winkels")}`}`,
-      weekday: "drukste weekdag tot nu toe",
+      weekday: "topdag van de week, tot dusver",
     },
     heroPoints: (x: RestockTimesView, latest: { config: string; store: Store; at: string } | null): Point[] => [
       ...(latest ? [{ text: <>Nieuwste: <b className="text-ink">{latest.config}</b>{x.one ? null : <> bij <Link href={storePath(latest.store)} className="underline underline-offset-2">{appleOf(latest.store)}</Link></>}, {localStamp(latest.at, latest.store)} lokale tijd</> }] : []),
@@ -435,7 +434,7 @@ export const views: Dict["views"] = {
       { text: <>Er is <b className="text-ink">geen officieel aanvulschema</b>; dit zijn onze eigen bevestigde checks, ongeveer elke vijf minuten ververst</>, no: true },
     ],
     emptyPoints: (x: RestockTimesView): Point[] => [
-      { text: x.one ? <>De winkel heeft er nu <b className="text-ink">{x.duoNow ? "een" : "geen"}</b> om op te halen</> : <><b className="text-ink">{rtN(x.duoNow)} van de {rtN(x.stores)}</b> {x.duoNow === 1 ? "heeft" : "hebben"} er nu een om op te halen</> },
+      { text: x.one ? <>Op dit moment ligt er <b className="text-ink">{x.duoNow ? "wel" : "geen"}</b> Duo klaar in de winkel</> : <>Nu klaar om op te halen in <b className="text-ink">{rtN(x.duoNow)} van de {rtN(x.stores)}</b></> },
       { text: <>De eerste bevestigde aanvulling opent elke tabel hieronder</>, step: true },
       { text: <>Voor uur- en weekdagpatronen uit de grootste steekproef: <Link href="/when-does-iphone-duo-restock" className="underline underline-offset-2">de pagina voor de VS</Link></>, step: true },
     ],
@@ -468,13 +467,13 @@ export const views: Dict["views"] = {
       const window = between(w.from, w.to);
       return [
         { q: `Wanneer vult Apple de iPhone Duo aan ${where}?`, a: t.n > 0 && pattern
-          ? `${cap(window)}, lokale tijd van de winkel, viel ${rtPct(w.share)} van de ${rtN(t.n)} bevestigde aanvullingen sinds ${longDate(t.since)}, en tussen 8:00 en 12:00 ${rtPct(hourShare(t.byHour, 8, 12))}. Er is geen officieel schema; dit is het patroon dat RestockWire ziet, ongeveer elke vijf minuten ververst.`
+          ? `Meestal ${window} op de klok van de winkel: daar viel ${rtPct(w.share)} van ${rtN(t.n)} bevestigde aanvullingen sinds ${longDate(t.since)}; 8:00–12:00 samen ${rtPct(hourShare(t.byHour, 8, 12))}. Apple publiceert geen schema. Dit patroon komt uit onze eigen checks en wordt ongeveer elke vijf minuten bijgewerkt.`
           : `RestockWire heeft ${where} ${cnt(t.n, "bevestigde aanvulling", "bevestigde aanvullingen")} gelogd sinds ${longDate(t.since)}${t.days ? `, op ${cnt(t.days, "dag", "dagen")}` : ""}, en Apple maakt geen schema bekend. Zodra er ${PATTERN_MIN} aanvullingen op ${PATTERN_MIN_DAYS} verschillende dagen zijn, noemt deze pagina vanzelf een gebruikelijk uur.` },
         { q: `Wordt de iPhone Duo ook in het weekend aangevuld${us ? "" : ` ${where}`}?`, a: t.n > 0
           ? `${weekend > 0 ? "Ja" : "Tot nu toe niet"}: ${cnt(weekend, "aanvulling", "aanvullingen")} van de ${rtN(t.n)} (${rtPct(weekend / t.n)}) ${weekend === 1 ? "viel" : "vielen"} op een zaterdag of zondag. ${t.peakWeekday != null ? `De drukste weekdag tot nu toe is ${WEEKDAYS_NL[t.peakWeekday]}.` : `Een drukste weekdag noemen we pas als de data ${WEEKDAY_MIN_SPAN} dagen beslaat; tot nu toe zijn dat er ${rtN(tracked)}.`}`
           : `Er is nog geen weekenddata ${where}; de dagtabel op deze pagina groeit met elke bevestigde aanvulling.` },
         { q: "Wanneer moet ik apple.com in de gaten houden?", a: t.n > 0 && pattern
-          ? `Met de hand: zet apple.com open met ophalen geselecteerd vanaf ${hourLabel(w.from)} lokale tijd; dat venster van twee uur bevat ${rtPct(w.share)} van de aanvullingen. Een gemiddelde aanvulling ${sell ? `was bij de mediaan binnen ${sell.medianSec} seconden weg` : "duurt ongeveer een minuut"}, en daarom wint een alert die elke ${SPEED.fastSec} seconden leest ([zo werken alerts](/iphone-duo-restock-alerts)) van elke hoeveelheid verversen.`
+          ? `Zelf kijken? Open apple.com met ophalen aangevinkt vanaf ${hourLabel(w.from)} (tijd ter plaatse); die twee uur dekken ${rtPct(w.share)} van alle aanvullingen. De mediane aanvulling ${sell ? `was na ${sell.medianSec} seconden op` : "is na zo'n minuut op"}, en daarom wint een alert die elke ${SPEED.fastSec} seconden leest ([zo werken alerts](/iphone-duo-restock-alerts)) van elke hoeveelheid verversen.`
           : `Zolang het patroon ${where} nog vorm krijgt, kan een alert voor je kijken: je gekozen winkels worden dag en nacht elke ${SPEED.fastSec} seconden gelezen ([zo werken alerts](/iphone-duo-restock-alerts)).` },
         { q: "Waarom is de iPhone Duo in elke Apple Store “niet beschikbaar”?", a: sell
           ? `Aanvullingen zijn kort: van de ${rtN(sell.n)} gemeten uitverkochte aanvullingen ${where} was ${rtPct(sell.within2min)} binnen 2 minuten weg en ${rtPct(sell.within20min)} binnen 20. Op dit moment ${x.duoNow === 1 ? "heeft" : "hebben"} ${rtN(x.duoNow)} van de ${rtN(x.stores)} winkels er een, dus meestal zegt apple.com terecht “niet beschikbaar”, ook op dagen met tientallen aanvullingen ([wat “niet beschikbaar” betekent](/apple-store-pickup-explained)).`
@@ -489,16 +488,16 @@ export const views: Dict["views"] = {
       reports: (tracker: string) => `${tracker}: meldingen van iPhone Duo-aanvullingen uit de lanceringsweek (hun eigen waarnemingen, apart gehouden en nooit meegeteld)`,
     },
     ld: (x: RestockTimesView) => ({
-      datasetName: `Aanvultijden van de iPhone Duo om op te halen, Apple Stores ${inC(x.c)}`,
-      description: `Bevestigde aanvullingen van de iPhone Duo om op te halen in Apple Stores ${inC(x.c)} sinds ${x.t.since} (winkel, configuratie, tijd), uit RestockWire dat elke winkel elke ${SPEED.checkSec} seconden leest; gegroepeerd per lokaal uur, dag, ${rtRegion(x)}, winkel en configuratie.`,
+      datasetName: `iPhone Duo terug voor ophalen: tijdstippen, Apple Stores ${inC(x.c)}`,
+      description: `Elke bevestigde terugkeer van de iPhone Duo voor ophalen in Apple Stores ${inC(x.c)} sinds ${x.t.since}, met winkel, configuratie en tijdstip. Bron: RestockWire, dat elke winkel om de ${SPEED.checkSec} seconden leest. Gegroepeerd naar uur ter plaatse, dag, ${rtRegion(x)}, winkel en configuratie.`,
       spatial: `Apple Stores ${inC(x.c)}`,
-      measured: ["tijd van aanvulling (lokale tijd van de winkel)", "Apple Store", "opslag en kleur van de iPhone Duo", "seconden tot uitverkocht"],
-      size: `${cnt(x.t.n, "aanvulling", "aanvullingen")} in ${cnt(x.t.stores, "winkel", "winkels")}`,
+      measured: ["moment van terugkeer (klok van de winkel)", "Apple Store", "iPhone Duo-configuratie (opslag, kleur)", "seconden tot uitverkocht"],
+      size: `${n$(x.t.n)} aanvullingen, ${n$(x.t.stores)} winkels`,
     }),
     crumb: "Aanvuluren iPhone Duo",
 
     // ---- time of day
-    timeLead: (x: RestockTimesView) => <b>{cap(between(x.w.from, x.w.to))}, lokale tijd van de winkel, bevat {rtPct(x.w.share)} van de {rtN(x.t.n)} aanvullingen; tussen 8:00 en 12:00 is dat {rtPct(hourShare(x.t.byHour, 8, 12))}.</b>,
+    timeLead: (x: RestockTimesView) => <b>{rtPct(x.w.share)} van {rtN(x.t.n)} aanvullingen valt {between(x.w.from, x.w.to)} op de klok van de winkel; het blok 8:00–12:00 pakt {rtPct(hourShare(x.t.byHour, 8, 12))}.</b>,
     busiestHour: (count: number) => `${cnt(count, "aanvulling", "aanvullingen")} in het drukste uur`,
     morning: "tussen 8:00 en 12:00",
     evening: "na 17:00, dus de avond telt ook mee",
@@ -509,15 +508,15 @@ export const views: Dict["views"] = {
       { text: <>Eén golf van tien aanvullingen is één gebeurtenis, geen gewoonte</>, no: true },
       { text: <>Elke nieuwe dag aan data werkt deze pagina vanzelf bij</>, step: true },
     ],
-    hourCaption: (x: RestockTimesView) => `${cnt(x.t.n, "aanvulling", "aanvullingen")} van de iPhone Duo ${inC(x.c)} per lokaal uur van de winkel, ${dateLabel(x.t.since, false)} tot vandaag`,
-    hourHead: ["Lokaal uur", "Aanvullingen", "Aandeel"],
+    hourCaption: (x: RestockTimesView) => `iPhone Duo ${inC(x.c)}, ${dateLabel(x.t.since, false)} tot vandaag: ${n$(x.t.n)} aanvullingen naar uur ter plaatse`,
+    hourHead: ["Uur ter plaatse", "Keer terug", "Deel"],
     morningKeys: (x: RestockTimesView): Point[] => [
       { text: <>De ochtendpiek heeft <b className="text-ink">niets met de openingstijd te maken</b>{x.us ? " (de meeste Apple Stores in de VS gaan om 10:00 open)" : ""}</> },
       { text: <>Apple geeft ophaalvoorraad <b className="text-ink">online</b> vrij, nog voor de deuren opengaan</> },
       { text: <>Kijk je zelf? Neem <b className="text-ink">{rangeLabel(x.w.from, x.w.to)}</b> op doordeweekse ochtenden</>, step: true },
       { text: <>Een <Link href={x.alert}>alert</Link> dekt de <b className="text-ink">overige 22 uur</b>, als niemand anders kijkt</>, step: true },
     ],
-    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>Elke winkelpagina toont de eigen uren in de eigen tijdzone (<Link href={x.storesHref}>{x.us ? "Apple Stores per staat" : `winkels ${inC(x.c)}`}</Link>), zodat je de winkel ziet die om 8:00 aanvult terwijl de regio om 9:00 piekt</>, step: true }],
+    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>Elke winkelpagina toont de eigen uren in de eigen tijdzone (<Link href={x.storesHref}>{x.us ? "winkels, staat voor staat" : `winkels ${inC(x.c)}`}</Link>), zodat je de winkel ziet die om 8:00 aanvult terwijl de regio om 9:00 piekt</>, step: true }],
 
     // ---- day by day
     dayLead: (x: RestockTimesView) => {
@@ -536,7 +535,7 @@ export const views: Dict["views"] = {
     drop: (x: RestockTimesView, drop: { at: string; restocks: number }) => `winkels aangevuld binnen één halfuur, ${zoneStamp(drop.at, x.c)} (${cnt(drop.restocks, "configuratie", "configuraties")}): een landelijke vrijgave`,
     weekend: (x: RestockTimesView) => `viel in een weekend (${cnt(x.weekend, "aanvulling", "aanvullingen")})`,
     dayCaption: (x: RestockTimesView) => `Aanvullingen van de iPhone Duo per dag ${inC(x.c)}${x.t.reports.length ? "; rijen met “gemeld” komen uit gepubliceerde waarnemingen van andere trackers van voor onze eigen metingen, alleen opgenomen voor de tijdlijn" : ""}`,
-    dayHead: { date: "Datum", restocks: "Aanvullingen", stores: "Winkels", busiest: "Drukste uur", source: "Bron" },
+    dayHead: { date: "Dag", restocks: "Keer terug", stores: "Winkels", busiest: "Piekuur", source: "Bron" },
     soFar: " · tot nu toe",
     reportedBy: (names: string[]) => <>volgens {names.join(" / ")}</>,
     dayKeys: (x: RestockTimesView, launch: string, resumed: string): Point[] => [
@@ -554,13 +553,13 @@ export const views: Dict["views"] = {
       <b>{hit[0].name}: {cnt(hit[0].restocks, "aanvulling", "aanvullingen")} in {rtN(hit[0].stores)} van de {cnt(hit[0].storesTotal, "winkel", "winkels")} daar sinds {dateLabel(x.t.since, false)}{hit[1] ? <>, gevolgd door {hit[1].name} ({rtN(hit[1].restocks)})</> : null}{hit[2] ? <> en {hit[2].name} ({rtN(hit[2].restocks)})</> : null}; {rtN(hit.length)} van de {rtN(total)} {rtRegions(x)} {hit.length === 1 ? "heeft" : "hebben"} een aanvulling gezien{total - hit.length > 0 ? `, ${rtN(total - hit.length)} nog geen` : ""}.</b>
     ),
     whereNone: (x: RestockTimesView) => <b>Nog geen {rtRegion(x)} {inC(x.c)} met een bevestigde aanvulling; de eerste opent de tabel.</b>,
-    regionCaption: (x: RestockTimesView) => `Bevestigde aanvullingen van de iPhone Duo per ${rtRegion(x)} ${inC(x.c)}, ${dateLabel(x.t.since, false)} tot vandaag`,
-    regionHead: (x: RestockTimesView) => [cap(rtRegion(x)), "Aanvullingen", "Winkels aangevuld", "Laatste aanvulling (lokale tijd)"],
+    regionCaption: (x: RestockTimesView) => `iPhone Duo ${inC(x.c)} naar ${rtRegion(x)}, ${dateLabel(x.t.since, false)} tot vandaag (bevestigd)`,
+    regionHead: (x: RestockTimesView) => [cap(rtRegion(x)), "Keer terug", "Winkels met aanvulling", "Recentste (tijd ter plaatse)"],
     ofN: (a: number, b: number) => <>{rtN(a)} van {rtN(b)}</>,
     storesCaption: (x: RestockTimesView) => `Winkels met de meeste aanvullingen van de iPhone Duo ${inC(x.c)}, ${dateLabel(x.t.since, false)} tot vandaag`,
     storesHead: ["Winkel", "Aanvullingen", "Dagen", "Gebruikelijk uur", "Laatste (lokale tijd)"],
     swaps: (x: RestockTimesView) => [
-      { no: "Achter de bovenste winkel van de lijst aan, hoe ver ook", yes: `Twee of drie winkels die je ${x.pattern ? `rond ${hourLabel(x.w.from)}` : "'s ochtends"} binnen een uur kunt bereiken`, why: "Aan een aanvulling buiten bereik heb je niets, en zelfs de drukste winkel staat op een paar minuten per dag na op niet beschikbaar." },
+      { no: "De nummer één van de lijst najagen, waar die ook ligt", yes: `Twee, drie winkels waar je ${x.pattern ? `rond ${hourLabel(x.w.from)}` : "'s ochtends"} binnen het uur staat`, why: "Een aanvulling die je niet haalt, telt niet. Ook de drukste winkel staat het grootste deel van de dag op niet beschikbaar." },
       { no: "Alles op één winkel zetten", yes: "Een alert op elk, en dan naar de winkel waar er een afgaat", why: "Gebruik de teltabel alleen om te kiezen naar welke van je winkels je eerst gaat." },
     ],
     nearMe: "Duo-voorraad bij jou in de buurt, live",
@@ -570,13 +569,13 @@ export const views: Dict["views"] = {
       <b>{top.label} gaat voorop met {rtN(top.restocks)} van de {rtN(x.t.n)} aanvullingen ({rtPct(top.restocks / x.t.n)}){rarest ? `; de ${rarest.label} sluit de rij met ${cnt(rarest.restocks, "aanvulling", "aanvullingen")}` : ""}.</b>
     ),
     mostRestocked: (config: string) => `${config} komt vaker terug dan elke andere configuratie`,
-    versus: (a: string, bCount: number, b: string) => `aanvullingen ${a}, tegen ${rtN(bCount)} voor ${b}`,
+    versus: (a: string, bCount: number, b: string) => `keer terug ${a}; ${b}: ${rtN(bCount)}`,
     restocksOf: (a: string) => `aanvullingen ${a}`,
     byStorage: "per opslag",
     byColour: "per kleur",
     configNone: (x: RestockTimesView) => <b>Nog geen configuratie {inC(x.c)} met een bevestigde aanvulling; alle acht staan er al, zodat de eerste aanvulling meteen een rij heeft.</b>,
     configCaption: (x: RestockTimesView) => `Bevestigde aanvullingen van de iPhone Duo per configuratie ${inC(x.c)}, ${dateLabel(x.t.since, false)} tot vandaag`,
-    configHead: ["Configuratie", "Aanvullingen", "Aandeel", "Laatste aanvulling (lokale tijd)"],
+    configHead: ["Configuratie", "Keer terug", "Deel", "Recentste (tijd ter plaatse)"],
     configKeys: (x: RestockTimesView): Point[] => [
       { text: <>De configuratie kiezen telt <b className="text-ink">zwaarder dan de winkel kiezen</b></> },
       x.storageRatio != null
@@ -609,9 +608,9 @@ export const views: Dict["views"] = {
     last24: "bevestigde aanvullingen, afgelopen 24 uur",
     unavailableKeys: (x: RestockTimesView, today: number): Point[] => [
       x.recent.restocks > 0
-        ? { text: <>Afgelopen 24 uur: <b className="text-ink">{cnt(x.recent.restocks, "bevestigde aanvulling", "bevestigde aanvullingen")}</b> in {cnt(x.recent.stores, "winkel", "winkels")} {inC(x.c)}</> }
+        ? { text: <>In 24 uur <b className="text-ink">{n$(x.recent.restocks)}× bevestigd terug</b>, verspreid over {cnt(x.recent.stores, "winkel", "winkels")} {inC(x.c)}</> }
         : today > 0
-          ? { text: <>Vandaag: <b className="text-ink">{cnt(today, "bevestigde aanvulling", "bevestigde aanvullingen")}</b> {inC(x.c)}</> }
+          ? { text: <>Vandaag {inC(x.c)}: <b className="text-ink">{n$(today)}× bevestigd terug</b></> }
           : { text: <>De dagtabel hierboven toont de aanvullingen die wel plaatsvonden</> },
       { text: <>Elke aanvulling stond <b className="text-ink">een minuut of twee</b> op apple.com</> },
       { text: <>“Overal niet beschikbaar” op dag vier of dag veertien betekent <b className="text-ink">niet</b> dat Apple gestopt is</>, no: true },
@@ -663,7 +662,7 @@ export const views: Dict["views"] = {
       nearMe: "Live voorraad bij mij in de buurt",
       unavailable: "“Niet beschikbaar”, uitgelegd",
     },
-    otherCountries: ((us: boolean): string => (us ? "Deze pagina voor andere landen" : "Meer landen")) as RT["otherCountries"],
+    otherCountries: ((us: boolean): string => (us ? "Zelfde vraag, ander land" : "Andere landen")) as RT["otherCountries"],
     faqTitle: "Veelgestelde vragen",
   },
 };

@@ -7,12 +7,12 @@ export const modules: CDict["modules"] = {
     cta: "Le voir sur la carte en direct →",
   },
   reports: {
-    legend: "Signalés par d’autres sites de suivi ({sources}), {range}",
+    legend: "Relevés tiers ({sources}), {range}",
     note: "{mark} : {what} que {links} ont publiés pour {range}. Ce sont des observations de ces sites ; RestockWire ne les a pas confirmées et aucun de nos chiffres ne les inclut.",
-    what: "retours en stock d’{models}",
-    whatAny: "retours en stock",
+    what: "retours en stock ({models})",
+    whatAny: "retours en stock, tous modèles",
     markDashed: "En pointillés",
-    markDashedRings: "Cercles en pointillés",
-    markHollowDots: "Points creux",
+    markDashedRings: "Points cerclés de tirets",
+    markHollowDots: "Points évidés",
   },
 };

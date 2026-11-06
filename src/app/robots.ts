@@ -7,7 +7,7 @@ const PRIVATE = ["/admin", "/account", "/api/", "/checkout/"];
 /**
  * Filtered views that are never meant for the index: every place-level product page (noindex) and the
  * map / restock-log filters (canonical to /live-map and /restock-log). Location pages link to about 13,500 of
- * them, so crawling them would spend a new site's crawl on pages Google drops anyway; Google's advice for
+ * them, so crawling them would waste a young site's crawl budget on pages Google discards; Google's advice for
  * faceted URLs you don't need indexed is to block crawling in robots.txt. National product pages
  * (/in-stock/{product}) and every /apple-stores page stay open. Every other country repeats the three under its prefix.
  */

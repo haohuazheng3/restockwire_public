@@ -49,7 +49,7 @@ export const content: Dict["content"] = {
     modelStockSome: (count: string) => zs(`最新一次檢查時有 ${count}，每家都列在本頁並附上規格。`),
     priceQ: (model: string) => zs(`${model} 賣多少錢？`),
     priceA: (low: string, high: string, storages: string, colors: string) => zs(`空機 ${low} 到 ${high}，價格依容量（${storages}）而定，顏色有${colors}。`),
-    modelRestockQ: (model: string) => zs(`${model} 多久補貨一次？`),
+    modelRestockQ: (model: string) => zs(`${model} 隔多久會補一次貨？`),
     modelLastsQ: (model: string) => zs(`${model} 補貨後，能在架上待多久？`),
     reserveQ: (model: string) => zs(`有辦法預約 ${model} 門市取貨嗎？`),
     reserveA: "無法事先預約：門市上架你的規格時，你在 apple.com 下單並選門市取貨，Apple 會在你選的時段替你保留。",
@@ -69,7 +69,7 @@ export const content: Dict["content"] = {
     placeStockNone: (place: string, model: string) => zs(`最新一次檢查時沒有；${place}一有門市上架 ${model}，就會出現在本頁。`),
     nStores: f({ other: "# 家" }),
     placeStockSome: (count: string, stores: string) => zs(`最新一次檢查時有 ${count}：${stores}。`),
-    countQ: (place: string) => zs(`${place}有幾家 Apple 直營店？`),
+    countQ: (place: string) => zs(`${place}一共有多少家 Apple 直營店？`),
     nAppleStores: f({ other: "# 家" }),
     countMany: (count: string, stores: string) => zs(`${count}，其中包括${stores}。`),
     countOne: (count: string, store: string) => zs(`${count}：${store}。`),
@@ -91,15 +91,15 @@ export const content: Dict["content"] = {
   titles: {
     state: (name: string, duoNow: string, stores: string) => [
       `${name} Apple Store：${stores} 家中 ${duoNow} 家上架 iPhone Duo`,
-      `${name} Apple Store：iPhone Duo 即時取貨現貨`,
-      `${name} Apple Store：iPhone Duo 現貨`,
-      `${name} Apple Store：iPhone 即時現貨`,
+      `${name} 各 Apple Store 的 iPhone Duo 取貨庫存（即時）`,
+      `${name} Apple Store 現在有沒有 iPhone Duo`,
+      `${name} Apple Store 的 iPhone 庫存快訊`,
     ].map(zs),
     city: (city: string, code: string, duoNow: string, stores: string) => [
       `${city}（${code}）Apple Store：${stores} 家中 ${duoNow} 家有 iPhone Duo`,
-      `${city}（${code}）Apple Store：iPhone Duo 即時取貨`,
-      `${city}（${code}）Apple Store：iPhone Duo 現貨`,
-      `${city} Apple Store：iPhone 即時現貨`,
+      `${city}（${code}）各店 iPhone Duo 取貨庫存（即時）`,
+      `${city}（${code}）Apple Store 現在有沒有 iPhone Duo`,
+      `${city} Apple Store 的 iPhone 庫存快訊`,
     ].map(zs),
     /** 門市頁 <title> 與 H1：店名在前（大家搜的就是「apple 信義 a13」），再接即時現貨、補貨時段、取貨。 */
     store: (name: string, region: string | null) => {
@@ -117,7 +117,7 @@ export const content: Dict["content"] = {
     model: (name: string, storesNow: string) => [
       `${name} 門市取貨現貨：此刻 ${storesNow} 家 Apple Store 上架`,
       `${name} 門市取貨現貨：${storesNow} 家 Apple Store`,
-      `${name} 門市取貨即時現貨`,
+      `${name}：門市取貨庫存快訊`,
     ].map(zs),
   },
 
@@ -217,7 +217,7 @@ export const content: Dict["content"] = {
     firstCheckSoon: "一分鐘內進行第一次檢查",
     buy: "在 apple.com 訂購",
     checked: (checked: ReactNode, note: ReactNode) => <>讀取於 {checked} · {note}</>,
-    checkNote: "每 15 秒，有通知的門市每 5 秒",
+    checkNote: "全部門市 15 秒一輪，有通知的門市 5 秒一輪",
   },
 
   source: (source: ReactNode) => <>資料：{source}</>,
@@ -236,22 +236,22 @@ export const content: Dict["content"] = {
     storesWithIt: "此刻上架的門市",
     pairsInStock: "上架中的「門市 × 規格」組合",
     restocksLogged: "已記錄的補貨",
-    medianTime: "上架時間中位數",
+    medianTime: "在架時間（中位數）",
     underOneMin: (min: string) => `< ${min}`,
   },
 
   /** 圖片說明：只翻通用圖與台灣的地點圖，其他 id 沿用英文。 */
   photos: {
-    "apple-store-pickup-counter": { alt: "Apple Store 店內掛著 Pickup 標示的木質取貨櫃台", caption: "門市取貨的訂單就是在這樣的櫃台交貨。" },
-    "phone-map": { alt: "在戶外用手機地圖 App 導航的雙手", caption: "補貨只維持一分鐘時，距離比你想的更重要。" },
-    "phone-card-payment": { alt: "一手拿 iPhone、一手拿信用卡準備線上付款的女性", caption: "線上付款，再到門市取貨。" },
-    "phone-on-box": { alt: "放在白色包裝盒上的新手機", caption: "剛拆封的新手機。" },
-    "city-map-phone": { alt: "兩個人一起看手機上的城市地圖", caption: "規劃去門市的路線。" },
-    "phone-notification": { alt: "手上拿著鎖定畫面顯示通知的手機", caption: "通知直接出現在鎖定畫面。" },
-    "apple-store-crowd-inside": { alt: "購物中心裡一間 Apple Store 店內排隊的人潮", caption: "上市週的 Apple Store 人潮：上架的貨幾分鐘就沒了。" },
-    "apple-store-glass-canopy": { alt: "夜晚有玻璃帷幕與木質雨遮的 Apple Store", caption: "入夜後的玻璃帷幕 Apple Store。" },
-    "apple-store-night-vancouver": { alt: "溫哥華夜裡燈火通明的 Apple Store", caption: "夜裡的 Apple Store：門市取貨的現貨隨時可能出現，但出現在早上的機率高得多。" },
-    "phone-hand-camera": { alt: "手持三鏡頭 iPhone 的人", caption: "大家排隊搶的就是 Pro 機型。" },
-    "place-tw-taiwan": { alt: "晴天下聳立在信義區天際線上的台北 101", caption: "台北 101，台北。" },
+    "apple-store-pickup-counter": { alt: "寬敞的購物中心中庭，有 Apple Store、手扶梯和自然光", caption: "像這樣的商場門市，通常在開門前就補好取貨庫存。" },
+    "phone-map": { alt: "戶外特寫：一隻手拿著開啟地圖 App 的手機", caption: "貨架只撐一分鐘，離門市多遠就是關鍵。" },
+    "phone-card-payment": { alt: "女性拿手機在刷卡機上感應付款", caption: "先在網路上付款，人再到店取機。" },
+    "phone-on-box": { alt: "白色背景前，一支還裝在盒子裡的手機", caption: "還沒拆封，已經是你的。" },
+    "city-map-phone": { alt: "一對年輕情侶在鄉間公路旅行中用手機導航", caption: "先排好去門市的路。" },
+    "phone-notification": { alt: "特寫：手裡的手機螢幕顯示勵志標語「Hard Work Forever Pays.」", caption: "補貨通知會跳上這個螢幕。" },
+    "apple-store-crowd-inside": { alt: "曼谷一座購物中心裡的 Apple Store，顧客在桌邊試用裝置", caption: "店裡每張桌子都是體驗區，取貨的隊伍排在後面。" },
+    "apple-store-glass-canopy": { alt: "芝加哥市中心河畔，一家玻璃建築的現代 Apple Store 外觀", caption: "芝加哥河畔的玻璃 Apple Store。" },
+    "apple-store-night-vancouver": { alt: "夜間空拍溫哥華，天際線和大橋燈火通明", caption: "取貨庫存任何時刻都可能冒出來，只是早上冒出來的機會大得多。" },
+    "phone-hand-camera": { alt: "特寫：手裡拿著橘色手機殼、三顆鏡頭的手機", caption: "排隊的人，多半是衝著 Pro 來的。" },
+    "place-tw-taiwan": { alt: "台北夜間天際線，摩天大樓燈火通明", caption: "台灣：台北的夜景。" },
   },
 };

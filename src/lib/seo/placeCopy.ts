@@ -38,7 +38,7 @@ const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 
 /**
  * Two place names collide with another page's search (DataForSEO, the SEO plan §10): people looking for New York
- * City type "apple store nyc" (6,600 a month), while the New York state page answers "apple stores in new
+ * City type "apple store nyc" (6,600 monthly searches); the New York state page answers "apple stores in new
  * york" (390); Washington State is "apple stores in washington state" (320), D.C. is "apple store dc"
  * (12,100). The titles and the prose name these places the way their own searches do.
  */
@@ -123,7 +123,7 @@ function duoPoints(i: PlaceCopyInput, w: string, alert: string): Block[] {
   if (st.lastRestock && last) items.push(`**Latest Duo restock here:** ${ET.format(new Date(st.lastRestock.at))} ET at ${appleName(last)}`);
   if (have.length > 0 && st.month > 0) items.push(`**Confirmed ${sinceWhen()}:** ${plural(st.month, "Duo restock")} across the stores in ${w}`);
   if (st.medianMs != null) items.push(`**How long a listing lasts:** about ${fmtDuration(st.medianMs)} at the median before the Duo sells out again`);
-  items.push(`**Fastest route to one:** [put the iPhone Duo on the wire in ${w}](${alert}) at the ${n <= 3 ? (n === 2 ? "two" : "three") : `${Math.min(n, 5)} nearest`} stores you would drive to; stores with alerts are read every ${SPEED.fastSec} seconds`);
+  items.push(`**Fastest route to one:** [put the iPhone Duo on the wire in ${w}](${alert}) across the ${n <= 3 ? (n === 2 ? "two" : "three") : `${Math.min(n, 5)} nearest`} stores you would drive to; stores with alerts are read every ${SPEED.fastSec} seconds`);
   items.push(`**One alert rule** is one store × one exact configuration, and the push lands about ${SPEED.alertSec} seconds after a second read confirms the restock`);
   const blocks: Block[] = [];
   if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: `**That changes in a minute:** Duo restocks land in bursts across the country, and every store here is on the ${SPEED.checkSec}-second wire.` });
@@ -141,13 +141,13 @@ export function placeSections(i: PlaceCopyInput): KeywordSection[] {
   const sections: KeywordSection[] = [
     {
       id: "iphone-duo",
-      h2: `Which Apple Stores in ${w} have the iPhone Duo right now?`,
+      h2: `iPhone Duo in ${w}: which stores list it this minute?`,
       lead: duoLead(i),
       blocks: duoPoints(i, w, alert),
     },
     {
       id: "iphone-18-pro-max",
-      h2: `Is the iPhone 18 Pro Max in stock in ${w}?`,
+      h2: `iPhone 18 Pro Max stock in ${w}: listed or not?`,
       lead: pm > 0
         ? `**Yes, at ${pm} of ${n} stores**, with **${pairsPct(i, "18-pro-max")}%** of the ${n * 16} store × configuration pairs in ${w} listed at this minute.`
         : `**Not at this minute**: none of the ${n} stores in ${w} lists an iPhone 18 Pro Max for pickup.`,
@@ -161,13 +161,13 @@ export function placeSections(i: PlaceCopyInput): KeywordSection[] {
   ];
   if (t) {
     const nb = neighborStates(i.state).map((s) => ({ name: s.name, t: SALES_TAX[s.name] })).filter((x) => x.t && x.t.combined > 0).sort((a, b) => b.t!.combined - a.t!.combined)[0];
-    const rows: [string, number][] = [["iPhone Duo 256GB", 1999], ["iPhone Duo 1TB", 2599], ["iPhone 18 Pro Max 256GB", 1299], ["iPhone 18 Pro Max 1TB", 1899], ["iPhone 18 Pro 256GB", 1199]];
+    const rows: [string, number][] = [["iPhone Duo, 256GB", 1999], ["iPhone Duo, 1TB", 2599], ["iPhone 18 Pro Max, 256GB", 1299], ["iPhone 18 Pro Max, 1TB", 1899], ["iPhone 18 Pro, 256GB", 1199]];
     const table: Block = {
       t: "table",
       head: ["iPhone", "apple.com price", t.combined === 0 ? `At pickup in ${i.state}` : `After ${t.combined}% tax`],
       rows: rows.map(([label, price]) => [label, money(price), money(withTax(price, i.state)!.total)]),
       caption: `What each iPhone comes to in ${i.state} at the state's average combined sales tax (${t.combined}%)`,
-      source: "[Tax Foundation, rates as of January 1, 2026](https://taxfoundation.org/data/all/state/sales-tax-rates/); prices from apple.com",
+      source: "[Tax Foundation state and local sales tax rates, January 1, 2026](https://taxfoundation.org/data/all/state/sales-tax-rates/); Apple price list: apple.com",
     };
     const blocks: Block[] = [table];
     if (t.combined === 0) {
@@ -184,7 +184,7 @@ export function placeSections(i: PlaceCopyInput): KeywordSection[] {
       id: "price-with-tax",
       h2: `What does the iPhone Duo cost in ${w} after sales tax?`,
       lead: t.combined === 0
-        ? `**$1,999, the apple.com price**: ${i.state} charges no sales tax, so a 256GB iPhone Duo costs exactly that at pickup.`
+        ? `**$1,999 flat**: no sales tax in ${i.state}, so the 256GB iPhone Duo is the apple.com price at the pickup counter.`
         : `**About ${money(withTax(1999, i.state)!.total)}** for a 256GB iPhone Duo at pickup, once ${i.state}'s average combined sales tax of **${t.combined}%** is added to apple.com's $1,999.`,
       blocks,
     });
@@ -200,7 +200,7 @@ export function taxFaq(i: PlaceCopyInput): Faq | null {
     q: `What is the iPhone Duo's price in ${placeName(i)} with tax?`,
     a: t.combined === 0
       ? `Exactly $1,999 for the 256GB: ${i.state} adds no sales tax at pickup, so the apple.com price is the final one.`
-      : `About ${money(withTax(1999, i.state)!.total)} for the 256GB and ${money(withTax(2599, i.state)!.total)} for the 1TB at ${i.state}'s average combined rate of ${t.combined}%; the pickup store's own local rate sets the exact figure.`,
+      : `Roughly ${money(withTax(1999, i.state)!.total)} (256GB) and ${money(withTax(2599, i.state)!.total)} (1TB), using ${t.combined}%, the average combined rate in ${i.state}. The exact total follows the pickup store's local rate.`,
   };
 }
 
@@ -218,6 +218,6 @@ export function hubFaq(): { count: Faq; taxFree: Faq } {
   const taxed = withTax(cheapest.price, highest.name)!;
   return {
     count: { q: "How many Apple Stores does the US have, and where are they?", a: `${STORES.length}, in ${cities.length} cities across ${states.length - 1} states and Washington, D.C.; ${top[0].name} has the most (${top[0].count}), followed by ${top[1].name} (${top[1].count}) and ${top[2].name} (${top[2].count}).` },
-    taxFree: { q: "Where can you pick up an iPhone at an Apple Store with no sales tax?", a: `${listWords(free)}: there an iPhone Duo ${cheapest.storage} costs its ${fmtPrice(cheapest.price)} list price at pickup, while in ${highest.name} (${taxed.rate}%, the highest average rate of any Apple Store state) the same phone comes to about ${fmtPrice(taxed.total)}.` },
+    taxFree: { q: "Where can you pick up an iPhone at an Apple Store with no sales tax?", a: `${listWords(free)}. An iPhone Duo ${cheapest.storage} goes out at its ${fmtPrice(cheapest.price)} list price there, nothing added. Top of the range is ${highest.name} at ${taxed.rate}% on average, where that phone runs about ${fmtPrice(taxed.total)}.` },
   };
 }

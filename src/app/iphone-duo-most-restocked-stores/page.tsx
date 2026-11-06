@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   title: { absolute: `${TITLE} · RestockWire` },
   description: DESCRIPTION,
   alternates: { canonical: "/iphone-duo-most-restocked-stores" },
-  openGraph: { type: "article", siteName: "RestockWire", title: TITLE, description: DESCRIPTION, url: "/iphone-duo-most-restocked-stores" },
+  openGraph: { url: "/iphone-duo-most-restocked-stores", type: "article", siteName: "RestockWire", description: DESCRIPTION, title: TITLE },
 };
 
 const APPLE_DUO = "https://www.apple.com/shop/buy-iphone/iphone-duo";
@@ -66,8 +66,8 @@ function topAbroad(t: RestockTimes): { name: string; storage: string; restocks: 
 /** A question, its one-sentence answer, then the UI. */
 function Section({ id, h2, lead, facts, children }: { id: string; h2: string; lead: string; facts: Facts; children: ReactNode }) {
   return (
-    <section id={id} className="pane scroll-mt-24 p-5 sm:p-7">
-      <h2 className="display text-2xl sm:text-3xl">{h2}</h2>
+    <section id={id} className="pane p-5 sm:p-7 scroll-mt-24">
+      <h2 className="text-2xl sm:text-3xl display">{h2}</h2>
       <p className="mt-3 text-base text-ink-2 sm:text-lg"><Inline text={lead} facts={facts} /></p>
       {children}
     </section>
@@ -76,8 +76,8 @@ function Section({ id, h2, lead, facts, children }: { id: string; h2: string; le
 /** Where to go next: a row of chip links. */
 function LinkRow({ links, className = "mt-4" }: { links: { label: string; href: string }[]; className?: string }) {
   return (
-    <div className={`flex flex-wrap gap-2 ${className}`}>
-      {links.map((l) => l.href.startsWith("http") ? <a key={l.href} href={l.href} target="_blank" rel="noopener" className="chip chip-sm">{l.label}</a> : <Link key={l.href} href={l.href} className="chip chip-sm">{l.label}</Link>)}
+    <div className={`flex gap-2 flex-wrap ${className}`}>
+      {links.map((l) => /^https?:/.test(l.href) ? <a key={l.href} href={l.href} target="_blank" rel="noopener" className="chip chip-sm">{l.label}</a> : <Link key={l.href} href={l.href} className="chip chip-sm">{l.label}</Link>)}
     </div>
   );
 }
@@ -132,7 +132,7 @@ export default async function WhichDuoRestocksMost() {
   const abroadTable: Block = { t: "table", head: ["Country", "Configuration with most restocks", "Its restocks", "All Duo restocks", "Stores with one"], rows: abroadRows.map((r) => [`[${r.name}](/${r.cc}/when-does-iphone-duo-restock)`, r.top ? r.top.name : r.t.unknown ? "—" : "none confirmed so far", r.top ? n(r.top.restocks) : "—", n(r.t.n), `${n(r.t.stores)} of ${r.t.storesTotal}`]), caption: `Each country's own Apple Stores and part numbers, counted since ${intlSince}`, source: "RestockWire restock log" };
 
   const mostLead = have && most
-    ? `**${most.name}** tops the ranking with **${n(most.restocks)}** confirmed restocks at US Apple Stores since ${since}${rows[1] ? `, ahead of ${rows[1].name} on ${n(rows[1].restocks)}` : ""}.`
+    ? `**${most.name}** is first: **${n(most.restocks)}** confirmed restocks on the US wire from ${since}${rows[1] ? `, ahead of ${rows[1].name} on ${n(rows[1].restocks)}` : ""}.`
     : "Eight configurations, one ranking: every confirmed restock at every US Apple Store is counted here, and the order updates as they land.";
   const storageLead = have && storageSorted.length >= 2 && colorSorted.length >= 2
     ? `**${storageWins ? "Storage size" : "Color"}**, by the wider gap: ${storageSorted[0].storage} holds **${pct(storageSorted[0].share)}** of confirmed US restocks against ${pct(storageSorted[storageSorted.length - 1].share)} for ${storageSorted[storageSorted.length - 1].storage}, while ${colorSorted[0].color} holds **${pct(colorSorted[0].share)}** against ${pct(colorSorted[1].share)} for ${colorSorted[1].color}.`
@@ -182,7 +182,7 @@ export default async function WhichDuoRestocksMost() {
       { "@type": "WebPage", "@id": `${site}/iphone-duo-most-restocked-stores`, url: `${site}/iphone-duo-most-restocked-stores`, name: TITLE, description: DESCRIPTION, isPartOf: { "@id": `${site}/#website` }, about: { "@id": `${site}/#organization` }, dateModified: t.at },
       {
         "@type": "Dataset", "@id": `${site}/iphone-duo-most-restocked-stores#dataset`, name: "iPhone Duo restocks by storage and color at US Apple Stores",
-        description: `Each iPhone Duo storage size and color's confirmed in-store pickup restocks across all ${STORES.length} US Apple Stores since ${longDate(TRACKING_SINCE_US)}, counted from RestockWire's own checks.`,
+        description: `Each iPhone Duo storage size and color's confirmed in-store pickup restocks across all ${STORES.length} Apple Stores in the US, tallied by RestockWire's own checks from ${longDate(TRACKING_SINCE_US)}.`,
         url: `${site}/iphone-duo-most-restocked-stores`, creator: { "@id": `${site}/#organization` }, isAccessibleForFree: true,
         temporalCoverage: `${TRACKING_SINCE_US}/..`, spatialCoverage: "Apple Stores in the United States",
         variableMeasured: ["storage size and color of the iPhone Duo", "confirmed pickup restocks", "share of all iPhone Duo restocks", "most recent restock", "stores listing the configuration now"],
@@ -199,13 +199,13 @@ export default async function WhichDuoRestocksMost() {
       <section className="grid items-start gap-8 lg:grid-cols-[1.15fr_0.85fr]">
         <div>
           <div className="eyebrow mb-4">iPhone Duo · restocks by storage and color</div>
-          <h1 className="display text-4xl sm:text-6xl">Which iPhone Duo configuration restocks most often?</h1>
+          <h1 className="text-4xl sm:text-6xl display">Which iPhone Duo storage and color restocks the most?</h1>
           <p className="mt-5 max-w-xl text-lg text-ink-2">
             {have && most && fewest
-              ? <><b className="text-ink">{most.name}</b> leads: <b className="text-ink">{pct(most.share)}</b> of the {n(t.n)} confirmed iPhone Duo restocks at US Apple Stores since {since} were that configuration ({fmtPrice(most.price)}); {fewest.name} trails at {pct(fewest.share)}.</>
+              ? <><b className="text-ink">{most.name}</b> leads: <b className="text-ink">{pct(most.share)}</b> of the {n(t.n)} iPhone Duo restocks RestockWire has confirmed in the US since {since} were that one ({fmtPrice(most.price)}); {fewest.name} trails at {pct(fewest.share)}.</>
               : <>RestockWire reads all eight configurations at all {STORES.length} US Apple Stores every {SPEED.checkSec} seconds; the ranking by storage and color, and the live store count for each, fills in here.</>}
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-7 flex gap-3 flex-wrap">
             <Link href="/#notify" className="btn btn-primary btn-lg">Alert me on a configuration</Link>
             <Link href="/in-stock/iphone-duo" className="btn btn-ghost btn-lg">Duo stock, live</Link>
           </div>

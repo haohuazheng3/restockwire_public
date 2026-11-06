@@ -20,7 +20,7 @@ export const modules: Dict["modules"] = {
     barAria: (day: string, r: number, soldouts: number) => `${day}: ${restocks(r)} und ${ausverkaeufe(soldouts)}`,
     barTitle: (day: string, r: number, soldouts: number) => `${day} · ${restocks(r)} · ${ausverkaeufe(soldouts)}`,
     legendRestocks: "Restocks",
-    legendSoldouts: "Ausverkäufe",
+    legendSoldouts: "Ausverkauft",
   },
 
   last24: {
@@ -31,11 +31,11 @@ export const modules: Dict["modules"] = {
     unknown: "Die 24-Stunden-Zahl ist gerade nicht verfügbar; Live-Bestand und Restock-Protokoll auf dieser Seite sind davon nicht betroffen.",
     none: (label: string, asOf: string) => <><b className="text-ink">Null iPhone-Duo-Restocks {label} in den letzten 24 Stunden</b> (abgelesen {asOf}).</>,
     some: (o: { restocks: number; one: boolean; label: string; withStores: number; allStores: number; config: string; store: ReactNode | null; when: string }) => (
-      <><b className="text-ink">{`${restocks(o.restocks)} beim iPhone Duo`} {o.one ? o.label : `in ${n(o.withStores)} von ${n(o.allStores)} Apple ${o.allStores === 1 ? "Store" : "Stores"} ${o.label}`}</b> in den letzten 24 Stunden; der jüngste war ein <b className="text-ink">{o.config}</b>{o.store != null && <> bei {o.store}</>}, {o.when} Ortszeit.</>
+      <><b className="text-ink">{`${restocks(o.restocks)} beim iPhone Duo ${o.one ? o.label : `in ${n(o.withStores)} von ${n(o.allStores)} Apple ${o.allStores === 1 ? "Store" : "Stores"} ${o.label}`}`}</b> binnen 24 Stunden – zuletzt ein <b className="text-ink">{o.config}</b>{o.store != null && <> bei {o.store}</>}, {o.when} Ortszeit.</>
     ),
     tileRestocks: "bestätigte Restocks in 24 Std.",
     tileConfigsBack: "Konfigurationen wieder aufgetaucht",
-    tileStores: (configs: number, allConfigs: number) => `Stores mit Restock${configs ? ` · ${n(configs)} von ${n(allConfigs)} Konfigurationen` : ""}`,
+    tileStores: (configs: number, allConfigs: number) => `Stores mit frischem Bestand${configs ? ` · ${n(configs)} von ${n(allConfigs)} Konfigurationen` : ""}`,
     tileLatest: (config: string, store: string | null) => <>jüngster · {config}{store != null && <> · {store}</>}</>,
     tileBefore: (config: string, store: string | null, day: string) => <>der davor · {config}{store != null && <> · {store}</>} · {day}</>,
     tileNoEarlier: "nichts Früheres erfasst",
@@ -63,8 +63,8 @@ export const modules: Dict["modules"] = {
     ),
     byHour: (zone: string) => `Nach Stunde · ${zone}`,
     byWeekday: "Nach Wochentag",
-    barReported: (k: number) => ` (+${n(k)} von anderen Trackern gemeldet)`,
-    barReportedTitle: (bar: string, k: number) => `${bar}: ${n(k)} von anderen Trackern gemeldet`,
+    barReported: (k: number) => ` (+${n(k)} laut Dritten)`,
+    barReportedTitle: (bar: string, k: number) => `${bar}: ${n(k)} laut Meldungen Dritter`,
     legendOurs: "Von RestockWire bestätigt",
   },
 
@@ -117,7 +117,7 @@ export const modules: Dict["modules"] = {
   configTable: {
     title: "Alle Konfigurationen in diesem Store",
     titleAt: (store: string) => `Alle Konfigurationen bei ${store}`,
-    lookupOff: (hasRows: boolean) => `Apple hat die Abholabfrage für diesen Store gerade abgeschaltet${hasRows ? " (die letzten Antworten stehen unten)" : ""}`,
+    lookupOff: (hasRows: boolean) => `Apple hat die Abholabfrage für diesen Store gerade abgeschaltet${hasRows ? " (unten die zuletzt erhaltenen Antworten)" : ""}`,
     tracked: (k: number) => `${n(k)} Konfigurationen im Takt`,
     firstSweep: "Erste Runde läuft · der Status erscheint binnen einer Minute",
     inStock: (k: number, total: number) => `${n(k)} von ${n(total)} gelistet`,
@@ -155,7 +155,7 @@ export const modules: Dict["modules"] = {
   },
 
   storeBlock: {
-    checked: (ago: ReactNode) => <>Abgelesen {ago} · alle {SPEED.checkSec} Sek., {SPEED.fastSec} Sek. mit Alarm</>,
+    checked: (ago: ReactNode) => <>Abgelesen {ago} · {SPEED.checkSec}-Sek.-Takt, mit Alarm {SPEED.fastSec} Sek.</>,
     map: "Auf der Karte ansehen",
     alert: "Diesen Store beobachten",
     alsoIn: (region: string) => `Mehr ${inOrt(region)}`,
@@ -173,10 +173,10 @@ export const modules: Dict["modules"] = {
     storePage: "Store-Seite",
     closed: "Geschlossen",
     everyDay: (hours: string) => `Täglich ${hours}`,
-    openNow: (closes: string) => `Jetzt geöffnet · schließt um ${closes}`,
-    opensAt: (opens: string) => `Öffnet um ${opens}`,
-    closedToday: (next: string | null) => (next ? `Heute geschlossen · öffnet ${next}` : "Heute geschlossen"),
-    closedNow: (next: string | null) => (next ? `Jetzt geschlossen · öffnet ${next}` : "Jetzt geschlossen"),
+    openNow: (closes: string) => `Geöffnet bis ${closes}`,
+    opensAt: (opens: string) => `Ab ${opens} geöffnet`,
+    closedToday: (next: string | null) => (next ? `Heute Ruhetag · wieder offen ${next}` : "Heute Ruhetag"),
+    closedNow: (next: string | null) => (next ? `Gerade zu · wieder offen ${next}` : "Gerade zu"),
     nextOpen: (day: string | null, time: string) => `${day ?? "morgen"} um ${time}`,
   },
 

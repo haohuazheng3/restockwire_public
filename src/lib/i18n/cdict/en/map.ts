@@ -1,6 +1,6 @@
 /**
  * English client strings: map (the live pickup-stock map). {model} is a model's short name ("Duo") or "iPhone", never
- * translated; {in} is "in Japan" (English: the site's own "in the US", "in the UK"; other languages fill `inCountry`).
+ * translated; {in} is "in Japan" (English pages pass ready-made phrases like "in the US" / "in the UK"; other languages build it from `inCountry`).
  */
 export const map = {
   title: "Live pickup stock map",

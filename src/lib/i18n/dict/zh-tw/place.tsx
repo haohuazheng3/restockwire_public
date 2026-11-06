@@ -23,7 +23,7 @@ const TRACKING_START = "2026-11-02";
 
 /** 「自 11 月 2 日開始追蹤以來」／「最近 30 天」。 */
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${TRACKING_START}T00:00:00Z`) < 30 * 86400_000 ? "自 11 月 2 日開始追蹤以來" : "最近 30 天";
+  return now - Date.parse(`${TRACKING_START}T00:00:00Z`) < 30 * 86400_000 ? "從 11 月 2 日開始記錄至今" : "最近 30 天";
 }
 
 /** 地名參數（英文資料或已是中文）→ Apple 台灣的寫法。 */
@@ -55,7 +55,7 @@ const PRICE_ROWS: [ModelKey, string][] = [["duo", "256GB"], ["duo", "1TB"], ["18
 
 /** 各國的稅務來源；台灣指向財政部賦稅署中文網站。 */
 function taxSource(code: Exclude<CountryCode, "us">): Source {
-  return code === "tw" ? { label: "財政部賦稅署：營業稅", url: "https://www.dot.gov.tw/" } : TAX_SOURCES[code];
+  return code === "tw" ? { label: "營業稅（財政部賦稅署）", url: "https://www.dot.gov.tw/" } : TAX_SOURCES[code];
 }
 
 function priceSection(code: CountryCode, placeName: string, region?: string, model: ModelKey = "duo"): KeywordSection {
@@ -122,7 +122,7 @@ function taxFaq(code: CountryCode, placeName: string, region?: string): FaqItem 
   }
   const r = includedRate(c);
   return r == null
-    ? { q: "在香港買 iPhone 要付銷售稅嗎？", a: zs(`不用：香港沒有銷售稅，也沒有加值稅。256GB 的 iPhone Duo 取貨時付 ${money(c, duo)}，和 apple.com 標價一模一樣。`) }
+    ? { q: "香港買 iPhone 另外要繳稅嗎？", a: zs(`不用：香港沒有銷售稅，也沒有加值稅。256GB 的 iPhone Duo 取貨時付 ${money(c, duo)}，和 apple.com 標價一模一樣。`) }
     : { q: zs(`Apple ${cn(code)}的價格已經含${taxName(code)}了嗎？`), a: zs(`是的：256GB iPhone Duo 的 ${money(c, duo)} 已含 ${r}% ${taxName(code)}。取貨櫃台不會再加任何費用。`) };
 }
 
@@ -198,7 +198,7 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
   return [
     {
       id: "iphone-duo",
-      h2: zs(`${w}哪些 Apple 直營店現在有 iPhone Duo？`),
+      h2: zs(`現在${w}哪幾家 Apple 直營店有 iPhone Duo 可取？`),
       lead: duoLead(i),
       blocks: duoPoints(i, w, alert),
     },
@@ -275,7 +275,7 @@ function modelPageTitles(code: CountryCode, model: ModelKey): { title: string; h
   const all = k === 1 ? "Apple 直營店" : k === 2 ? "兩家 Apple 直營店" : `全部 ${n(k)} 家 Apple 直營店`;
   return {
     title: fitTitleW([`${w}有 ${m.name} 現貨嗎？${all}即時庫存`, `${w}有 ${m.name} 現貨嗎？即時庫存`, `${m.name} ${w}現貨`].map(zs), 70),
-    h2: [zs(`${w}哪些 Apple 直營店現在有 ${m.name}？`), priceSection(code, w, undefined, model).h2],
+    h2: [zs(`現在${w}哪幾家 Apple 直營店有 ${m.name} 可取？`), priceSection(code, w, undefined, model).h2],
   };
 }
 
@@ -307,7 +307,7 @@ function modelDescription(code: CountryCode, model: ModelKey, inStock: number): 
 function homeDescription(code: CountryCode): string {
   const c = COUNTRIES[code];
   const k = storesOf(code).length;
-  return zs(`${allStoresPhrase(code)}的 iPhone Duo、18 Pro 與 18 Pro Max 門市取貨即時現貨，每 15 秒讀取一次。${k === 1 ? "價格" : "補貨時段與價格"}以${currencyZh(c)}標示；你的門市一補貨，推播立刻送到。`);
+  return zs(`${allStoresPhrase(code)}的 iPhone Duo、18 Pro 與 18 Pro Max 門市取貨即時現貨，每 15 秒讀取一次。${k === 1 ? "價格" : "價格與各店補貨時段"}以${currencyZh(c)}標示；你的門市一補貨，推播立刻送到。`);
 }
 
 function homeIntro(code: CountryCode): string {
@@ -329,7 +329,7 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
       h2: zs(`${w}現在有哪些 iPhone 有現貨？`),
       lead: zs(`看這張表就知道：apple.com 上${allStoresPhrase(code)}每一種規格的門市取貨供應狀態，每 15 秒讀取一次${k > 1 ? `，並依門市、${regionZh(c)}與規格拆開` : ""}。`),
       blocks: [
-        { t: "table", head: ["機型", "規格數", "現在有貨的門市", "已記錄補貨"], rows: cc.modelRows(code, i.storesNow, i.restocks), caption: zs(`${w}即時狀態，截至 {{asOf}}`) },
+        { t: "table", head: ["機型", "規格數", "此刻有貨門市", "已記錄補貨"], rows: cc.modelRows(code, i.storesNow, i.restocks), caption: zs(`${w}即時狀態，截至 {{asOf}}`) },
         { t: "ul", items: [
           "**確認就是看兩次：**第二次讀取一致才會發布變化，apple.com 偶發的錯誤回應不會變成補貨或售完",
           "**第一次看到不算補貨：**某個規格第一次出現，只拿來當基準",
@@ -363,7 +363,7 @@ function homeFaq(code: CountryCode, rt: RestockTimesBrief): Faq[] {
   const w = cn(code);
   const p = code === "us" ? "" : `/${code}`;
   const when = rt.n === 0
-    ? `自 11 月 2 日開始追蹤以來還沒有確認的補貨。[Apple 幾點在${w}補貨 iPhone Duo？](${rt.path})會在補貨出現時，依當地小時與星期逐次計入。`
+    ? `從 11 月 2 日開始記錄至今，還沒有任何確認的補貨。[Apple 幾點在${w}補貨 iPhone Duo？](${rt.path})會在補貨出現時，依當地小時與星期逐次計入。`
     : rt.peakHour != null
       ? `多半落在**當地時間${hh(rt.peakHour)}**前後：自 11 月 2 日起，${n(rt.storesTotal)} 家門市中有 ${n(rt.stores)} 家，共確認補貨 ${n(rt.n)} 次。[逐小時、逐日看](${rt.path})。`
       : `自 11 月 2 日起，${n(rt.storesTotal)} 家門市中有 ${n(rt.stores)} 家，共確認補貨 ${n(rt.n)} 次；天數還太少，說不出通常幾點。[逐小時、逐日看](${rt.path})。`;
@@ -387,7 +387,7 @@ const homeLabels: Dict["place"]["home"] = {
   selloutH2: (code: CountryCode) => zs(`${cn(code)}的 iPhone 補貨能撐多久？`),
   selloutLabel: (code: CountryCode) => zs(`${cn(code)} Apple 直營店`),
   last24Label: (code: CountryCode) => cn(code),
-  newsroom: "Apple Newsroom：iPhone Duo 登陸全球 Apple 直營店（2026 年 10 月 23 日）",
+  newsroom: "iPhone Duo 全球 Apple 直營店同步開賣（Apple Newsroom，2026 年 10 月 23 日）",
 };
 
 /** 門市頁的 <title> 與 H1：「Apple 信義 A13：iPhone 現貨查詢、庫存、門市取貨與營業時間」。 */

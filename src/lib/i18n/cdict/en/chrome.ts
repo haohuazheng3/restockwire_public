@@ -1,19 +1,19 @@
 /** English client strings: chrome — header nav, sign-in link, language/country switch, search, theme, consent, floating "Alert me", live "checked … ago", error page. */
 export const chrome = {
   nav: {
-    duoStock: "Duo stock",
-    restocks: "Restocks",
-    map: "Map",
-    stores: "Stores",
-    pricing: "Pricing",
-    getApp: "Get the app",
+    duoStock: "Duo live",
+    restocks: "Restock wire",
+    map: "Stock map",
+    stores: "Store finder",
+    pricing: "Plans",
+    getApp: "Phone alerts",
     home: "RestockWire, home page",
     main: "Main navigation",
     sections: "Site sections",
   },
   auth: { myAlerts: "My alerts", signIn: "Sign in" },
   switcher: {
-    /** Button label: "Country: Japan. Switch country". */
+    /** Screen-reader label of the country button, e.g. "Country: Japan. Change country". */
     aria: "Country: {country}. Change country",
     title: "Change country",
     language: "Language",
@@ -32,7 +32,7 @@ export const chrome = {
     results: "Results",
     none: "No result for “{q}”. Search by ZIP code, store name, city or state.",
     kinds: { store: "Store", city: "City", state: "State", model: "Model", page: "Page", country: "Country" },
-    shortcuts: { duo: "iPhone Duo stock", log: "Restock log", map: "Live map", stores: "Browse 269 stores", storesHere: "Browse every store" },
+    shortcuts: { duo: "iPhone Duo, live", log: "Latest restocks", map: "Stock map", stores: "Browse 269 stores", storesHere: "Browse every store" },
   },
   consent: {
     region: "Analytics consent",

@@ -1,10 +1,10 @@
 /**
- * Sales tax by state, as of January 1, 2026 (Tax Foundation, "State and Local Sales Tax Rates, 2026",
- * https://taxfoundation.org/data/all/state/sales-tax-rates/). `avgLocal` is the population-weighted
+ * Sales tax by state on 2026-01-01 (Tax Foundation 2026 state and local rates table,
+ * https://taxfoundation.org/data/all/state/sales-tax-rates/). `avgLocal`: population-weighted
  * average of local rates, so `combined` is what a typical buyer in the state pays; for in-store pickup
  * the tax is the rate where the store is. Percentages.
  */
-export const SALES_TAX_SOURCE = { label: "Tax Foundation: State and local sales tax rates as of January 1, 2026", url: "https://taxfoundation.org/data/all/state/sales-tax-rates/" };
+export const SALES_TAX_SOURCE = { label: "Tax Foundation, state and local sales tax rates (January 1, 2026)", url: "https://taxfoundation.org/data/all/state/sales-tax-rates/" };
 
 export const SALES_TAX: Record<string, { state: number; avgLocal: number; combined: number }> = {
   Alabama: { state: 4, avgLocal: 5.46, combined: 9.46 },

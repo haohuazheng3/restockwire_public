@@ -7,7 +7,7 @@ import { COUNTRIES } from "@/lib/apple/countries";
 import type { Dict } from "../en";
 import { cn, currencyZh, regionZh, zs } from "./util";
 
-const CHECK = "每 15 秒，有通知的門市每 5 秒";
+const CHECK = "全部門市 15 秒一輪，設了通知的門市 5 秒一輪";
 /** 「信義 A13」→「Apple 信義 A13」。 */
 const apple = (name: string) => (/^apple\b/i.test(name) ? name : `Apple ${name}`);
 
@@ -20,7 +20,7 @@ export const pages: Dict["pages"] = {
     fullLog: "完整紀錄 →",
     restocksBy: "哪些規格會補貨",
     lastDays: (days: number) => `${days} 天補貨，一天一條`,
-    nearbyCities: "附近有 Apple 直營店的城市",
+    nearbyCities: "鄰近也有 Apple 直營店的城市",
     neighboringStates: "相鄰的州",
     acrossStateLine: "過了州界就到",
     allUsRestocks: "美國每一筆補貨",
@@ -48,7 +48,7 @@ export const pages: Dict["pages"] = {
     matrixHint: "每款機型：上架中／追蹤中。",
     matrixLabel: "各門市現貨",
     cityPage: "打開城市頁面 →",
-    storePage: "打開門市頁面 →",
+    storePage: "前往門市頁 →",
     since: "2026 年 11 月 2 日",
   },
   home: {

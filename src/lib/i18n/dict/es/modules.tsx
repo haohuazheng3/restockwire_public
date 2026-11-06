@@ -1,6 +1,6 @@
 /**
- * Spanish (Spain): modules — the restock, store and stock modules. `label` arrives with its preposition
- * ("en Madrid", "en Apple Puerta del Sol", "aquí"); numbers raw (formatted here), durations and times formatted.
+ * Spanish (Spain): modules — restock, store and stock blocks. The place label comes in with its preposition
+ * already attached (en + place, or aquí); numbers come raw and are formatted below, durations and times come formatted.
  */
 import type { ReactNode } from "react";
 import type { Dict } from "../en";
@@ -8,8 +8,8 @@ import { n, reposiciones, dias, tiendas, v } from "./words";
 
 const agotamientos = (x: number) => `${n(x)} ${x === 1 ? "agotamiento" : "agotamientos"}`;
 const configs = (x: number) => `${n(x)} ${x === 1 ? "configuración" : "configuraciones"}`;
-const CHECK_NOTE = "cada 15 s; 5 s con alerta";
-/** "las 9:00" / "la 1:00". */
+const CHECK_NOTE = "ronda de 15 s · 5 s si tiene alerta";
+/** Article for an hour: la before 1:xx, las otherwise. */
 const las = (hour: string) => (/^1:/.test(hour) ? `la ${hour}` : `las ${hour}`);
 
 export const modules: Dict["modules"] = {
@@ -44,8 +44,8 @@ export const modules: Dict["modules"] = {
     thConfig: "Configuración",
     thRestocks: "Reposiciones",
     thStores: "Tiendas",
-    thLast: "Última reposición (hora local)",
-    thNow: "En stock ahora",
+    thLast: "Repuesta por última vez (hora de la tienda)",
+    thNow: "¿Disponible ya?",
     ofStores: (k: number, total: number) => `${n(k)} de ${n(total)}`,
     noneIn24: "ninguna en 24 h",
     yes: "sí",
@@ -58,14 +58,14 @@ export const modules: Dict["modules"] = {
   clock: {
     none: (label: string, days: number) => `Por ahora, ninguna reposición ${label} en los últimos ${n(days)} días.`,
     thin: (total: number, label: string, days: number, dates: number | null) =>
-      `${reposiciones(total)} ${label} en los últimos ${n(days)} días${dates != null ? ` (en ${dias(dates)})` : ""}: todavía no bastan para señalar una hora habitual.`,
+      `${n(days)} días, ${reposiciones(total)} ${label}${dates != null ? `, repartidas en ${dias(dates)}` : ""}. Con eso aún no sale una hora habitual.`,
     pattern: (total: number, label: string, days: number, hour: string, day: string | null) => (
       <>{reposiciones(total)} {label} en los últimos {n(days)} días. La hora habitual es hacia <b className="text-ink">{las(hour)}</b>, hora local{day ? <>; el <b className="text-ink">{day}</b> es el día que más trae</> : null}.</>
     ),
     byHour: (zone: string) => `Por hora · ${zone}`,
-    byWeekday: "Por día de la semana",
-    barReported: (k: number) => ` (+${n(k)} según otros rastreadores)`,
-    barReportedTitle: (bar: string, k: number) => `${bar}: ${n(k)} según otros rastreadores`,
+    byWeekday: "Día a día",
+    barReported: (k: number) => ` (+${n(k)} publicadas por otros rastreadores)`,
+    barReportedTitle: (bar: string, k: number) => `${bar}: ${n(k)} publicadas por otros rastreadores`,
     legendOurs: "Confirmadas por RestockWire",
   },
 
@@ -116,7 +116,7 @@ export const modules: Dict["modules"] = {
   },
 
   configTable: {
-    title: "Todas las configuraciones de esta tienda",
+    title: "Esta tienda, configuración a configuración",
     titleAt: (store: string) => `Todas las configuraciones en ${store}`,
     lookupOff: (hasRows: boolean) => `Apple tiene desactivadas ahora mismo las consultas de recogida en esta tienda${hasRows ? " (abajo están sus respuestas más recientes)" : ""}`,
     tracked: (k: number) => `${configs(k)} en vigilancia`,
@@ -176,8 +176,8 @@ export const modules: Dict["modules"] = {
     everyDay: (hours: string) => `Todos los días ${hours}`,
     openNow: (closes: string) => `Abierto ahora · cierra a ${las(closes)}`,
     opensAt: (opens: string) => `Abre a ${las(opens)}`,
-    closedToday: (next: string | null) => (next ? `Cerrado hoy · abre ${next}` : "Cerrado hoy"),
-    closedNow: (next: string | null) => (next ? `Cerrado ahora · abre ${next}` : "Cerrado ahora"),
+    closedToday: (next: string | null) => (next ? `Hoy cerrado · abre ${next}` : "Hoy cerrado"),
+    closedNow: (next: string | null) => (next ? `Ahora cerrado · abre ${next}` : "Ahora cerrado"),
     nextOpen: (day: string | null, time: string) => `${day ?? "mañana"} a ${las(time)}`,
   },
 
@@ -190,8 +190,8 @@ export const modules: Dict["modules"] = {
 
   board: {
     summary: (k: number, stores: number, short: string) => `${n(k)} de ${tiendas(stores)} ${v(k, "tiene", "tienen")} el ${short} en este momento`,
-    lastCheck: (ago: ReactNode) => <>Última comprobación {ago}</>,
-    firstSweep: "Primera ronda en curso.",
+    lastCheck: (ago: ReactNode) => <>Revisado {ago}</>,
+    firstSweep: "Aún corre la primera comprobación.",
     noneListed: (model: string, storage: string | null, color: string | null) => `En este momento ninguna tienda tiene el ${model}${storage ? ` ${storage}` : ""}${color ? ` en ${color}` : ""}.`,
     more: (k: number) => `+${n(k)}`,
     seen: (ago: ReactNode) => <>Disponible {ago}</>,

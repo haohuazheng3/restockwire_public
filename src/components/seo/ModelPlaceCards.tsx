@@ -1,4 +1,4 @@
-/** "Same place, one iPhone": three cards that open the model's own page for this place. */
+/** Three model cards for one place; each opens that model's page for the same place. */
 import { PendingLink as Link } from "@/components/ui/PendingLink";
 import { MODELS, type ModelKey } from "@/lib/apple/catalog";
 import { productFor, productPath, type Place } from "@/lib/seo/products";

@@ -1,6 +1,6 @@
 "use client";
 /**
- * "This user's alerts just changed": the wizard says so after a save, the alert list after a pause or
+ * A signal that the signed-in person's alerts changed: the wizard says so after a save, the alert list after a pause or
  * delete, and the account page (rules, plan use, restock modules) refreshes. Same tab through a window
  * event, other tabs through a BroadcastChannel (the storage event where that is missing).
  */

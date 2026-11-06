@@ -4,12 +4,12 @@ import type { CDict } from "../en";
 export const content: CDict["content"] = {
   quickCheck: {
     model: "Modelo de iPhone",
-    search: "Código postal, ciudad o Apple Store",
+    search: "Apple Store, ciudad o código postal",
     useLocation: "Localízame",
     nearMe: "📍 Cerca de mí",
     locationOff: "Este sitio no tiene acceso a tu ubicación. Escribe un código postal.",
     storesNow: "El {what} está disponible para recogida en **{n} de {total}** Apple Store de EE. UU. ahora mismo",
-    nearestTo: " · los más cercanos a {place}",
+    nearestTo: " · ordenados por distancia a {place}",
     you: "ti",
     noMatch: "No se ha encontrado nada. Escribe un código postal de 5 cifras o una ciudad.",
     inStock: "{n}/{total} disponibles",

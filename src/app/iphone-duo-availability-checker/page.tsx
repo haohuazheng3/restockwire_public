@@ -224,11 +224,11 @@ export default async function StockCheckerPage() {
     { q: "Why does every store say \"currently unavailable for pickup\" when I look?", a: sell && band
       ? `Because you land between restocks: a typical Duo listing lasts about ${band} (median ${sell.medianSec} seconds over ${n(sell.n)} timed sell-outs since ${since}). The state table shows where it reads "available" now, and [the wording explained](/apple-store-pickup-explained) covers the rest.`
       : `Because you land between restocks: a Duo listing lasts seconds to a few minutes, then reads "currently unavailable" for the rest of the day. The state table shows where it reads "available" now, and [the wording explained](/apple-store-pickup-explained) covers the rest.` },
-    { q: "What does the checker cost, and what do alerts cost?", a: `The checker, every store page, the [map](/live-map) and the [restock log](/restock-log) are free. ${PRICE_SENTENCE} ${PLANS.plus.name} holds ${PLANS.plus.limit} alerts, ${PLANS.pro.name} ${PLANS.pro.limit} ($${PLANS.pro.priceUsd}), ${PLANS.max.name} ${PLANS.max.limit} ($${PLANS.max.priceUsd}); one alert is one store × one exact configuration ([pricing](/pricing)).` },
+    { q: "What does the checker cost, and what do alerts cost?", a: `The checker, every store page, the [map](/live-map) and the [restock log](/restock-log) are free. ${PRICE_SENTENCE} ${PLANS.plus.name} holds ${PLANS.plus.limit} alerts, ${PLANS.pro.name} ${PLANS.pro.limit} ($${PLANS.pro.priceUsd}), ${PLANS.max.name} ${PLANS.max.limit} ($${PLANS.max.priceUsd}); each alert covers a single store and a single exact configuration ([pricing](/pricing)).` },
   ];
 
   const sources: Source[] = [
-    { label: "Apple: Delivery and Pickup, how pickup availability and holds work", url: APPLE_PICKUP },
+    { label: "Apple, Delivery and Pickup: how pickup holds work", url: APPLE_PICKUP },
     { label: "Apple: Buy iPhone Duo, the availability this checker reads", url: APPLE_DUO },
     { label: "Apple Newsroom: iPhone Duo arrives at Apple Store locations worldwide, October 23, 2026", url: APPLE_NEWSROOM },
     { label: "MacRumors: iPhone Duo pickup at US Apple Stores, October 24, 2026", url: MACRUMORS },
@@ -242,7 +242,7 @@ export default async function StockCheckerPage() {
     "@graph": [
       { "@type": "WebPage", "@id": `${SITE}${PATH}`, url: `${SITE}${PATH}`, name: TITLE_STATIC, description, isPartOf: { "@id": `${SITE}/#website` }, about: { "@id": `${SITE}/#organization` }, dateModified: facts.at },
       {
-        "@type": "WebApplication", "@id": `${SITE}${PATH}#app`, name: "RestockWire iPhone Duo stock checker", url: `${SITE}${PATH}`,
+        "@type": "WebApplication", "@id": `${SITE}${PATH}#app`, name: "RestockWire iPhone Duo availability checker", url: `${SITE}${PATH}`,
         description: `Reads iPhone Duo in-store pickup availability at all ${STORES.length} US Apple Stores every ${SPEED.checkSec} seconds (plus ${intlStores} stores in ${INTL_CODES.length} other countries), shows the states and stores with one now, and logs each confirmed restock.`,
         applicationCategory: "UtilitiesApplication", operatingSystem: "Any",
         featureList: [
@@ -250,14 +250,14 @@ export default async function StockCheckerPage() {
           `${SPEED.checkSec}-second checks at every store; ${SPEED.fastSec}-second checks at stores with an alert`,
           "A second check confirms each restock before it counts",
           "A log of each confirmed restock and sell-out with store, configuration and local time",
-          `A phone push about ${SPEED.alertSec} seconds after a confirmed restock`,
+          `A push to your phone ~${SPEED.alertSec} seconds once a restock is confirmed`,
         ],
-        offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: `Free to browse; alerts from $${PLANS.plus.priceUsd}/month` },
+        offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: `Browsing costs nothing; alerts start at $${PLANS.plus.priceUsd}/month` },
         publisher: { "@id": `${SITE}/#organization` },
       },
       {
         "@type": "Dataset", "@id": `${SITE}${PATH}#dataset`, name: "Live iPhone Duo pickup stock per US state",
-        description: `Per US state with an Apple Store: the stores listing an iPhone Duo for in-store pickup at the latest check, the configurations in stock, confirmed restocks since ${since} and the most recent one, from RestockWire's reads of apple.com every ${SPEED.checkSec} seconds.`,
+        description: `Per US state with an Apple Store: the stores listing an iPhone Duo for in-store pickup at the latest check, which configurations are listed, restocks confirmed from ${since} on and the latest one, from RestockWire's reads of apple.com every ${SPEED.checkSec} seconds.`,
         url: `${SITE}${PATH}`, creator: { "@id": `${SITE}/#organization` }, isAccessibleForFree: true,
         temporalCoverage: `${TRACKING_SINCE_US}/..`, spatialCoverage: "Apple Stores in the United States",
         variableMeasured: ["US state", "Apple Stores listing an iPhone Duo for pickup", "iPhone Duo configurations in stock", "confirmed restocks", "most recent restock, store local time"],
@@ -315,9 +315,9 @@ export default async function StockCheckerPage() {
           <p><b>{!live
             ? `The live read did not load this time. The table still lists every US state with its Apple Stores, its confirmed iPhone Duo restocks since ${since} and the most recent one; each state page has its own live table.`
             : duoNow > 0 && topState
-              ? `${duoNow} of ${STORES.length} US Apple Stores at ${asOf}, across ${plural(statesHit.length, "state")}. ${topState.name} leads with ${topState.withStock} of its ${plural(topState.stores, "store")}; every state with an Apple Store is below, states with stock on top.`
+              ? `${duoNow} of ${STORES.length} US Apple Stores at ${asOf}, across ${plural(statesHit.length, "state")}. ${topState.name} is ahead: ${topState.withStock} out of ${plural(topState.stores, "store")} there; every state with an Apple Store is below, states with stock on top.`
               : `None at ${asOf}, which is normal between restocks. ${latest && latest.store ? `The last confirmed restock was a ${cfg(latest.partNumber)} at ${appleName(latest.store)}, ${stampAt(latest.at, latest.store)}` : "No restock was confirmed in the last 24 hours either"}; the table keeps each state's restock count and most recent one.`}</b></p>
-          <Table caption={`US states with an Apple Store: stores listing an iPhone Duo for pickup at the latest check${live ? ` (${asOf})` : ""}, configurations in stock, confirmed restocks since ${since} and the most recent, in store local time`} head={["State", "Stores with a Duo now", "Configurations listed", `Restocks since ${shortDate(t.since)}`, "Most recent restock"]} min="40rem">
+          <Table caption={`US states with an Apple Store: stores listing an iPhone Duo for pickup at the latest check${live ? ` (${asOf})` : ""}, which configurations are listed, restocks confirmed from ${since} on and the latest, in store local time`} head={["State", "Stores with a Duo now", "Configurations listed", `Restocks since ${shortDate(t.since)}`, "Most recent restock"]} min="40rem">
             {states.map((s) => (
               <tr key={s.name} className={`border-b border-line ${s.withStock > 0 ? "bg-ok/[0.06]" : ""}`}>
                 <th scope="row" className={rowTh}><Link href={s.path} className="hover:underline">{s.name}</Link></th>
@@ -348,7 +348,7 @@ export default async function StockCheckerPage() {
         {/* ---------------------------------------------------------------- apple.com */}
         <section id="apple" className="scroll-mt-24">
           <h2>{h2Of("apple")}</h2>
-          <p><b>Yes, one configuration and one ZIP at a time: on the <a href={APPLE_DUO} target="_blank" rel="noopener">iPhone Duo buy page</a>, pick storage and color, choose &quot;Pick up&quot;, enter a ZIP, and Apple marks nearby stores &quot;Available Today&quot; or &quot;Currently unavailable for pickup&quot; for that instant (<a href={APPLE_PICKUP} target="_blank" rel="noopener">Apple: Delivery and Pickup</a>).</b></p>
+          <p><b>Yes, one configuration and one ZIP at a time: on the <a href={APPLE_DUO} target="_blank" rel="noopener">iPhone Duo buy page</a>, pick storage and color, choose &quot;Pick up&quot;, enter a ZIP, and Apple marks nearby stores &quot;Available Today&quot; or &quot;Currently unavailable for pickup&quot; for that instant (<a href={APPLE_PICKUP} target="_blank" rel="noopener">Apple&apos;s pickup page</a>).</b></p>
           <StepStrip className="my-4 lg:grid-cols-3!" steps={[
             { title: "Pick the configuration", hint: "storage and color, unlocked; price shown before tax" },
             { title: "Pick up → type a ZIP", hint: "Apple lists the stores near it, usually up to a dozen" },
@@ -362,7 +362,7 @@ export default async function StockCheckerPage() {
             { text: <>US pickup opened October 24, 2026, a day after launch (<a href={MACRUMORS} target="_blank" rel="noopener">MacRumors</a>)</> },
           ]} />
           <ol className="my-4 grid gap-3 sm:grid-cols-2">
-            <Swap no="ZIP after ZIP after ZIP" yes={<Link href="/iphone-duo-in-stock-near-me">Every store ranked by distance from you</Link>} why={`All ${STORES.length} US Apple Stores in one list, live stock on each.`} />
+            <Swap no="ZIP after ZIP after ZIP" yes={<Link href="/iphone-duo-in-stock-near-me">All stores, nearest first</Link>} why={`All ${STORES.length} US Apple Stores in one list, live stock on each.`} />
             <Swap no="Reloading apple.com every few minutes" yes="A checker that reloads for you and pushes to your phone" why={`Each US store is read every ${SPEED.checkSec} seconds, alert stores every ${SPEED.fastSec}; the push lands about ${SPEED.alertSec} seconds after a confirmed restock.`} />
           </ol>
           <Figure id="click-and-collect-queue" />
@@ -407,28 +407,28 @@ export default async function StockCheckerPage() {
                 <Stat value={live ? `${topNow}/${items.length}` : "–"} label="configurations listed now" live={live} tone={topNow > 0 ? "ok" : "plain"} />
               </StatGrid>
               <KeyTable head={["On the store page", `${appleName(topStore)} now`]} rows={[
-                ["Live stock", <>All {items.length} configurations, each &quot;available&quot; or not at the latest check</>],
+                ["Live stock", <>Each of the {items.length} configurations, marked listed or not as of the newest check</>],
                 ["Restocks", <>{n(topRow.restocks)} since {since}{topPattern ? `, ${topPattern.restocks} in the last 30 days` : ""}, each with local time and seconds listed</>],
                 ["Usual hour", <>{topRow.peakHour != null ? `${rangeLabel(topRow.peakHour, topRow.peakHour + 1)} local time, from ${plural(topRow.days, "day")} of restocks` : `not yet: needs ${PATTERN_MIN} restocks on ${PATTERN_MIN_DAYS} separate days`}</>],
                 ...(topHours ? [["Hours", <>{topHours}</>] as [ReactNode, ReactNode]] : []),
                 ["Address", <>{fullAddress(topStore)}</>],
-                ...(topTax ? [["Price with tax", <>{fmtPrice(cheapest)} list, about {fmtPrice(topTax.total)} with {topStore.state}&apos;s {topTax.rate}% average combined sales tax (<a href={SALES_TAX_SOURCE.url} target="_blank" rel="noopener">Tax Foundation, 2026</a>)</>] as [ReactNode, ReactNode]] : []),
+                ...(topTax ? [["Price with tax", <>{fmtPrice(cheapest)} before tax; roughly {fmtPrice(topTax.total)} once {topStore.state} adds its {topTax.rate}% average state-plus-local rate (<a href={SALES_TAX_SOURCE.url} target="_blank" rel="noopener">Tax Foundation, 2026</a>)</>] as [ReactNode, ReactNode]] : []),
               ]} />
               <ChipLinks items={[
                 { href: storePath(topStore), label: `${appleName(topStore)} store page` },
                 { href: "/iphone-duo-most-restocked-stores", label: "Most-restocked stores" },
-                { href: "/apple-stores", label: `${STORES.length} store pages by state` },
+                { href: "/apple-stores", label: `All ${STORES.length} stores, state by state` },
               ]} />
             </>
           ) : (
             <>
-              <p>The worked example appears once the restock log loads; meanwhile every store page under <Link href="/apple-stores">Apple Stores by state</Link> shows the same facts for its own store.</p>
-              <ChipLinks items={[{ href: "/apple-stores", label: `${STORES.length} store pages by state` }, { href: "/iphone-duo-most-restocked-stores", label: "Most-restocked stores" }]} />
+              <p>The worked example appears once the restock log loads; meanwhile every store page under <Link href="/apple-stores">the state-by-state store list</Link> shows the same facts for its own store.</p>
+              <ChipLinks items={[{ href: "/apple-stores", label: `All ${STORES.length} stores, state by state` }, { href: "/iphone-duo-most-restocked-stores", label: "Most-restocked stores" }]} />
             </>
           )}
           <Keys items={[
             { text: <>Set an alert for a store from that store&apos;s page</>, step: true },
-            { text: <>Each restock shows the <b className="text-ink">seconds it lasted</b>, bounded by two checks</> },
+            { text: <>Each restock shows the <b className="text-ink">seconds it lasted</b>, measured between two checks</> },
             { text: <>A usual hour needs <b className="text-ink">{PATTERN_MIN} restocks on {PATTERN_MIN_DAYS} separate days</b>; one burst is an event, not a habit</> },
           ]} />
         </section>
@@ -437,7 +437,7 @@ export default async function StockCheckerPage() {
         <section id="configs" className="scroll-mt-24">
           <h2>{h2Of("configs")}</h2>
           <p><b>{topCfg
-            ? `${cfg(topCfg.partNumber)}, with ${pct(topCfgN / t.n)} of the ${n(t.n)} confirmed US iPhone Duo restocks since ${since}${live && mostNow && mostNowN > 0 ? `; at this moment ${cfg(mostNow.partNumber)} is listed by the most stores (${plural(mostNowN, "store")})` : live ? "; at this moment no store lists any configuration" : ""}. The table covers all ${items.length}, with stores listing each now, restocks in 24 hours and since launch, and Apple's buy page.`
+            ? `${cfg(topCfg.partNumber)}, with ${pct(topCfgN / t.n)} of all ${n(t.n)} US iPhone Duo restocks confirmed from ${since} on${live && mostNow && mostNowN > 0 ? `; at this moment ${cfg(mostNow.partNumber)} is listed by the most stores (${plural(mostNowN, "store")})` : live ? "; at this moment no store lists any configuration" : ""}. The table covers all ${items.length}, with stores listing each now, restocks in 24 hours and since launch, and Apple's buy page.`
             : t.unknown
               ? "No ranking this time: the restock log did not load. The table still lists all eight configurations with Apple's buy page for each, and fills in on reload."
               : `No ranking yet: no configuration has a confirmed restock. The table lists all ${items.length} with the stores listing each now and Apple's buy page.`}</b></p>
@@ -465,7 +465,7 @@ export default async function StockCheckerPage() {
           ]} />
           <ChipLinks items={[
             { href: "/iphone-duo-most-restocked-stores", label: "Most-restocked configurations" },
-            { href: "/in-stock/iphone-duo", label: "Live stock by configuration and place" },
+            { href: "/in-stock/iphone-duo", label: "Duo stock by configuration, store and state" },
           ]} />
         </section>
 
@@ -473,7 +473,7 @@ export default async function StockCheckerPage() {
         <section id="when" className="scroll-mt-24">
           <h2>{h2Of("when")}</h2>
           <p><b>{pattern
-            ? `No one can honestly predict it; the checker reports a pattern. ${pct(w.share)} of the ${n(t.n)} confirmed US iPhone Duo restocks since ${since} landed between ${hl(w.from)} and ${hl(w.to)} store local time: something to plan around, not an appointment.`
+            ? `No one can honestly predict it; the checker reports a pattern. ${pct(w.share)} of all ${n(t.n)} US iPhone Duo restocks confirmed from ${since} on landed between ${hl(w.from)} and ${hl(w.to)} store local time: something to plan around, not an appointment.`
             : t.unknown
               ? "No one can honestly predict it; the checker reports a pattern, and the restock log did not load this time. The hourly tables come back on reload."
               : `No one can honestly predict it; the checker reports a pattern, and it names one only after ${PATTERN_MIN} restocks on ${PATTERN_MIN_DAYS} separate days. The US log holds ${n(t.n)} so far.`}</b></p>
@@ -510,7 +510,7 @@ export default async function StockCheckerPage() {
                 <th scope="row" className={rowTh}><Link href={`${prefixOf(c.cc)}/in-stock/iphone-duo`} className="hover:underline">{COUNTRIES[c.cc].name}</Link></th>
                 <td className={`${td} ${c.now > 0 ? "font-semibold text-ok" : ""}`}>{live ? `${c.now} of ${c.stores}` : "–"}</td>
                 <td className={td}>{c.stores}</td>
-                <td className="py-2 pe-3 align-top"><Link href={prefixOf(c.cc) || "/"} className="hover:underline">{COUNTRIES[c.cc].short} home</Link> · <Link href={`${prefixOf(c.cc)}/when-does-iphone-duo-restock`} className="hover:underline">restock hours</Link></td>
+                <td className="py-2 pe-3 align-top"><Link href={prefixOf(c.cc) || "/"} className="hover:underline">{COUNTRIES[c.cc].short} front page</Link> · <Link href={`${prefixOf(c.cc)}/when-does-iphone-duo-restock`} className="hover:underline">restock hours</Link></td>
               </tr>
             ))}
           </Table>
@@ -532,7 +532,7 @@ export default async function StockCheckerPage() {
           </StatGrid>
           <Keys items={[
             { text: <>From the push: &quot;I&apos;ll pick it up&quot; at that store on apple.com, then pay: <Link href="/iphone-duo-restock-checkout-guide">the 20-second checkout</Link></>, step: true },
-            { text: <>An alert is <b className="text-ink">one Apple Store × one exact configuration</b> (model, storage, color); two colors at one store take two alerts</> },
+            { text: <>An alert is <b className="text-ink">a single Apple Store paired with a single exact configuration</b> (model, storage, color); two colors at one store take two alerts</> },
             { text: <>One push per restock with store and configuration; none for sell-outs</> },
             { text: <>Pushes reach iPhone through the <Link href="/phone-alerts">Home Screen app</Link>; no App Store download</> },
           ]} />
@@ -548,8 +548,8 @@ export default async function StockCheckerPage() {
       </div>
 
       <RelatedBlock title="More from the wire">
-        <LinkRow title="Same data, other questions" links={[
-          { href: "/is-iphone-duo-back-in-stock", label: "Is the iPhone Duo back in stock?" },
+        <LinkRow title="The same log answers these too" links={[
+          { href: "/is-iphone-duo-back-in-stock", label: "Duo back in stock right now?" },
           { href: "/when-does-iphone-duo-restock", label: "When does the iPhone Duo restock?" },
           { href: "/how-fast-does-iphone-duo-sell-out", label: "How many seconds does a restock last?" },
           { href: "/iphone-duo-most-restocked-stores", label: "Most-restocked configurations" },

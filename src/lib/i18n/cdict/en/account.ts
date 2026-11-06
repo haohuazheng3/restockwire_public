@@ -6,7 +6,7 @@
 export const account = {
   signOut: "Sign out",
 
-  /** Device names (lib/devices.ts, summarised for "Alerts go to your {label}") and the device list. */
+  /** Names for devices (lib/devices.ts boils them down to one {label} for the card) plus the per-device list. */
   devices: {
     iphone: "iPhone",
     ipad: "iPad",
@@ -62,7 +62,7 @@ export const account = {
     /** iPhone in Safari: the three steps under the card (iOS's own words for Share / Add to Home Screen). */
     miniSteps: ["In Safari, tap Share", "Choose Add to Home Screen", "Open the app and allow notifications"],
     /** "Preview here": a sample banner drawn by this device. */
-    preview: { title: "iPhone Duo 256GB Night Sky", body: "Apple Fifth Avenue · New York, NY — Available Today. Open apple.com to reserve it." },
+    preview: { title: "iPhone Duo 1TB Star White", body: "Apple Fifth Avenue · New York, NY — Available Today. Open apple.com to reserve it." },
     /** "Send a test": what the server answered. {device} names come from the server. */
     test: {
       gone: "The push service reports this device's subscription has expired. Switch notifications off and back on from that device.",
@@ -110,16 +110,16 @@ export const account = {
     tomorrow: "tomorrow",
     nextTomorrow: "Up next: {time} tomorrow, {soon}",
     /** Row labels for screen readers. */
-    rowReported: { one: "{time}: {n} restock reported by other trackers at {where}", other: "{time}: {n} restocks reported by other trackers at {where}" },
-    rowMine: { one: "{time}: {n} restock at {where}", other: "{time}: {n} restocks at {where}" },
-    rowArea: { one: "{time}: {n} restock at {where} on {zone} time", other: "{time}: {n} restocks at {where} on {zone} time" },
+    rowReported: { one: "{time} · {where} · {n} restock, per other trackers", other: "{time} · {where} · {n} restocks, per other trackers" },
+    rowMine: { one: "{time} · {where} · {n} restock", other: "{time} · {where} · {n} restocks" },
+    rowArea: { one: "{time} ({zone} time) · {where} · {n} restock", other: "{time} ({zone} time) · {where} · {n} restocks" },
     rowNext: ", next",
     rowNextTomorrow: ", next, tomorrow",
     /** Tooltip on a row's bar. */
     often: { one: "{n} restock near this time over the past {days} days", other: "{n} restocks near this time over the past {days} days" },
     oftenReported: { one: "{n} restock near this time over the past {days} days, reported by other trackers", other: "{n} restocks near this time over the past {days} days, reported by other trackers" },
     hidden: { one: "Only your peak times are shown; {n} restock at a quieter time is left out.", other: "Only your peak times are shown; {n} restocks at quieter times are left out." },
-    /** Starts the other trackers' footnote: "Dashed rings: iPhone Duo restocks published by …". */
+    /** First words of the footnote that credits restocks taken from other trackers' public logs. */
     reportMark: "Dashed rings",
   },
   /** The dashboard's language setting. */

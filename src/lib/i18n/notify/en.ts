@@ -3,9 +3,9 @@
  * imports: the poller sends these too. Every language mirrors this shape in notify/<lang>.ts.
  */
 export const notifyEn = {
-  /** Push title: "iPhone Duo 256GB Night Sky" alone (`cfg` = model, storage and colour as the reader writes them): a prefix pushed the colour past the one-line banner. */
+  /** Banner headline is the configuration and nothing else, e.g. "iPhone Duo 1TB Star White" (`cfg` in the reader's own spelling); any prefix would cut the colour off a one-line banner. */
   pushTitle: (cfg: string) => cfg,
-  /** Push body: `where` = "Apple SoHo · New York, NY"; `quote` = Apple's own pickup wording, when it is in the reader's language. */
+  /** Banner text. `where` looks like "Apple Michigan Avenue · Chicago, IL"; `quote` carries Apple's pickup phrase when Apple wrote it in the reader's language, else null. */
   pushBody: (where: string, quote: string | null) => `${where}${quote ? ` — ${quote}` : ""}. Open apple.com to reserve it.`,
   testTitle: "RestockWire test: notifications work",
   testBody: (time: string, device: string) => `Sent ${time} to your ${device}. A real restock alert lands exactly like this, seconds after it is confirmed.`,
@@ -17,8 +17,9 @@ export const notifyEn = {
     computer: (browser: string) => `computer${browser ? ` (${browser})` : ""}`,
     other: "this device",
   },
+  /** The restock e-mail, sent only when no device has notifications on. */
   email: {
-    /** `more`: how many other alerts the same email carries (0 = none). */
+    /** `more` counts the extra alerts bundled into this one e-mail; 0 when it carries a single alert. */
     subject: (cfg: string, store: string, more: number) => `${cfg} · ${store}${more > 0 ? ` +${more} more` : ""}`,
     intro: "Listed for in-store pickup at this moment:",
     reserve: "Reserve",
@@ -28,16 +29,16 @@ export const notifyEn = {
     htmlTitle: "Listed for pickup now",
     htmlReserve: "Reserve on apple.com",
     htmlStorePage: "Open the store page →",
-    /** HTML: <b>…</b> allowed. */
+    /** May contain <b>…</b>. */
     htmlTip: "Pickup listings rarely last long. In the Apple Store app or on apple.com, choose <b>Pick up</b> and then this store.",
     htmlManage: "Change or pause this alert",
-    /** The plan's way out, under every alert: `url` = /account/cancel (lands on the plan's cancel step). */
+    /** Footer line of each alert e-mail; `url` points at /account/cancel, which opens straight on the cancel step. */
     cancel: (url: string) => `Have your iPhone now? Cancel anytime: ${url}`,
     htmlGotIt: "Have your iPhone now?",
     htmlCancel: "Cancel anytime",
-    /** Under every alert that went by e-mail: the faster way exists. `url` = /install. */
+    /** Footer of each e-mailed alert, pointing to push as the quicker channel; `url` is the phone-alerts guide. */
     nudge: (url: string) => `Email is the fallback: no phone on your account has notifications on. A push lands about 3 seconds after a confirmed restock. To switch, open RestockWire from your Home Screen and tap "Turn on notifications": ${url}`,
-    /** HTML: <b> and the link allowed; `url` is already escaped. */
+    /** May contain <b> and the anchor; `url` arrives escaped. */
     htmlNudge: (url: string) => `Email is the fallback: no phone on your account has notifications on. A <b>push lands about 3 seconds</b> after a confirmed restock. Open RestockWire from your Home Screen and tap <b>Turn on notifications</b>. <a href="${url}" style="color:#0a7f3f">Setup steps →</a>`,
   },
   /** The one e-mail (at most every 14 days) to a member whose alerts go by e-mail: turn notifications on. */
@@ -50,10 +51,10 @@ export const notifyEn = {
     after: "Email continues until a device is switched on. After that, alerts arrive as notifications and the emails stop.",
     cta: (url: string) => `Illustrated setup steps: ${url}`,
   },
-  /** Stripe Checkout's line above the pay button: the plan, its alerts, how fast checks run (5 s / 15 s / ~3 s push). */
+  /** Shown by Stripe Checkout next to the pay button: plan name, alert count, and the three speeds (store checks, other stores, push). */
   checkoutSubmit: (plan: string, limit: number, fastSec: number, checkSec: number, alertSec: number) => `${plan}: ${limit} alerts. Your stores are read every ${fastSec} s and every other store every ${checkSec} s; a confirmed restock reaches your phone in about ${alertSec} s. Billed monthly, cancel anytime.`,
   stopped: {
-    deviceWord: { ios: "iPhone", android: "Android phone", desktop: "computer", other: "device" },
+    deviceWord: { ios: "iPhone", android: "Android device", desktop: "computer", other: "device" },
     subject: (device: string) => `Your ${device} no longer receives RestockWire notifications`,
     gone: (device: string) => `The push service reports that your ${device} has dropped its RestockWire subscription, so notifications no longer reach it.`,
     byEmail: "Until notifications are back on, your restock alerts come by email.",

@@ -14,9 +14,9 @@ type Kind = "state" | "city" | "store" | "model";
 
 /** "las 9:00" / "la 1:00" for an hour label. */
 const lasS = (hour: string): string => { const x = fixHour(hour); return /^1:/.test(x) ? `la ${x}` : `las ${x}`; };
-/** "los lunes", "los sábados". */
+/** Weekday in the plural with its article (lunes → los lunes; sábado → los sábados). */
 const losDays = (day: string): string => { const d = fixDay(day); return /o$/.test(d) ? `los ${d}s` : `los ${d}`; };
-/** "Todas las provincias" / "Todos los estados". */
+/** Region nouns that are feminine, so the browse row says Todas, not Todos. */
 const FEM = new Set(["provincias", "zonas", "prefecturas", "regiones", "ciudades"]);
 
 export const content: Dict["content"] = {
@@ -29,12 +29,12 @@ export const content: Dict["content"] = {
     closedToday: "Hoy cerrado",
     opensAt: (time: string) => `Abre a ${lasS(time)}`,
     openNow: (closes: string) => `Abierto · cierra a ${lasS(closes)}`,
-    closedNowOpens: (next: string) => `Cerrado ahora · abre ${next}`,
-    closedNow: "Cerrado ahora",
+    closedNowOpens: (next: string) => `Ahora cerrado · abre ${next}`,
+    closedNow: "Ahora cerrado",
   },
 
   duration: {
-    underAMinute: "menos de un minuto",
+    underAMinute: "menos de 1 minuto",
     pair: (a: string, b: string) => `${a} ${b}`,
   },
   listMore: (n: string) => `${n} más`,
@@ -44,7 +44,7 @@ export const content: Dict["content"] = {
     where: (kind: Kind, place: string) => (kind === "model" ? `del ${place}` : `en ${place}`),
     nRestocks: f({ one: "# reposición", other: "# reposiciones" }),
     restockA: ({ count, where, days, week, peak }: { count: string | null; where: string; days: string; week: string; peak: { hour: string; day: string | null } | null }) =>
-      `${count == null ? `Cero reposiciones ${where} en los últimos ${days} días` : `${count} ${where} en los últimos ${days} días (${week} en la última semana)`}${peak ? `, concentradas hacia ${lasS(peak.hour)}, hora local${peak.day ? `, con ${losDays(peak.day)} como el día de más movimiento` : ""}` : ""}; Apple no anuncia ningún calendario.`,
+      `${count == null ? `Cero reposiciones ${where} en los últimos ${days} días` : `${count} ${where} en los últimos ${days} días (${week} en la última semana)`}${peak ? `; el pico, hacia ${lasS(peak.hour)} (hora de la tienda)${peak.day ? ` y ${losDays(peak.day)}` : ""}` : ""}; Apple no anuncia ningún calendario.`,
     lastsNone: (where: string) => `Todavía no se han agotado suficientes reposiciones ${where} para ponerle una cifra.`,
     lasts: (days: string, duration: string) => `${cap(aprox(duration))} de mediana: es lo que una configuración repuesta siguió disponible antes de agotarse, en los últimos ${days} días.`,
     storeIn: (store: string, line: string) => `${store} en ${line}`,
@@ -64,7 +64,7 @@ export const content: Dict["content"] = {
     storeStockQ: (store: string, model: string) => `¿Hay stock del ${model} en ${store}?`,
     nConfigs: f({ one: "# configuración", other: "# configuraciones" }),
     storeStockYes: (count: string) => `Sí: ${count} en la última comprobación, con la capacidad y el color en la tabla de esta página.`,
-    storeStockNo: (other: { pro: string; proMax: string } | null) => `No, no en la última comprobación${other ? `; eso sí, tiene ${other.pro} configuraciones del iPhone 18 Pro y ${other.proMax} del 18 Pro Max` : ", y tampoco tiene ninguna configuración del 18 Pro ni del 18 Pro Max"}.`,
+    storeStockNo: (other: { pro: string; proMax: string } | null) => `No, no en la última comprobación${other ? `. Lo que sí había: ${other.pro} del iPhone 18 Pro y ${other.proMax} del 18 Pro Max` : ". Del 18 Pro y del 18 Pro Max, tampoco nada"}.`,
     hoursQ: (store: string) => `¿Cuándo abre ${store}?`,
     hoursA: ({ hours, today, address, phone }: { hours: string | null; today: string | null; address: string; phone: string | null }) =>
       `${hours ?? "Consulta la tabla de horarios de esta página"}${today ? `; hoy, ${today}` : ""}; dirección: ${address}${phone ? `, teléfono ${phone}` : ""}.`,
@@ -86,7 +86,7 @@ export const content: Dict["content"] = {
   },
 
   explainer: (kind: Kind, place: string) => {
-    const at = kind === "store" ? place : kind === "model" ? "todos los Apple Store de EE. UU." : `los Apple Store de ${place}`;
+    const at = kind === "store" ? place : kind === "model" ? "cada Apple Store de EE. UU." : `los Apple Store de ${place}`;
     return [
       "La recogida en tienda es una compra en apple.com: eliges la configuración y la tienda al pagar, pagas online y la recoges en persona, a menudo el mismo día. Las tiendas de los operadores y el stock de estantería son otra cosa.",
       `En ${at}, RestockWire lee cada configuración seguida cada 15 segundos, o cada 5 segundos donde hay una alerta. Un cambio solo cuenta cuando lo confirma una segunda comprobación, así que un fallo puntual nunca aparece como reposición ni como agotamiento.`,
@@ -98,14 +98,14 @@ export const content: Dict["content"] = {
   titles: {
     state: (name: string, duoNow: string, stores: string) => [
       `Apple Store en ${name}: iPhone Duo en ${duoNow} de ${stores}`,
-      `Apple Store en ${name}: stock del iPhone Duo en directo`,
-      `Apple Store en ${name}: stock del iPhone Duo ahora`,
+      `Apple Store en ${name}: iPhone Duo, stock al momento`,
+      `Apple Store en ${name}: ¿hay iPhone Duo hoy?`,
       `Apple Store ${name}: stock de iPhone en directo`,
     ],
     city: (city: string, code: string, duoNow: string, stores: string) => [
       `Apple Store en ${city}, ${code}: iPhone Duo en ${duoNow} de ${stores}`,
-      `Apple Store en ${city}, ${code}: iPhone Duo en directo`,
-      `Apple Store en ${city}, ${code}: stock del iPhone Duo`,
+      `Apple Store en ${city}, ${code}: iPhone Duo al momento`,
+      `Apple Store en ${city}, ${code}: ¿hay iPhone Duo?`,
       `Apple Store ${city}: stock de iPhone en directo`,
     ],
     store: (name: string, region: string | null) => {
@@ -123,7 +123,7 @@ export const content: Dict["content"] = {
     model: (name: string, storesNow: string) => [
       `Stock del ${name} para recogida: en ${storesNow} Apple Store ahora`,
       `Stock del ${name}: ${storesNow} Apple Store ahora`,
-      `Stock del ${name} para recogida en tienda, en directo`,
+      `${name}: recogida en tienda, stock al momento`,
     ],
   },
 
@@ -163,7 +163,7 @@ export const content: Dict["content"] = {
   keepExploring: "Más en RestockWire",
   browse: {
     storesByState: "Tiendas por estado",
-    allStatesCities: "Todos los estados y ciudades →",
+    allStatesCities: "Estados y ciudades, uno a uno →",
     liveByModel: "Stock en directo, modelo a modelo",
     modelStock: (model: string) => `Stock del ${model}`,
     thisPage: "esta página",
@@ -174,7 +174,7 @@ export const content: Dict["content"] = {
     bigCities: "Grandes ciudades",
     cities: "Ciudades",
     storesBy: (region: string) => `Tiendas por ${region}`,
-    allStoresIn: ({ country }: { inName: string; country: string }) => <>Todos los Apple Store de {country} →</>,
+    allStoresIn: ({ country }: { inName: string; country: string }) => <>Apple Store de {country}: la lista entera →</>,
     allRegions: (regions: string) => `${FEM.has(regions) ? "Todas las" : "Todos los"} ${regions}`,
   },
   modelCards: "Elige un iPhone",
@@ -247,19 +247,19 @@ export const content: Dict["content"] = {
   },
 
   photos: {
-    "apple-store-pickup-counter": { alt: "Mostrador de recogida de madera con el rótulo Pickup dentro de un Apple Store", caption: "Los pedidos con recogida se entregan en un mostrador como este." },
-    "phone-map": { alt: "Manos usando una app de mapas en un smartphone al aire libre", caption: "La distancia importa más de lo que parece cuando una reposición dura un minuto." },
-    "phone-card-payment": { alt: "Una mujer con un iPhone y una tarjeta de crédito pagando online", caption: "Pagar online para recoger en tienda." },
-    "phone-on-box": { alt: "Un smartphone nuevo apoyado sobre su caja blanca", caption: "Un móvil nuevo, recién sacado de la caja." },
-    "city-map-phone": { alt: "Dos personas consultando un mapa de la ciudad en un móvil", caption: "Planificar la ruta hasta la tienda." },
-    "phone-notification": { alt: "Mano sujetando un móvil con notificaciones en la pantalla de bloqueo", caption: "Una alerta llega a la pantalla de bloqueo." },
-    "apple-store-crowd-inside": { alt: "Gente haciendo cola dentro de un Apple Store lleno en un centro comercial", caption: "Colas en un Apple Store la semana del lanzamiento: el stock que llega a la tienda vuela en minutos." },
-    "apple-store-glass-canopy": { alt: "Apple Store con fachada de cristal y marquesina de madera de noche", caption: "Un Apple Store acristalado al caer la noche." },
-    "apple-store-night-vancouver": { alt: "Un Apple Store iluminado de noche en Vancouver", caption: "Apple Store de noche: el stock para recogida puede aparecer a cualquier hora, pero llega mucho más a menudo por la mañana." },
-    "phone-hand-camera": { alt: "Persona sujetando un iPhone con triple cámara", caption: "Los modelos Pro son por los que se hace cola." },
-    "place-es-spain": { alt: "La Ciudad de las Artes y las Ciencias de Valencia bajo un cielo azul", caption: "La Ciudad de las Artes y las Ciencias, Valencia." },
-    "place-es-madrid-region": { alt: "Los rascacielos de las Cuatro Torres, en el norte de Madrid, con la sierra al fondo", caption: "Las Cuatro Torres, el distrito de negocios de Madrid." },
-    "place-es-madrid": { alt: "El edificio Metrópolis en la Gran Vía de Madrid bajo un cielo despejado", caption: "El edificio Metrópolis, en la Gran Vía de Madrid." },
-    "place-es-barcelona": { alt: "Vista aérea de la Sagrada Família sobre el Eixample de Barcelona al atardecer", caption: "La Sagrada Família, Barcelona, al atardecer." },
+    "apple-store-pickup-counter": { alt: "Amplio atrio de un centro comercial con un Apple Store, escaleras mecánicas y luz natural", caption: "Las tiendas de centro comercial como esta reponen la recogida antes de abrir las puertas." },
+    "phone-map": { alt: "Primer plano, al aire libre, de una mano con un smartphone que muestra una app de mapas", caption: "Con un minuto de margen, cada kilómetro hasta la tienda cuenta." },
+    "phone-card-payment": { alt: "Mujer que paga sin contacto con su smartphone en un datáfono", caption: "Se paga en apple.com; se recoge en la tienda." },
+    "phone-on-box": { alt: "Smartphone en su caja sobre fondo blanco", caption: "Aún en su caja, ya reservado." },
+    "city-map-phone": { alt: "Pareja joven que se orienta con el móvil durante un viaje por una carretera rural", caption: "La ruta a la tienda, decidida antes del aviso." },
+    "phone-notification": { alt: "Primer plano de una mano con un móvil que muestra la frase motivadora «Hard Work Forever Pays.»", caption: "En esta pantalla aparece el aviso." },
+    "apple-store-crowd-inside": { alt: "Clientes probando dispositivos en las mesas de un Apple Store dentro de un centro comercial de Bangkok", caption: "Dentro de la tienda, cada mesa es para probar; la cola de recogida se forma al fondo." },
+    "apple-store-glass-canopy": { alt: "Exterior de un Apple Store moderno de cristal junto al río, en el centro de Chicago", caption: "Chicago: un Apple Store de cristal junto al río." },
+    "apple-store-night-vancouver": { alt: "Vista aérea de Vancouver de noche, con el skyline y el puente iluminados", caption: "Vancouver de noche. Hay reposiciones a cualquier hora, pero la mañana se lleva la mayoría." },
+    "phone-hand-camera": { alt: "Primer plano de una mano con un smartphone de funda naranja y tres cámaras", caption: "Los Pro: el modelo que más colas genera." },
+    "place-es-spain": { alt: "Vista aérea del frente de playa de Benidorm con el edificio Intempo", caption: "España: Benidorm y el Intempo, desde el aire." },
+    "place-es-madrid-region": { alt: "Tejados históricos y Plaza Mayor de Chinchón bajo un cielo azul despejado", caption: "Comunidad de Madrid: la Plaza Mayor de Chinchón." },
+    "place-es-madrid": { alt: "Vista de Madrid al anochecer, con sus edificios más reconocibles", caption: "Madrid al caer la tarde." },
+    "place-es-barcelona": { alt: "Panorámica de Barcelona con la Torre Glòries en una mañana despejada", caption: "Barcelona: la Torre Glòries por la mañana." },
   },
 };

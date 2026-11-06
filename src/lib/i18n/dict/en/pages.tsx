@@ -29,14 +29,15 @@ export const pages = {
     onTheMap: (place: string) => `Map view of ${place}`,
     allOf: (place: string) => `${place} overview`,
     allOfArrow: (place: string) => `${place} overview →`,
+    /** Store and its city on one line. */
     storeAndCity: (store: string, city: string) => `${store} · ${city}`,
-    /** Source list line: "Apple: Ginza store page". */
+    /** Source list entry pointing at Apple's page for one store. */
     appleStorePage: (store: string) => `Apple's own page for ${store}`,
-    /** Source list: where the live data comes from ("the 11 Apple Stores in Japan"). */
+    /** Source list: the stores the live data covers (e.g. every Apple Store in Japan). */
     sourcesWhere: (n: number, cc: CountryCode) => `all ${n} Apple Stores ${inName(cc)}`,
-    /** Label handed to the restock modules for a place: "in Michigan". */
+    /** Place label for the restock modules (English: "in Michigan"). */
     inPlace: (place: string) => `in ${place}`,
-    /** The same for one store: "at Apple Somerset". */
+    /** Store label for the same modules (English: "at Apple Somerset"). */
     atPlace: (place: string) => `at ${place}`,
     here: "here",
     storesWithIt: "stores listing it",
@@ -80,10 +81,11 @@ export const pages = {
     nearbyHint: (place: string) => `Measured from the midpoint of ${place}'s stores.`,
     beyond: (place: string) => `Outside ${place}`,
     everyStore: (place: string) => `${place}, store by store`,
-    /** "Nearest provinces in Canada" (the country's word for its regions, plural). */
+    /** Heading for the bordering regions, using the country's plural region noun (provinces, cantons…). */
     nearestRegions: (cc: CountryCode) => `Neighboring ${COUNTRIES[cc].regionNounPlural ?? "areas"} ${inName(cc)}`,
   },
   city: {
+    /** City header line: store count and the check cadence. */
     counts: (stores: number) => `${stores} Apple Stores · checked ${CHECK_NOTE}`,
     storeHeading: (name: string) => `Apple ${name}`,
     details: "About this store",
@@ -93,7 +95,7 @@ export const pages = {
     otherCities: (region: string) => `More ${region} cities with a store`,
   },
   store: {
-    /** Meta description, three lengths (the first that fits 155 characters wins). */
+    /** Store meta description in three lengths; the longest one within 155 characters is used. */
     description: (a: { place: string; street: string; city: string; where: string; duo: number; pro: number; pm: number }) => [
       `Live in-store pickup stock at ${a.place} (${a.street}, ${a.city}): ${a.duo} iPhone Duo, ${a.pro} 18 Pro and ${a.pm} Pro Max configs tracked, with hours, restock hours and nearby stores.`,
       `${a.place}, ${a.where}: pickup stock for ${a.duo} Duo, ${a.pro} 18 Pro and ${a.pm} Pro Max configs, live, with today's hours and usual restock times.`,
@@ -107,6 +109,7 @@ export const pages = {
     /** "Apple Store Ginza": the store as people say it. */
     storeWord: (name: string) => (/^apple\b/i.test(name) ? name.replace(/^apple\s*/i, "Apple Store ") : `Apple Store ${name}`),
     hoursH2: (storeWord: string) => `${storeWord}: opening hours, address and pickup rules`,
+    /** Opening line of the hours section. */
     hoursLead: (place: string, address: string, phone: string | undefined, today: string, week: string) => `${place}'s address is ${address}${phone ? `; phone ${phone}` : ""}. Hours today: ${today}. Across the week: ${week}.`,
     pickupRules: (helpUrl: string) => [
       `**Come in only after Apple's pickup notification** ([Apple's pickup rules](${helpUrl}))`,
@@ -115,14 +118,17 @@ export const pages = {
       `**Sending someone else?** Only a pickup contact named at checkout`,
     ],
     directions: (place: string, dirUrl: string, appleUrl?: string) => `[Get directions to ${place}](${dirUrl})${appleUrl ? ` · [This store on apple.com](${appleUrl})` : ""}`,
+    /** Single-store places: heading, then the country or city variant. */
     onlyH2: (where: string, place: string) => `${place}: the one Apple Store ${where}`,
+    /** Country with a single store. */
     onlyInCountry: (place: string, cc: CountryCode) => `Every in-store pickup ${inName(cc)} goes through ${place}, the country's only Apple Store. There is no backup store when a configuration appears here, so an alert on this store is the whole plan.`,
-    /** One store in the city; `backups`: "Apple X in City (12 km)" list, may be empty. */
+    /** Only store in its city. `backups` lists the next stores with distance and can be empty. */
     onlyInCity: (city: string, place: string, backups: string) => `${place} is the only Apple Store in ${city}.${backups ? ` Next nearest: ${backups}.` : ""}`,
+    /** One backup store with its city and distance. */
     backup: (apple: string, city: string, dist: string) => `${apple} in ${city} (${dist})`,
     onlyBlockCountry: (place: string) => `An alert is one store plus one exact configuration; when ${place} lists yours for pickup, your phone hears within seconds.`,
     onlyBlock: (place: string) => `When ${place} does not have your configuration, those backups deserve an alert too: each alert is one store plus one exact configuration, and the push lands seconds after that store lists it.`,
-    /** The first paragraph. Numbers: in stock now / configurations, per model; `peak`: the usual hour or null. */
+    /** Opening paragraph: per model, configurations listed now out of those tracked; `peak` is the usual restock hour, or null. */
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (
       <>Right now {a.place}{a.street ? ` at ${a.street}` : ""} has <b className="text-ink">{a.duo} of {a.duoOf}</b> iPhone Duo configurations, <b className="text-ink">{a.pro} of {a.proOf}</b> of the iPhone 18 Pro and <b className="text-ink">{a.pm} of {a.pmOf}</b> of the iPhone 18 Pro Max listed for in-store pickup.{a.peak ? <> The usual restock hour here is <b className="text-ink">{a.peak}</b> local time.</> : null}</>
     ),
@@ -141,7 +147,7 @@ export const pages = {
     elsewhereIn: (region: string) => `Further afield in ${region}`,
     faqTitle: (place: string) => `${place}: questions`,
     applePage: (place: string) => `Apple's own page for ${place} (hours, events)`,
-    /** Source list "where" for a country page: "the Apple Store in Austria" / "the 11 Apple Stores in Japan". */
+    /** Source list scope on a country page: the single store (Austria) or the full count (Japan). */
     sourcesWhere: (n: number, cc: CountryCode) => `${n === 1 ? "the single Apple Store" : `all ${n} Apple Stores`} ${inName(cc)}`,
     around: (place: string) => `Near ${place}`,
     otherInCity: (city: string) => `${city}'s other Apple Stores`,

@@ -44,7 +44,7 @@ const CITY: Partial<Record<string, Partial<Record<CountryCode, Record<string, st
   ar: { ae: { Dubai: "دبي", "Abu Dhabi": "أبوظبي", "Al Ain": "العين" } },
 };
 
-/** Region names (Apple's store-list groups), English → the language's. */
+/** Region names as Apple groups its store lists, mapped from English to each language. */
 const REGION: Partial<Record<string, Partial<Record<CountryCode, Record<string, string>>>>> = {
   ja: { jp: { Aichi: "愛知県", Fukuoka: "福岡県", Kanagawa: "神奈川県", Kyoto: "京都府", Osaka: "大阪府", Tokyo: "東京都" } },
   ko: { kr: { Gyeonggi: "경기도", Seoul: "서울" } },
@@ -102,6 +102,7 @@ export function appleStoreLabel(s: { storeNumber: string; name: string }, lang: 
   const n = storeLabel(s, lang);
   return /^apple\b/i.test(n) ? n : `Apple ${n}`;
 }
+/** City name in the page language (English: as stored). */
 export function cityLabel(cc: CountryCode, city: string, lang: Lang): string {
   return lang === "en" ? city : CITY[fam(lang)]?.[cc]?.[city] ?? city;
 }
@@ -116,7 +117,7 @@ export function configLabel(item: { storage: string; color: string }, lang: Lang
   return `${item.storage} ${colorLabel(item.color, lang)}`;
 }
 const names = new Map<string, Intl.DisplayNames>();
-/** The country's name in the language (Intl), English: the site's own name ("United Kingdom"). */
+/** Country name via Intl in the reader's language; English uses our own form, e.g. United Kingdom. */
 /** Where Intl's name is the long official one ("中國香港特別行政區", "Sonderverwaltungsregion Hongkong"): what people say. */
 const SHORT_NAME: Partial<Record<CountryCode, Record<string, string>>> = {
   hk: { ja: "香港", ko: "홍콩", zh: "香港", de: "Hongkong", fr: "Hong Kong", it: "Hong Kong", es: "Hong Kong", nl: "Hongkong", sv: "Hongkong", ar: "هونغ كونغ" },

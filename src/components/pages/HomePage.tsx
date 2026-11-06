@@ -2,7 +2,7 @@
  * A country's home: / (the US) and /{cc}. The live board for one model (stores with it, restocks, last check,
  * the latest restocks) beside the alert setup, then the keyword sections, FAQ and sources. The US keeps its
  * hand-written copy (content/home.ts); another country's copy is built from its own live numbers, prices,
- * tax rule and stores (the SEO plan §12: "iPhone Stock Checker {Country}: {n} Apple Stores, Checked Every 15s").
+ * tax rule and stores; its title follows the per-country formula in the SEO plan §12.
  */
 import type { Metadata } from "next";
 import { bidi } from "@/lib/i18n/format";
@@ -48,7 +48,7 @@ import { restockLeaderboard, restockStreak } from "@/lib/content/wire";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-/** The home's metadata: the US one as it always was (plus hreflang), another country's from its formula. */
+/** Home metadata. US: the fixed copy plus hreflang. Elsewhere: built from the country formula. */
 export function homeMetadata(c: Country, loc: Locale = englishLocale(c.cc)): Metadata {
   const languages = hreflangFor("home", loc);
   if (c.cc === "us") {
@@ -79,7 +79,7 @@ export async function HomePage({ country: c, searchParams: sp }: { country: Coun
     "@context": "https://schema.org",
     "@graph": [
       // Organization and WebSite come from the root layout (lib/seo/siteLd.ts).
-      { "@type": "WebApplication", name: "RestockWire iPhone stock checker", url: "https://restockwire.com", description: SITE_DESCRIPTION, featureList: SITE_FEATURES, applicationCategory: "UtilitiesApplication", operatingSystem: "Web, iOS and Android (Home Screen app)", offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: "Live stock, restock times, map and restock log are free; alerts from $5/month" }, publisher: { "@id": ORG_ID } },
+      { "@type": "WebApplication", name: "RestockWire iPhone stock checker", url: "https://restockwire.com", description: SITE_DESCRIPTION, featureList: SITE_FEATURES, applicationCategory: "UtilitiesApplication", operatingSystem: "Web; iPhone and Android as a Home Screen app", offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: "Free to browse: live stock, restock hours, the map and the log. Alerts start at $5 a month." }, publisher: { "@id": ORG_ID } },
     ],
   };
   return (
@@ -87,7 +87,7 @@ export async function HomePage({ country: c, searchParams: sp }: { country: Coun
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
 
       <section className="pt-6 sm:pt-10">
-        <div className="eyebrow inline-flex items-center gap-2"><span className="dot dot-ok dot-live" /> Live · all 269 US Apple Stores · {CHECK_NOTE}</div>
+        <div className="eyebrow inline-flex items-center gap-2"><span className="dot dot-ok dot-live" /> On the wire · 269 US Apple Stores · {CHECK_NOTE}</div>
         <h1 className="display mt-3 text-3xl sm:text-5xl">{HOME_TITLES.main.h1}</h1>
         <p className="mt-2 max-w-3xl text-ink-2"><Inline text={HOME_INTRO} facts={facts} /></p>
       </section>
@@ -103,10 +103,10 @@ export async function HomePage({ country: c, searchParams: sp }: { country: Coun
       </section>
 
       <section className="mt-6 flex flex-wrap items-center gap-2 text-sm text-ink-3">
-        <span>Also tracking:</span>
+        <span>Other models:</span>
         {MODELS.filter((m) => m.key !== model).map((m) => <Link key={m.key} href={`/?model=${m.key}`} className="chip px-3 py-1.5 text-xs">{m.name}</Link>)}
         <Link href="/live-map" className="chip px-3 py-1.5 text-xs">Live map</Link>
-        <Link href="/apple-stores" className="chip px-3 py-1.5 text-xs">Stores by state</Link>
+        <Link href="/apple-stores" className="chip px-3 py-1.5 text-xs">Apple Stores by state</Link>
       </section>
 
       {/* The country-wide answer to "did the Duo restock in the last 24 hours, and which configuration?", in one sentence and a table. */}
@@ -116,7 +116,7 @@ export async function HomePage({ country: c, searchParams: sp }: { country: Coun
         <RestockStreak data={streak} label="in the US" />
       </div>
 
-      <RelatedBlock title="Browse stock by place">
+      <RelatedBlock title="Stock, place by place">
         <BrowsePopular />
         <BrowseModels />
       </RelatedBlock>
@@ -124,10 +124,10 @@ export async function HomePage({ country: c, searchParams: sp }: { country: Coun
       <div className="mx-auto mt-12 max-w-3xl">
         <KeywordSections sections={sections} facts={facts} />
         <section className="pane mt-10 p-5" aria-labelledby="sellout-h">
-          <h2 id="sellout-h" className="text-xl font-semibold">How fast do iPhone restocks sell out?</h2>
+          <h2 id="sellout-h" className="text-xl font-semibold">How many seconds does an iPhone restock last?</h2>
           <div className="mt-3"><SellOutTimes data={sell} label="at US Apple Stores" showStore /></div>
         </section>
-        <div className="mt-10"><RichFaq items={HOME_FAQ} facts={facts} title="Questions" /></div>
+        <div className="mt-10"><RichFaq items={HOME_FAQ} facts={facts} title="Quick answers" /></div>
         <div className="mt-8"><SourceList sources={HOME_SOURCES} facts={facts} /></div>
       </div>
     </div>
@@ -213,7 +213,7 @@ async function IntlHome({ c, sp }: { c: Country; sp: SearchParams }) {
   const ld = {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "WebApplication", name: P.home.appName(cc), url: `https://restockwire.com${pageUrl}`, applicationCategory: "UtilitiesApplication", operatingSystem: "Web, iOS and Android (Home Screen app)", areaServed: { "@type": "Country", name: c.name }, offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: P.home.offer }, publisher: { "@type": "Organization", name: "RestockWire" }, ...(loc.native ? { inLanguage: loc.tag } : {}) },
+      { "@type": "WebApplication", name: P.home.appName(cc), url: `https://restockwire.com${pageUrl}`, applicationCategory: "UtilitiesApplication", operatingSystem: "Web; iPhone and Android as a Home Screen app", areaServed: { "@type": "Country", name: c.name }, offers: { "@type": "Offer", price: "0", priceCurrency: "USD", description: P.home.offer }, publisher: { "@type": "Organization", name: "RestockWire" }, ...(loc.native ? { inLanguage: loc.tag } : {}) },
       { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "RestockWire", item: "https://restockwire.com/" }, { "@type": "ListItem", position: 2, name: lang === "en" ? c.name : N.country() }] },
     ],
   };

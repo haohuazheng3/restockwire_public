@@ -4,12 +4,12 @@ import type { CDict } from "../en";
 export const content: CDict["content"] = {
   quickCheck: {
     model: "Modello di iPhone",
-    search: "CAP, città o Apple Store",
+    search: "Apple Store, città o CAP",
     useLocation: "Trova la mia posizione",
     nearMe: "📍 Vicino a me",
     locationOff: "Questo sito non ha accesso alla posizione. Inserisci invece un CAP.",
     storesNow: "In questo momento l'{what} è disponibile per il ritiro in **{n} Apple Store su {total}** negli Stati Uniti",
-    nearestTo: " · i più vicini a {place}",
+    nearestTo: " · per distanza da {place}",
     you: "te",
     noMatch: "Nessun risultato. Inserisci un CAP di 5 cifre o una città.",
     inStock: "{n}/{total} disponibili",

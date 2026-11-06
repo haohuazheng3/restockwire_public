@@ -1,6 +1,6 @@
 /**
- * Swedish helpers shared by the sv dictionaries (pure, server and test safe): numbers, plurals, prices, durations,
- * Apple Sweden's colour names inside product names, the country's name and its tax wording.
+ * Pure helpers for the sv dictionaries (safe on server and in tests): numerals, plural forms, money, durations,
+ * colour names as Apple Sweden spells them, country names and the tax phrase after a price.
  */
 import { COUNTRIES, type Country, type CountryCode } from "@/lib/apple/countries";
 import type { Store } from "@/lib/apple/catalog";
@@ -18,28 +18,28 @@ export const pc = (x: number): string => pct(SV, x);
 export const share = (x: number): string => (x > 0 && x < 0.005 ? "<1 %" : pct(SV, Math.round(x * 100)));
 /** "1 butik" / "3 butiker". */
 export const pl = (x: number, one: string, other: string): string => plural(SV, x, { one: `# ${one}`, other: `# ${other}` });
-/** "a, b och c"; beyond `max`: "a, b, c och 4 till". */
-export const words = (items: string[], max = 6): string => list(SV, items, max, (k) => `${n(k)} till`);
+/** Swedish list joining; past `max` items the tail becomes a count (… och 4 fler). */
+export const words = (items: string[], max = 6): string => list(SV, items, max, (k) => `${n(k)} fler`);
 export const fit = fitTitleW;
 export const cap = (s: string): string => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
-/** "Sverige", "USA", "Storbritannien". */
+/** Country name in Swedish. */
 export const land = (cc: CountryCode): string => countryLabel(cc, SV);
-/** A price in the country's currency, Swedish style ("26 995 kr"). */
+/** Price in local currency, Swedish digit grouping. */
 export const kr = (cc: CountryCode, v: number): string => price(SV, COUNTRIES[cc], v);
-/** "Apple Mall of Scandinavia". */
+/** Store label with its Apple prefix. */
 export const apple = (s: Pick<Store, "storeNumber" | "name">): string => appleStoreLabel(s, SV);
-/** "kl. 9" */
+/** Clock hour, Swedish style. */
 export const klock = (h: number): string => hour(SV, h);
-/** "kl. 9–11" (a window of local hours [from, to)). */
+/** Window of local hours [from, to), Swedish style. */
 export const range = (from: number, to: number): string => `kl. ${from}–${to % 24}`;
-/** "mellan kl. 9 och 11". */
+/** Same window as prose. */
 export const between = (from: number, to: number): string => `mellan kl. ${from} och ${to % 24}`;
 
-/** How long stock stayed listed: "under en minut", "12 min", "2 tim 15 min", "3 d 4 tim". */
+/** Time a listing stayed up, shortest unit pair (min, tim + min, d + tim). */
 export function dur(ms: number): string {
   const s = Math.round(ms / 1000);
-  if (s < 60) return "under en minut";
+  if (s < 60) return "mindre än en minut";
   const m = Math.floor(s / 60);
   if (m < 60) return unit(SV, m, "m");
   const h = Math.floor(m / 60);
@@ -49,9 +49,9 @@ export function dur(ms: number): string {
 }
 
 const COLORS = ["Night Sky", "Star White", "Burgundy", "Glacier", "Silver", "Black"];
-/** Apple Sweden's colour name ("natthimmel"). */
+/** Colour name as Apple Sweden writes it. */
 export const color = (c: string): string => colorLabel(c, SV);
-/** "iPhone Duo 256GB Night Sky" → "iPhone Duo 256GB natthimmel": a product or configuration name as Apple Sweden writes it. */
+/** Swaps a trailing English colour in a product or configuration name for the Swedish one. */
 export function prod(name: string): string {
   for (const c of COLORS) {
     if (name === c) return colorLabel(c, SV);
@@ -60,7 +60,7 @@ export function prod(name: string): string {
   return name;
 }
 
-/** What a country's stores are grouped by. Sweden's groups (Skåne, Solna, Uppland) are no single kind of area: "område". */
+/** Region word per grouping kind; the Swedish store groups (Skåne, Solna, Uppland) all fall under område. */
 const NOUN: Record<string, [string, string]> = {
   state: ["delstat", "delstater"],
   province: ["provins", "provinser"],
@@ -79,18 +79,18 @@ export function noun(c: Pick<Country, "regionNoun">, plural = false): string {
   return plural ? f[1] : f[0];
 }
 
-/** The tax inside the price, in Swedish: "moms", "GST", "konsumtionsskatt". */
+/** Name of the tax included in a price. */
 export function taxWord(c: Country): string {
   if (/^VAT/.test(c.taxNote)) return "moms";
   if (/^GST/.test(c.taxNote)) return "GST";
   if (/^consumption tax/.test(c.taxNote)) return "konsumtionsskatt";
   return "skatt";
 }
-/** One phrase after a price: "inkl. moms (25 %)". */
+/** Tax phrase printed after a price. */
 export function taxNote(c: Country): string {
-  if (c.cc === "us") return "exkl. delstaternas försäljningsskatt";
-  if (c.cc === "ca") return "exkl. GST/HST och provinsskatt";
+  if (c.cc === "us") return "före delstatlig försäljningsskatt";
+  if (c.cc === "ca") return "före GST/HST och provinsskatt";
   const r = includedRate(c);
-  if (r == null) return "ingen moms i Hongkong";
+  if (r == null) return "momsfritt i Hongkong";
   return `inkl. ${taxWord(c)} (${pc(r)})`;
 }

@@ -50,8 +50,8 @@ function taxSentence(cc: CountryCode, region?: string): string {
   if (duo == null) return "";
   if (cc === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
-    if (t) return `Un iPhone Duo da 256GB arriva a circa ${eur(c, t.total)} in ${region}: i ${eur(c, duo)} di Apple più la ${CA_PROVINCE_TAX[region!].label} del ${t.rate}%.`;
-    return `Un iPhone Duo da 256GB costa ${eur(c, duo)} tasse escluse; la provincia del negozio di ritiro aggiunge dal 5% al 15% alla cassa.`;
+    if (t) return `In ${region} un iPhone Duo da 256GB sale a circa ${eur(c, t.total)}: listino Apple ${eur(c, duo)}, più ${CA_PROVINCE_TAX[region!].label} al ${t.rate}%.`;
+    return `Listino Apple dell'iPhone Duo da 256GB: ${eur(c, duo)} tasse escluse. Alla cassa la provincia del negozio di ritiro aggiunge tra il 5% e il 15%.`;
   }
   const r = includedRate(c);
   if (r == null) return `${eur(c, duo)} è il prezzo completo di un iPhone Duo da 256GB al ritiro: Hong Kong non applica imposte sulle vendite.`;
@@ -63,16 +63,16 @@ const PRICE_ROWS: [ModelKey, string][] = [["duo", "256GB"], ["duo", "1TB"], ["18
 /** Italy's tax source in Italian (Your Europe has every EU language); elsewhere the English one. */
 function taxSource(cc: Exclude<CountryCode, "us">): Source {
   const src = TAX_SOURCES[cc];
-  if (src.url.includes("europa.eu/youreurope")) return { label: "La tua Europa (Unione europea): aliquote IVA applicate nei paesi dell'UE", url: src.url.replace(/index_en\.htm$/, "index_it.htm") };
+  if (src.url.includes("europa.eu/youreurope")) return { label: "Your Europe, portale dell'UE: le aliquote IVA paese per paese", url: src.url.replace(/index_en\.htm$/, "index_it.htm") };
   return src;
 }
 function pickupHelpIt(cc: CountryCode): Source {
   const s = pickupHelp(cc);
-  return cc === "it" ? { label: "Apple: Spedizione e ritiro (cosa portare al ritiro)", url: s.url } : s;
+  return cc === "it" ? { label: "Supporto Apple sugli ordini: ritiro in negozio e documenti da portare", url: s.url } : s;
 }
 function storeListIt(cc: CountryCode): Source {
   const s = storeListSource(cc);
-  return cc === "it" ? { label: "Apple: elenco degli Apple Store (Italia)", url: s.url } : s;
+  return cc === "it" ? { label: "Apple, elenco ufficiale dei negozi in Italia", url: s.url } : s;
 }
 
 function priceSection(cc: CountryCode, placeName: string, region?: string, model: ModelKey = "duo"): KeywordSection {
@@ -86,12 +86,12 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
     if (t) {
       const table: Block = {
         t: "table",
-        head: ["iPhone", "Prezzo su apple.com", `Con ${t.label} (${pct(IT, t.total)})`],
+        head: ["iPhone", "Listino apple.com", `Totale con ${t.label} (${pct(IT, t.total)})`],
         rows: rows.map(([label, p]) => [label, eur(c, p), eur(c, withProvinceTax(p, region!)!.total)]),
         caption: `Quanto costa ogni iPhone in ${region} con ${t.label} (${pct(IT, t.total)})`,
-        source: `[${src.label}](${src.url}); prezzi da apple.com/ca`,
+        source: `[${src.label}](${src.url}); listino: apple.com/ca`,
       };
-      const parts = t.hst ? `l'HST del ${t.hst}%` : t.pst ? `la GST del ${t.gst}% e la ${t.label.split(" + ")[1]} del ${t.pst}%` : `la GST del ${t.gst}% (senza imposta provinciale)`;
+      const parts = t.hst ? `l'HST al ${t.hst}%` : t.pst ? `la GST al ${t.gst}% e la ${t.label.split(" + ")[1]} al ${t.pst}%` : `la sola GST al ${t.gst}%, senza imposta provinciale`;
       return {
         id: "price-with-tax",
         h2: `Quanto costa l'${m.name} ${aLuogo(placeName)} con le tasse?`,
@@ -104,14 +104,14 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
     const dearest = provinces.reduce((a, b) => (CA_PROVINCE_TAX[b].total > CA_PROVINCE_TAX[a].total ? b : a));
     return {
       id: "price-with-tax",
-      h2: `Quanto costa l'${m.name} in Canada con le tasse, provincia per provincia?`,
+      h2: `Canada, provincia per provincia: quanto costa l'${m.name} con le tasse?`,
       lead: `**Da ${eur(c, withProvinceTax(base, cheapest)!.total)} in ${cheapest} a ${eur(c, withProvinceTax(base, dearest)!.total)} in ${dearest}** per un ${m.name} da 256GB: i ${eur(c, base)} di Apple sono tasse escluse, e la provincia del negozio di ritiro aggiunge un'imposta compresa tra ${pct(IT, CA_PROVINCE_TAX[cheapest].total)} e ${pct(IT, CA_PROVINCE_TAX[dearest].total)}.`,
       blocks: [{
         t: "table",
-        head: ["Provincia", "Imposta", "Aliquota", `${m.short} 256GB con le tasse`],
+        head: ["Provincia", "Imposta", "Aliquota", `${m.short} 256GB, totale alla cassa`],
         rows: provinces.map((p) => [p, CA_PROVINCE_TAX[p].label, pct(IT, CA_PROVINCE_TAX[p].total), eur(c, withProvinceTax(base, p)!.total)]),
         caption: "Imposte su un ritiro in negozio, in ogni provincia con un Apple Store",
-        source: `[${CA_TAX_SOURCE.label}](${CA_TAX_SOURCE.url}); prezzi da apple.com/ca`,
+        source: `[${CA_TAX_SOURCE.label}](${CA_TAX_SOURCE.url}); listino: apple.com/ca`,
       }],
     };
   }
@@ -125,10 +125,10 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
       : `**${eur(c, base)}** per l'${m.name} da 256GB al ritiro ${aLuogo(placeName)}, con **${tn} al ${pct(IT, r)} già inclusa** (${eur(c, beforeTax(c, base))} senza ${tn}); alla cassa non si aggiunge nulla.`,
     blocks: [{
       t: "table",
-      head: r == null ? ["iPhone", "Prezzo su apple.com"] : ["iPhone", "Prezzo su apple.com", `Senza ${tn} (${pct(IT, r)})`],
+      head: r == null ? ["iPhone", "Listino apple.com"] : ["iPhone", "Listino apple.com", `${tn} esclusa (${pct(IT, r)})`],
       rows: rows.map(([label, p]) => (r == null ? [label, eur(c, p)] : [label, eur(c, p), eur(c, beforeTax(c, p))])),
-      caption: `Prezzi dell'Apple Store online ${aggettivo(cc)}, come si pagano al ritiro${r == null ? "" : ` (${tn} inclusa)`}`,
-      source: `[${src.label}](${src.url}); prezzi da apple.com/${c.buyPath ?? c.shopPath}`,
+      caption: `Listino dello store online Apple ${aggettivo(cc)}: la cifra che paghi al ritiro${r == null ? "" : `, ${tn} compresa`}`,
+      source: `[${src.label}](${src.url}); listino: apple.com/${c.buyPath ?? c.shopPath}`,
     }],
   };
 }
@@ -155,11 +155,11 @@ function placeTitle(i: IntlPlaceInput): string {
   const w = placeLabel(i.cc, localName(i));
   const where = withProvince(i, w);
   return fitTitleW([
-    `Apple Store ${where}: ritiro iPhone Duo ${n === 2 ? "in entrambi i negozi" : `nei ${N(n)} negozi`}, in tempo reale`,
-    `Apple Store ${where}: ritiro iPhone Duo in tempo reale`,
-    `Apple Store ${where}: disponibilità iPhone adesso`,
-    `Apple Store ${where}: disponibilità iPhone`,
-    `Apple Store ${w}: disponibilità iPhone`,
+    `Apple Store ${where}: iPhone Duo ${n === 2 ? "nei 2 negozi" : `in ${N(n)} negozi`}, ritiro live`,
+    `Apple Store ${where}: iPhone Duo da ritirare, live`,
+    `Apple Store ${where}: iPhone disponibili ora`,
+    `Apple Store ${where}: iPhone in negozio`,
+    `Apple Store ${w}: iPhone in negozio`,
   ]);
 }
 
@@ -214,8 +214,8 @@ function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
   if (st.lastRestock && last) items.push(`**Ultimo rifornimento di Duo qui:** ${whenIn(i.cc, st.lastRestock.at)} da ${apple(last)}`);
   if (have.length > 0 && st.month > 0) items.push(`**Confermati ${sinceWhen()}:** ${pl(st.month, "rifornimento di iPhone Duo", "rifornimenti di iPhone Duo")} nei negozi ${aLuogo(w)}`);
   if (st.medianMs != null) items.push(`**Quanto dura una disponibilità:** circa ${fmtDuration(st.medianMs, IT)} (mediana) prima che il Duo si esaurisca di nuovo`);
-  const which = n === 1 ? "nel negozio" : n <= 3 ? `nei ${n === 2 ? "due" : "tre"} negozi` : `nei ${Math.min(n, 5)} negozi più vicini`;
-  items.push(`**La via più rapida per averne uno:** [metti l'iPhone Duo sul filo ${aLuogo(w)}](${alert}) ${which} in cui andresti davvero; i negozi con avvisi vengono letti ogni 5 secondi`);
+  const which = n === 1 ? "sull'unico negozio" : n <= 3 ? `su ${n === 2 ? "entrambi i" : "tutti e tre i"} negozi` : `sui ${Math.min(n, 5)} negozi più vicini`;
+  items.push(`**Scorciatoia per averne uno:** [un avviso sull'iPhone Duo ${aLuogo(w)}](${alert}), ${which} che raggiungi davvero; quei negozi passano a una lettura ogni 5 secondi`);
   items.push("**Una regola di avviso** è un negozio × una configurazione esatta, e la notifica arriva circa 3 secondi dopo che una seconda lettura ha confermato il rifornimento");
   const blocks: Block[] = [];
   if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**Cambia da un minuto all'altro:** un avviso vede il prossimo rifornimento molto prima di quanto farebbe un aggiornamento di apple.com." });
@@ -233,7 +233,7 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
   return [
     {
       id: "iphone-duo",
-      h2: `Quali Apple Store ${aLuogo(w)} hanno l'iPhone Duo in questo momento?`,
+      h2: `Apple Store ${aLuogo(w)}: dove c'è l'iPhone Duo adesso?`,
       lead: duoLead(i),
       blocks: duoPoints(i, w, alert),
     },
@@ -245,8 +245,8 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
         : `**Non in questo momento**: ${nessunoHa(n, ` ${aLuogo(w)}`)} un iPhone 18 Pro Max per il ritiro.`,
       blocks: [{ t: "ul", items: [
         ...(scarce.length ? [`**${scarce.length === 1 ? "Il più difficile" : "I più difficili"} da trovare adesso:** ${list(IT, scarce.map((x) => `${cfgIt(x.label)} (in ${N(x.stores)} negozi su ${N(n)})`))}`] : []),
-        `**iPhone 18 Pro:** ${N(i.stockNow["18-pro"])} negozi su ${N(n)}, ${pct(IT, pairsPct(i, "18-pro"))} delle sue combinazioni disponibili`,
-        `**Confermati ${sinceWhen()}:** ${i.max.month ? pl(i.max.month, "rifornimento di 18 Pro Max", "rifornimenti di 18 Pro Max") : "ancora nessun rifornimento di 18 Pro Max"}`,
+        `**iPhone 18 Pro:** ritirabile in ${N(i.stockNow["18-pro"])} negozi su ${N(n)}; combinazioni coperte: ${pct(IT, pairsPct(i, "18-pro"))}`,
+        `**Ritorni di 18 Pro Max ${sinceWhen()}:** ${i.max.month ? N(i.max.month) : "zero, per ora"}`,
         ...(i.max.medianMs != null ? [`**Quanto dura una disponibilità:** circa ${fmtDuration(i.max.medianMs, IT)} (mediana) prima che un Pro Max si esaurisca di nuovo`] : []),
       ] }],
     },
@@ -259,23 +259,23 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
 function storesIndexTitle(cc: CountryCode): string {
   const n = storesOf(cc).length;
   const where = inPaese(cc);
-  const all = n === 1 ? "" : n === 2 ? " in entrambi i negozi" : ` in tutti i ${N(n)} negozi`;
-  return fitTitleW([`Apple Store ${where}: ritiro iPhone Duo${all}, in tempo reale`, `Apple Store ${where}: ritiro iPhone Duo in tempo reale`, `Apple Store ${where}: disponibilità iPhone in tempo reale`], 70);
+  const all = n === 1 ? "" : ` in ${N(n)} negozi`;
+  return fitTitleW([`Apple Store ${where}: iPhone Duo${all}, ritiro live`, `Apple Store ${where}: iPhone Duo da ritirare, live`, `Apple Store ${where}: iPhone in negozio, live`], 70);
 }
 
 function homeTitle(cc: CountryCode): string {
   const n = storesOf(cc).length;
   const p = paese(cc);
   return fitTitleW([
-    ...(n > 1 ? [`Apple Store ${p}: disponibilità iPhone in tempo reale nei ${N(n)} negozi`] : []),
-    `Apple Store ${p}: disponibilità iPhone per il ritiro in tempo reale`,
-    `Apple Store ${p}: disponibilità iPhone`,
+    ...(n > 1 ? [`Apple Store ${p}: iPhone in negozio, live su ${N(n)} negozi`] : []),
+    `Apple Store ${p}: iPhone da ritirare, stato live`,
+    `Apple Store ${p}: iPhone in negozio`,
   ]);
 }
 
 function homeH1(cc: CountryCode): string {
   const n = storesOf(cc).length;
-  return n === 1 ? `Disponibilità iPhone per il ritiro in tempo reale nell'Apple Store ${inPaese(cc)}` : `Disponibilità iPhone per il ritiro in tempo reale in tutti i ${N(n)} Apple Store ${inPaese(cc)}`;
+  return n === 1 ? `iPhone ritirabili adesso nell'Apple Store ${inPaese(cc)}` : `iPhone ritirabili adesso nei ${N(n)} Apple Store ${inPaese(cc)}`;
 }
 
 function allStoresPhrase(cc: CountryCode): string {
@@ -292,7 +292,7 @@ function spreadPhrase(cc: CountryCode): string {
   if (n === 1) return aLuogo(city0);
   if (cities.length === 1) return `tutti ${aLuogo(city0)}`;
   if (!c.regionNoun || regions.length === 1) return `in ${N(cities.length)} città`;
-  return `in ${N(cities.length)} città di ${N(regions.length)} ${regione(c, regions.length !== 1)}`;
+  return `in ${N(cities.length)} città sparse in ${N(regions.length)} ${regione(c, regions.length !== 1)}`;
 }
 
 /** The model page's bound titles: "iPhone Duo disponibile in Italia? Tutti i 17 Apple Store, in tempo reale". */
@@ -303,7 +303,7 @@ function modelPageTitles(cc: CountryCode, model: ModelKey): { title: string; h2:
   const all = n === 1 ? "L'Apple Store" : n === 2 ? "Entrambi gli Apple Store" : `Tutti i ${N(n)} Apple Store`;
   return {
     title: fitTitleW([`${m.name} disponibile ${where}? ${all}, in tempo reale`, `${m.name} disponibile ${where}? In tempo reale`, `${m.name}: disponibilità ${where}`], 70),
-    h2: [`Quali Apple Store ${where} hanno l'${m.name} in questo momento?`, priceSection(cc, paese(cc), undefined, model).h2],
+    h2: [`Apple Store ${where}: dove c'è l'${m.name} adesso?`, priceSection(cc, paese(cc), undefined, model).h2],
   };
 }
 
@@ -345,8 +345,8 @@ function homeDescription(cc: CountryCode): string {
   const n = storesOf(cc).length;
   const cur = CURRENCY[c.currency] ?? c.currency;
   return fitTitleW([
-    `Disponibilità di iPhone Duo, 18 Pro e 18 Pro Max per il ritiro in ${allStoresPhrase(cc)}, letta ogni 15 secondi. ${n === 1 ? "Prezzi" : "Orari dei rifornimenti e prezzi"} in ${cur}, e una notifica appena il tuo negozio viene rifornito.`,
-    `Disponibilità di iPhone Duo, 18 Pro e Pro Max per il ritiro ${n === 1 ? `nell'Apple Store ${inPaese(cc)}` : `nei ${N(n)} Apple Store ${inPaese(cc)}`}, ogni 15 secondi. Orari dei rifornimenti, prezzi in ${cur} e notifiche.`,
+    `iPhone Duo, 18 Pro e 18 Pro Max da ritirare in ${allStoresPhrase(cc)}: stato letto ogni 15 secondi, ${n === 1 ? "prezzi" : "ore tipiche dei rifornimenti e prezzi"} in ${cur}, notifica quando il tuo negozio si rifornisce.`,
+    `Ritiro di iPhone Duo, 18 Pro e Pro Max ${n === 1 ? `nell'Apple Store ${inPaese(cc)}` : `nei ${N(n)} Apple Store ${inPaese(cc)}`}: controllo ogni 15 secondi, rifornimenti, prezzi in ${cur}, avvisi.`,
   ], 155);
 }
 
@@ -387,10 +387,10 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
         { t: "ol", items: [
           n === 1 ? `Scegli iPhone, capacità e colore in **Avvisami**; il negozio è ${apple(stores[0])}, ${cityLabel(cc, stores[0].city, IT)}.` : "Scegli iPhone, capacità e colore in **Avvisami**, poi seleziona i negozi che puoi raggiungere: i più vicini sono in cima, con i chilometri su strada e il tempo in auto.",
           "Su iPhone aggiungi RestockWire alla schermata Home e consenti le notifiche: iOS consegna le notifiche web solo a un'app installata ([come installarla](/phone-alerts)).",
-          "Quando arriva la notifica, aprila per andare su apple.com e completa l'acquisto con il Ritiro in negozio in quel negozio.",
+          "Tocca la notifica: si apre apple.com e chiudi l'ordine scegliendo il Ritiro proprio in quel negozio.",
         ] },
         { t: "table", head: ["Piano", "Al mese (USD)", "Regole di avviso"], rows: [["Plus", "$5", "10"], ["Pro", "$10", "20"], ["Max", "$20", "50"]], caption: "Una regola = un negozio × una configurazione esatta; consultare la disponibilità resta gratis, e la velocità è la stessa su tutti i piani ([prezzi](/pricing))" },
-        { t: "note", text: "**Il nostro parere:** l'iPhone Duo merita un avviso in ogni negozio che puoi raggiungere; per 18 Pro e Pro Max guarda prima i numeri in tempo reale." },
+        { t: "note", text: "**La nostra linea:** per 18 Pro e Pro Max bastano spesso i numeri live; per l'iPhone Duo, invece, un avviso su ogni negozio che puoi raggiungere." },
         { t: "img", id: "apple-store-pickup-counter" },
       ],
     },
@@ -402,13 +402,13 @@ function homeFaq(cc: CountryCode, rt: RestockTimesBrief): Faq[] {
   const p = cc === "us" ? "" : `/${cc}`;
   const where = inPaese(cc);
   const when = rt.n === 0
-    ? `Nessuno confermato finora, da quando il monitoraggio è iniziato il 2 novembre. [Quando torna disponibile l'iPhone Duo ${where}?](${rt.path}) li conta per ora e giorno locali man mano che arrivano.`
+    ? `Nessuno confermato finora, da quando il monitoraggio è iniziato il 2 novembre. La pagina [A che ora torna l'iPhone Duo ${where}](${rt.path}) li registra per ora e giorno locali appena arrivano.`
     : rt.peakHour != null
-      ? `La maggior parte arriva verso **${leOre(rt.peakHour)}, ora locale**: ${pl(rt.n, "rifornimento confermato", "rifornimenti confermati")} in ${N(rt.stores)} negozi su ${N(rt.storesTotal)} dal 2 novembre. [Ora per ora e giorno per giorno](${rt.path}).`
-      : `${pl(rt.n, "rifornimento confermato", "rifornimenti confermati")} in ${N(rt.stores)} negozi su ${N(rt.storesTotal)} dal 2 novembre, in troppo pochi giorni per indicare ancora un orario abituale. [Ora per ora e giorno per giorno](${rt.path}).`;
+      ? `Il picco cade verso **${leOre(rt.peakHour)}, ora del negozio**. Base: ${pl(rt.n, "rifornimento confermato", "rifornimenti confermati")} in ${N(rt.stores)} negozi su ${N(rt.storesTotal)} dal 2 novembre. [Dettaglio per ora e per giorno](${rt.path}).`
+      : `Dal 2 novembre: ${pl(rt.n, "rifornimento confermato", "rifornimenti confermati")} in ${N(rt.stores)} negozi su ${N(rt.storesTotal)}, ma su troppi pochi giorni per fissare un orario abituale. [Dettaglio per ora e per giorno](${rt.path}).`;
   return [
-    { q: `Quali Apple Store ${where} hanno l'iPhone Duo in questo momento?`, a: `{{duo.storesNow}} su ${N(n)} all'ultima lettura ({{asOf}}). [Disponibilità iPhone Duo ${where}](${p}/in-stock/iphone-duo) indica ogni negozio e configurazione e si aggiorna ogni 15 secondi.` },
-    { q: `Quando torna disponibile l'iPhone Duo ${where}?`, a: when },
+    { q: `Dove trovo l'iPhone Duo ${where} adesso?`, a: `{{duo.storesNow}} su ${N(n)} all'ultima lettura ({{asOf}}). [Disponibilità iPhone Duo ${where}](${p}/in-stock/iphone-duo) indica ogni negozio e configurazione e si aggiorna ogni 15 secondi.` },
+    { q: `A che ora torna l'iPhone Duo ${where}?`, a: when },
     { q: `Quanto velocemente RestockWire vede un rifornimento ${where}?`, a: `I negozi con avvisi vengono letti ogni 5 secondi e tutti gli Apple Store ${where} ogni 15; un primo «disponibile» viene riletto entro un secondo. Il rifornimento confermato arriva sul tuo telefono circa 3 secondi dopo.` },
     { q: "Serve un piano per consultare la disponibilità?", a: "No: disponibilità in tempo reale, mappa e registro dei rifornimenti sono gratis. Un piano aggiunge le regole di avviso, addebitate in dollari USA: Plus $5 al mese per 10, Pro $10 per 20, Max $20 per 50, e si disdice quando vuoi ([prezzi](/pricing))." },
     taxFaq(cc, paese(cc)),
@@ -418,30 +418,30 @@ function homeFaq(cc: CountryCode, rt: RestockTimesBrief): Faq[] {
 
 const homeLabels: Dict["place"]["home"] = {
   appName: (cc: CountryCode) => `RestockWire: verifica disponibilità iPhone ${paese(cc)}`,
-  offer: "Disponibilità in tempo reale, mappa e registro dei rifornimenti sono gratis; i piani di avviso partono da $5 al mese",
+  offer: "Gratis: stato live, mappa e diario dei rifornimenti. Gli avvisi partono da $5 al mese",
   itemList: (cc: CountryCode) => `Apple Store ${inPaese(cc)}`,
   restockTimesChip: "Orari dei rifornimenti",
-  storesByRegion: (cc: CountryCode) => `Negozi per ${regione(COUNTRIES[cc])}`,
+  storesByRegion: (cc: CountryCode) => `Negozi ${regione(COUNTRIES[cc])} per ${regione(COUNTRIES[cc])}`,
   browse: (cc: CountryCode) => `Disponibilità per luogo ${inPaese(cc)}`,
   selloutH2: (cc: CountryCode) => `Quanto dura un rifornimento di iPhone ${inPaese(cc)}?`,
   selloutLabel: (cc: CountryCode) => `negli Apple Store ${inPaese(cc)}`,
   last24Label: (cc: CountryCode) => inPaese(cc),
-  newsroom: "Apple Newsroom (in inglese): iPhone Duo arriva negli Apple Store di tutto il mondo (23 ottobre 2026)",
+  newsroom: "Apple Newsroom, 23 ottobre 2026 (in inglese): l'iPhone Duo entra negli Apple Store del mondo",
 };
 
-/** "Apple Via del Corso: disponibilità iPhone oggi, ritiro e orari"; `region` (Italian) when it is the city's or province's only store. */
+/** Store page title, e.g. "Apple Via del Corso: iPhone disponibili oggi, orari e ritiro"; `region` (Italian) is added for a city's or province's only store. */
 function storeTitle(s: Store, region?: string): string {
   const name = appleStoreLabel(s, IT);
   const shown = region && !s.name.toLowerCase().includes(region.toLowerCase()) && !name.toLowerCase().includes(region.toLowerCase()) ? region : null;
   const r = shown ? ` (${shown})` : "";
   return fitTitleW([
-    `${name}${r}: disponibilità iPhone oggi, ritiro e orari`,
-    `${name}${r}: disponibilità iPhone oggi e orari`,
-    `${name}${r}: disponibilità iPhone e orari`,
-    `${name}: disponibilità iPhone oggi, ritiro e orari`,
-    `${name}: disponibilità iPhone e orari`,
-    `${name}: disponibilità iPhone`,
-    `${name} – disponibilità`,
+    `${name}${r}: iPhone disponibili oggi, orari e ritiro`,
+    `${name}${r}: iPhone disponibili oggi e orari`,
+    `${name}${r}: iPhone disponibili e orari`,
+    `${name}: iPhone disponibili oggi, orari e ritiro`,
+    `${name}: iPhone disponibili e orari`,
+    `${name}: iPhone disponibili`,
+    `${name} – stato live`,
   ]);
 }
 

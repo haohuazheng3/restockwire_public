@@ -20,8 +20,8 @@ const LIMIT = 50;
 export function restocksMetadata(c: Country, loc: Locale = englishLocale(c.cc)): Metadata {
   if (c.cc === "us") {
     return {
-      title: "iPhone restock log — every US Apple Store, live",
-      description: "Every iPhone Duo, 18 Pro and Pro Max restock at US Apple Stores for in-store pickup, with exact time, configuration and map.",
+      title: "US Apple Store iPhone restock log, newest first",
+      description: "Newest first: each confirmed iPhone Duo, 18 Pro and Pro Max pickup restock at a US Apple Store, with the minute, the exact configuration and a map link.",
       alternates: { canonical: "/restock-log" },
     };
   }
@@ -59,7 +59,7 @@ export async function RestocksPage({ country: c, searchParams: sp }: { country: 
   const url = `https://restockwire.com${loc.native ? pathInLocale(self, loc) : self}`;
   const dataset = {
     "@context": "https://schema.org", "@type": "Dataset", "@id": `${url}#dataset`, url,
-    name: us ? "US Apple Store iPhone pickup restock log" : V.datasetName(c),
+    name: us ? "Confirmed iPhone pickup restocks at US Apple Stores" : V.datasetName(c),
     description: V.datasetDescription(c),
     creator: { "@id": ORG_ID }, isAccessibleForFree: true, temporalCoverage: `${us ? "2026-10-29" : "2026-11-02"}/..`,
     spatialCoverage: us ? "United States" : countryLabel(cc, lang), variableMeasured: V.datasetMeasured,
@@ -68,7 +68,7 @@ export async function RestocksPage({ country: c, searchParams: sp }: { country: 
   return (
     <div className="mx-auto max-w-4xl px-4 pt-8">
       <JsonLd data={dataset} />
-      <h1 className="display text-3xl sm:text-5xl">{us ? "Restock log" : V.h1(c)}</h1>
+      <h1 className="display text-3xl sm:text-5xl">{us ? "The US restock log" : V.h1(c)}</h1>
       <p className="mt-2 text-ink-2">{V.summary(counts.day, counts.week, model ? modelByKey(model)!.name : undefined, state ? regionName(cc, state, lang) : undefined)}</p>
       <div className="mt-5 flex flex-wrap items-center gap-2 text-sm">
         <Link href={base({ model: "all", page: undefined })} className="chip px-3 py-1.5 text-xs" data-on={!model}>{V.allModels}</Link>
@@ -80,7 +80,7 @@ export async function RestocksPage({ country: c, searchParams: sp }: { country: 
           <form action={self} method="get" className="ms-auto flex items-center gap-1">
             <input type="hidden" name="model" value={model ?? "all"} />{kind === "all" && <input type="hidden" name="kind" value="all" />}
             <select name="state" defaultValue={state ? states.find((s) => s.name === state)?.slug : ""} className="input w-auto py-1.5 text-xs" aria-label={us ? "State" : V.regionLabel(c)}>
-              <option value="">{us ? "All states" : V.allRegions(c)}</option>
+              <option value="">{us ? "Every state" : V.allRegions(c)}</option>
               {states.map((s) => <option key={s.slug} value={s.slug}>{regionName(cc, s.name, lang)}</option>)}
             </select>
             <button className="chip px-3 py-1.5 text-xs" type="submit">{V.filter}</button>

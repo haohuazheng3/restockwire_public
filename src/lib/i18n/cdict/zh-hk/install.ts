@@ -6,18 +6,18 @@ import type { CDict } from "../en";
 
 export const install: CDict["install"] = {
   hero: {
-    eyebrow: "主畫面 App · 不用下載",
+    eyebrow: "加到主畫面即用 · 毋須下載",
     title: "補貨消息，直達鎖定畫面。",
     lead: "補貨一經確認，幾秒內就會出現在你的鎖定畫面。只需兩件事：把 RestockWire 加至主畫面，以及允許通知。",
     seeSteps: "顯示步驟",
     sendTest: "發送測試推送",
-    turnOn: "開啟通知",
+    turnOn: "打開通知",
     already: "**✓ 已經設定好。**你的{label}會收到提醒。跟着以下步驟，也可以把這部裝置加進來。{link}",
-    myAlerts: "我的提醒",
+    myAlerts: "查看我的提醒",
   },
   progress: {
     homeScreen: "已加至主畫面",
-    signedIn: "已登入",
+    signedIn: "登入完成",
     on: "已允許通知",
     blocked: "已在設定中封鎖：第 {n} 步可以解決。",
   },
@@ -29,21 +29,21 @@ export const install: CDict["install"] = {
       desktop: "在瀏覽器內運行，不用安裝任何東西。",
     },
     tabsLabel: "選擇你的裝置",
-    tabs: { ios: "iPhone / iPad", android: "Android", desktop: "電腦" },
+    tabs: { ios: "iPhone 或 iPad", android: "Android 手機", desktop: "桌面電腦" },
     ios: {
       safari: { title: "用 Safari 前往 restockwire.com", text: "一定要用 Safari；Chrome 和 App 內置瀏覽器都做不到。" },
       share: { title: "按「分享」", text: "iPhone 在底部列，iPad 在頂部列。" },
       choose: { title: "選擇「加至主畫面」", text: "看不到？把選單向下捲動。" },
       add: { title: "按「加入」", text: "名稱保留 RestockWire 就可以。" },
       open: { title: "從主畫面打開並登入", text: "App 要另外登入；用同一個電郵，提醒就全部在。" },
-      allow: { title: "按「開啟通知」，再按「允許」", text: "按鈕在你的提醒頁面。iPhone 只會問一次。" },
+      allow: { title: "「開啟通知」→「允許」", text: "「開啟通知」掣就在提醒頁。iPhone 只彈一次詢問。" },
     },
     android: {
       chrome: { title: "用 Chrome 前往 restockwire.com", text: "Samsung Internet 和 Edge 也可以；App 內置瀏覽器則不行。" },
-      install: { title: "安裝 App", text: "按一下就完成，不用經 App 商店。" },
+      install: { title: "按「安裝」", text: "一按即裝好，毋須經 Google Play。" },
       menu: { title: "選單 ⋮ →「加至主畫面」", text: "部分手機會寫成**安裝應用程式**。" },
       open: { title: "打開 RestockWire 並登入", text: "在主畫面或應用程式清單找到它；用同一個電郵，提醒就會出現。" },
-      allow: { title: "按「開啟通知」，再按「允許」", text: "Android 只會問一次。用 Chrome 分頁也可以。" },
+      allow: { title: "「開啟通知」→「允許」", text: "Android 只問一次；留在 Chrome 分頁內亦可。" },
     },
     desktop: {
       allow: { title: "按「開啟通知」", text: "支援 Chrome、Edge、Firefox 及 Safari 16 或以上；瀏覽器只會問一次。" },
@@ -58,7 +58,7 @@ export const install: CDict["install"] = {
     needsInstall: "在主畫面 App 內才會開放。",
     signInFirst: "登入以開始",
     signInThenOn: "登入並開啟",
-    turnOn: "開啟通知",
+    turnOn: "打開通知",
     denied: "已封鎖：請在「設定」允許 RestockWire，然後重新載入。",
   },
   notes: [
@@ -79,6 +79,6 @@ export const install: CDict["install"] = {
     androidAlert: { title: "要允許 RestockWire 傳送通知給你嗎？", dontAllow: "不允許", allow: "允許" },
     desktopAlert: { wantsTo: "restockwire.com 想", show: "顯示通知", block: "封鎖", allow: "允許" },
     desktopInstall: { callout: "安裝", title: "安裝 RestockWire", text: "會在獨立視窗中開啟", cancel: "取消", install: "安裝" },
-    lockScreen: { date: "10月29日 星期四", now: "現在", title: "iPhone 18 Pro 256GB 黑色", body: "Apple Canton Road（廣東道）· 香港尖沙咀——今天可提供。按此在 apple.com 預訂。" },
+    lockScreen: { date: "10月29日 星期四", now: "現在", title: "iPhone 18 Pro 512GB 冰川色", body: "Apple Festival Walk（又一城）· 香港九龍塘——今日可提取。到 apple.com 預訂。" },
   },
 };

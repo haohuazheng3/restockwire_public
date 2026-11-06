@@ -16,7 +16,7 @@ export interface DeviceSummary {
   label: string | null;
 }
 
-/** In the person's language (`lang`): the label goes into their sentences ("Alerts go to your iPhone app"). */
+/** In the person's language (`lang`): the label is dropped into their sentences (the device that receives alerts). */
 export function deviceLabel(d: { platform: string; standalone: boolean; userAgent?: string | null }, lang: Lang = "en"): string {
   const w = CDICTS[lang].account.devices;
   if (d.platform === "ios") {

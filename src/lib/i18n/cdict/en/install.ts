@@ -33,22 +33,22 @@ export const install = {
     ios: {
       safari: { title: "Go to restockwire.com in Safari", text: "It has to be Safari; Chrome and in-app browsers cannot do this." },
       share: { title: "Tap Share", text: "iPhone: bottom bar. iPad: top bar." },
-      choose: { title: "Choose “Add to Home Screen”", text: "Not in view? Scroll the sheet down." },
+      choose: { title: "Pick “Add to Home Screen” from the list", text: "Not in view? Scroll the sheet down." },
       add: { title: "Tap Add", text: "Leave the name as RestockWire." },
       open: { title: "Launch it from the Home Screen and sign in", text: "The app signs in separately; use the same email and your alerts are there." },
-      allow: { title: "Tap “Turn on notifications”, then Allow", text: "You will find the button on your alerts page. iPhone asks only once." },
+      allow: { title: "Press “Turn on notifications” → Allow", text: "You will find the button on your alerts page. iPhone asks only once." },
     },
     android: {
       chrome: { title: "Go to restockwire.com in Chrome", text: "Samsung Internet and Edge work as well; in-app browsers do not." },
       /** Chrome offered its install prompt. */
       install: { title: "Install the app", text: "A single tap, no app store involved." },
       /** No prompt: Chrome's menu. */
-      menu: { title: "Menu ⋮ → “Add to Home screen”", text: "On some phones it reads **Install app**." },
+      menu: { title: "Open the ⋮ menu, pick “Add to Home screen”", text: "On some phones it reads **Install app**." },
       open: { title: "Launch RestockWire and sign in", text: "Find it on the Home Screen or in the app drawer; the same email brings your alerts." },
-      allow: { title: "Tap “Turn on notifications”, then Allow", text: "Android asks only once. A Chrome tab works too." },
+      allow: { title: "Press “Turn on notifications” and allow it", text: "Android asks only once. A Chrome tab works too." },
     },
     desktop: {
-      allow: { title: "Tap “Turn on notifications”", text: "Works in Chrome, Edge, Firefox and Safari 16+; the browser asks only once." },
+      allow: { title: "Press “Turn on notifications”", text: "Works in Chrome, Edge, Firefox and Safari 16+; the browser asks only once." },
       install: { title: "Optional: run it as an app", text: "In Chrome or Edge, use the install icon in the address bar; notifications then arrive with the browser closed." },
       phone: { title: "Add your phone as well", text: "Sign in there with the same email. Each device with notifications on receives each alert." },
     },
@@ -82,7 +82,7 @@ export const install = {
     chromeMenu: { before: ["New tab", "History", "Downloads", "Bookmarks", "Share…"], add: "Add to Home screen", after: ["Desktop site"] },
     androidAlert: { title: "Allow RestockWire to send you notifications?", dontAllow: "Don’t allow", allow: "Allow" },
     desktopAlert: { wantsTo: "restockwire.com wants to", show: "Show notifications", block: "Block", allow: "Allow" },
-    desktopInstall: { callout: "Install", title: "Install RestockWire", text: "Opens in its own window", cancel: "Cancel", install: "Install" },
-    lockScreen: { date: "Thursday, October 29", now: "now", title: "iPhone 18 Pro 256GB Black", body: "Apple Fifth Avenue · New York, NY — Available Today. Open apple.com to reserve it." },
+    desktopInstall: { callout: "Install", title: "Install RestockWire", text: "Runs in a separate window", cancel: "Cancel", install: "Install" },
+    lockScreen: { date: "Thursday, October 29", now: "now", title: "iPhone 18 Pro 512GB Glacier", body: "Apple Fifth Avenue · New York, NY — Available Today. Open apple.com to reserve it." },
   },
 };

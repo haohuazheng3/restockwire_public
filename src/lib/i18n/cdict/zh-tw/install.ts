@@ -36,14 +36,14 @@ export const install: CDict["install"] = {
       choose: { title: "選擇「加入主畫面」", text: "沒看到？把選單往下滑。" },
       add: { title: "點「加入」", text: "名稱保留 RestockWire 即可。" },
       open: { title: "從主畫面開啟並登入", text: "App 要另外登入；用同一個 Email，通知就都在。" },
-      allow: { title: "點「開啟通知」，再點「允許」", text: "按鈕在你的通知頁面。iPhone 只會問一次。" },
+      allow: { title: "先按「開啟通知」，接著按「允許」", text: "按鈕就在通知頁上；這個詢問 iPhone 只跳一次。" },
     },
     android: {
       chrome: { title: "用 Chrome 前往 restockwire.com", text: "Samsung Internet 和 Edge 也可以；App 內建瀏覽器不行。" },
       install: { title: "安裝 App", text: "點一下就好，不經過應用程式商店。" },
       menu: { title: "選單 ⋮ →「加到主畫面」", text: "有些手機上會寫成 **安裝應用程式**。" },
       open: { title: "開啟 RestockWire 並登入", text: "在主畫面或應用程式清單裡找到它；用同一個 Email，通知就會出現。" },
-      allow: { title: "點「開啟通知」，再點「允許」", text: "Android 只會問一次。用 Chrome 分頁也可以。" },
+      allow: { title: "按「開啟通知」→「允許」", text: "Android 只會問一次。用 Chrome 分頁也可以。" },
     },
     desktop: {
       allow: { title: "點「開啟通知」", text: "支援 Chrome、Edge、Firefox 與 Safari 16 以上；瀏覽器只會問一次。" },
@@ -78,7 +78,7 @@ export const install: CDict["install"] = {
     chromeMenu: { before: ["新分頁", "歷史記錄", "下載", "書籤", "分享…"], add: "加到主畫面", after: ["電腦版網站"] },
     androidAlert: { title: "要允許「RestockWire」傳送通知給你嗎？", dontAllow: "不允許", allow: "允許" },
     desktopAlert: { wantsTo: "restockwire.com 要求取得以下權限：", show: "顯示通知", block: "封鎖", allow: "允許" },
-    desktopInstall: { callout: "安裝", title: "要安裝 RestockWire 嗎？", text: "會在獨立視窗中開啟", cancel: "取消", install: "安裝" },
-    lockScreen: { date: "10月29日 星期四", now: "現在", title: "iPhone 18 Pro 256GB 黑色", body: "Apple 信義 A13 · 台北 — 今天可取貨。點一下前往 apple.com 預訂。" },
+    desktopInstall: { callout: "安裝", title: "要安裝 RestockWire 嗎？", text: "以獨立視窗執行", cancel: "取消", install: "安裝" },
+    lockScreen: { date: "10月29日 星期四", now: "現在", title: "iPhone 18 Pro 256GB 黑色", body: "Apple 信義 A13（台北）今天有貨可取 · 點按即到 apple.com 預訂" },
   },
 };

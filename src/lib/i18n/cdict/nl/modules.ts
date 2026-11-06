@@ -7,9 +7,9 @@ export const modules: CDict["modules"] = {
     cta: "Bekijk op de live kaart →",
   },
   reports: {
-    legend: "Gemeld door andere trackers ({sources}), {range}",
+    legend: "Waarnemingen van andere trackers ({sources}), {range}",
     note: "{mark}: {what} die {links} voor {range} publiceerde. Dit zijn waarnemingen van die sites; RestockWire heeft ze niet bevestigd en ze zitten in geen van onze cijfers.",
-    what: "aanvullingen van de {models}",
+    what: "{models}-aanvullingen",
     whatAny: "aanvullingen",
     markDashed: "Gestreept",
     markDashedRings: "Gestreepte ringen",

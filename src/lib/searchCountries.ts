@@ -20,7 +20,7 @@ export function buildCountrySearchIndex(): SearchEntry[] {
     const c = COUNTRIES[cc];
     const stores = storesOf(cc);
     const tag = `${norm(c.name)} ${norm(c.short)} ${cc} ${aliases((l) => countryLabel(cc, l))}`;
-    out.push({ k: "country", l: c.name, s: `${stores.length} Apple Store${stores.length === 1 ? "" : "s"} · iPhone stock checker`, h: `/${cc}`, q: `${tag} ${norm(c.adjective)} country` });
+    out.push({ k: "country", l: c.name, s: `iPhone stock checker · ${stores.length === 1 ? "one Apple Store" : `${stores.length} Apple Stores`}`, h: `/${cc}`, q: `${tag} ${norm(c.adjective)} country` });
     const regions = regionRefs(cc);
     // A country whose one region is the whole country (Singapore, Hong Kong, Taiwan) has no region level to search.
     if (regions.length > 1) for (const r of regions) out.push({ k: "state", l: `${r.name}, ${c.short}`, s: `${r.count} store${r.count === 1 ? "" : "s"} · ${c.name}`, h: r.href, q: `${norm(r.name)} ${norm(r.code)} ${aliases((l) => regionLabel(cc, r.name, l))} ${tag}` });

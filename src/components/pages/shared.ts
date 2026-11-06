@@ -41,7 +41,7 @@ export function hreflangFor(page: EquivalentPage, loc?: Locale): Record<string, 
 
 /**
  * hreflang for a page that exists in one country only (a store, region, city, product, map or log page). English
- * pages carry none, as before. A native page names its country's other native versions (Switzerland's German and
+ * pages carry none, as before. A native page lists the sibling native versions of its country (Swiss German and
  * French, Belgium's French and Dutch) when there is more than one; otherwise none.
  */
 export function versionsOf(path: string): Record<string, string> {

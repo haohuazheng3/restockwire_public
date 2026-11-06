@@ -1,5 +1,5 @@
 /**
- * "When your stores restock" (account page): which hours to be ready at, said in the zone the user's
+ * The account page's restock-hours module: which hours to be ready at, said in the zone the user's
  * stores are in. Pure, so it is tested.
  */
 import { clock } from "@/lib/i18n/format";

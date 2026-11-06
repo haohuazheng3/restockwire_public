@@ -61,8 +61,8 @@ export const modules: Dict["modules"] = {
     ),
     byHour: (zone: string) => `依小時 · ${zone}`,
     byWeekday: "依星期",
-    barReported: (k: number) => `（另有 ${k} 次為其他追蹤網站回報）`,
-    barReportedTitle: (bar: string, k: number) => `${bar}：其他追蹤網站回報 ${k} 次`,
+    barReported: (k: number) => `（另 ${k} 次來自第三方追蹤站）`,
+    barReportedTitle: (bar: string, k: number) => `${bar}：第三方追蹤站通報 ${k} 次`,
     legendOurs: "RestockWire 確認",
   },
 
@@ -117,7 +117,7 @@ export const modules: Dict["modules"] = {
     titleAt: (store: string) => zs(`${store}的全部規格`),
     lookupOff: (hasRows: boolean) => `Apple 目前關閉了這家門市的取貨查詢${hasRows ? "（下方列出它最近的回應）" : ""}`,
     tracked: (k: number) => `監看中的規格 ${k} 種`,
-    firstSweep: "第一輪檢查進行中 · 一分鐘內就會顯示狀態",
+    firstSweep: "首輪讀取還在跑 · 一分鐘內出現狀態",
     inStock: (k: number, total: number) => `${total} 款中 ${k} 款上架`,
     available: "有現貨",
     unavailable: "無現貨",
@@ -188,7 +188,7 @@ export const modules: Dict["modules"] = {
   board: {
     summary: (k: number, stores: number, short: string) => `目前 ${stores} 家門市中有 ${k} 家上架 ${short}`,
     lastCheck: (ago: ReactNode) => <>最新檢查 {ago}</>,
-    firstSweep: "第一輪檢查進行中。",
+    firstSweep: "首輪讀取還在跑。",
     noneListed: (model: string, storage: string | null, color: string | null) => `此刻沒有任何門市上架 ${model}${storage ? ` ${storage}` : ""}${color ? ` ${colorLabel(color, L)}` : ""}。`,
     more: (k: number) => `+${k}`,
     seen: (ago: ReactNode) => <>{ago}上架</>,

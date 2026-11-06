@@ -6,16 +6,16 @@ import type { NotifyText } from "./en";
 
 export const notifyDe: NotifyText = {
   pushTitle: (cfg: string) => cfg,
-  pushBody: (where: string, quote: string | null) => `${where}${quote ? ` – ${quote}` : ""}. Auf apple.com öffnen und reservieren.`,
+  pushBody: (where: string, quote: string | null) => `${where}${quote ? ` – ${quote}` : ""}. Jetzt auf apple.com sichern.`,
   testTitle: "RestockWire-Test: Mitteilungen funktionieren",
   testBody: (time: string, device: string) => `Gesendet um ${time} an: ${device}. Ein echter Restock-Alarm kommt genau so an, Sekunden nach der Bestätigung.`,
   device: {
-    iphoneApp: "iPhone (Home-Bildschirm-App)",
+    iphoneApp: "iPhone-App vom Home-Bildschirm",
     iphoneSafari: "iPhone (Safari)",
     androidApp: "Android (installierte App)",
     android: (browser: string) => `Android${browser ? ` (${browser})` : ""}`,
     computer: (browser: string) => `Computer${browser ? ` (${browser})` : ""}`,
-    other: "dieses Gerät",
+    other: "dieses Endgerät",
   },
   email: {
     subject: (cfg: string, store: string, more: number) => `${cfg} · ${store}${more > 0 ? ` +${more} weitere` : ""}`,
@@ -32,8 +32,8 @@ export const notifyDe: NotifyText = {
     cancel: (url: string) => `Haben Sie Ihr iPhone schon? Jederzeit kündbar: ${url}`,
     htmlGotIt: "Haben Sie Ihr iPhone schon?",
     htmlCancel: "Jederzeit kündigen",
-    nudge: (url: string) => `E-Mail ist nur der Ersatzweg: Auf keinem Handy in Ihrem Konto sind Mitteilungen eingeschaltet. Ein Push kommt etwa 3 Sekunden nach einem bestätigten Restock an. Zum Umstellen öffnen Sie RestockWire vom Home-Bildschirm und tippen auf „Mitteilungen einschalten“: ${url}`,
-    htmlNudge: (url: string) => `E-Mail ist nur der Ersatzweg: Auf keinem Handy in Ihrem Konto sind Mitteilungen eingeschaltet. Ein <b>Push kommt etwa 3 Sekunden</b> nach einem bestätigten Restock an. Öffnen Sie RestockWire vom Home-Bildschirm und tippen Sie auf <b>Mitteilungen einschalten</b>. <a href="${url}" style="color:#0a7f3f">Einrichtung →</a>`,
+    nudge: (url: string) => `Diese E-Mail ist der Notweg: Kein Handy in Ihrem Konto hat Mitteilungen an. Per Push wären Sie etwa 3 Sekunden nach der Bestätigung informiert. Umstellen: RestockWire vom Home-Bildschirm starten, „Mitteilungen einschalten“ antippen: ${url}`,
+    htmlNudge: (url: string) => `Diese E-Mail ist der Notweg: Kein Handy in Ihrem Konto hat Mitteilungen an. <b>Per Push wären Sie etwa 3 Sekunden</b> nach der Bestätigung informiert. Dazu RestockWire vom Home-Bildschirm starten und <b>Mitteilungen einschalten</b> antippen. <a href="${url}" style="color:#0a7f3f">Einrichtung →</a>`,
   },
   nudge: {
     subject: "Ihre RestockWire-Alarme können Ihr Handy in etwa 3 Sekunden erreichen",
@@ -46,7 +46,7 @@ export const notifyDe: NotifyText = {
   },
   checkoutSubmit: (plan: string, limit: number, fastSec: number, checkSec: number, alertSec: number) => `${plan}: ${limit} Alarme. Ihre Stores werden im ${fastSec}-Sekunden-Takt gelesen, alle anderen Stores im ${checkSec}-Sekunden-Takt; ein bestätigter Restock ist in etwa ${alertSec} Sek. auf Ihrem Handy. Monatliche Abrechnung, jederzeit kündbar.`,
   stopped: {
-    deviceWord: { ios: "iPhone", android: "Android-Handy", desktop: "Computer", other: "Gerät" },
+    deviceWord: { ios: "iPhone", android: "Android-Smartphone", desktop: "Computer", other: "Endgerät" },
     subject: (device: string) => `Ihr ${device} empfängt keine RestockWire-Mitteilungen mehr`,
     gone: (device: string) => `Laut Push-Dienst hat Ihr ${device} sein RestockWire-Abo beendet; Mitteilungen erreichen das Gerät daher nicht mehr.`,
     byEmail: "Bis Mitteilungen wieder eingeschaltet sind, kommen Ihre Restock-Alarme per E-Mail.",

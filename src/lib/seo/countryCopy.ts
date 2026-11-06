@@ -42,7 +42,7 @@ export function placeLabel(cc: CountryCode, name: string): string {
   return US_NAMES.has(name.toLowerCase()) ? `${name}, ${COUNTRIES[cc].short}` : name;
 }
 
-/** "City" where Taiwan's regions are cities; "province", "prefecture"… */
+/** The word for a region: "city" for Taiwan, otherwise "province", "prefecture"… */
 const noun = (c: Country, plural = false) => (plural ? c.regionNounPlural : c.regionNoun) ?? (plural ? "areas" : "area");
 
 /* ------------------------------------------------------------------ tax */
@@ -55,7 +55,7 @@ export function taxSentence(cc: CountryCode, region?: string): string {
   if (cc === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
     if (t) return `A 256GB iPhone Duo comes to about ${money(c, t.total)} in ${region}: Apple's ${money(c, duo)} plus ${t.rate}% ${CA_PROVINCE_TAX[region!].label}.`;
-    return `A 256GB iPhone Duo is ${money(c, duo)} before tax; the pickup store's province adds 5% to 15% at the counter.`;
+    return `Apple prices the 256GB iPhone Duo at ${money(c, duo)} before tax. At pickup, the store's province adds 5% to 15%.`;
   }
   const r = includedRate(c);
   if (r == null) return `${money(c, duo)} is the whole price of a 256GB iPhone Duo at pickup: Hong Kong adds no sales tax.`;
@@ -79,12 +79,12 @@ export function priceSection(cc: CountryCode, placeName: string, region?: string
         head: ["iPhone", "apple.com price", `With ${t.total}% ${t.label}`],
         rows: rows.map(([label, p]) => [label, money(c, p), money(c, withProvinceTax(p, region!)!.total)]),
         caption: `What each iPhone comes to in ${region} with ${t.label} (${t.total}%)`,
-        source: `[${src.label}](${src.url}); prices from apple.com/ca`,
+        source: `[${src.label}](${src.url}); Apple price list: apple.com/ca`,
       };
       return {
         id: "price-with-tax",
         h2: `What does the ${m.name} cost in ${placeName} after sales tax?`,
-        lead: `**About ${money(c, withProvinceTax(base, region!)!.total)}** for the 256GB ${m.name} at a store in ${placeName}: Apple's **${money(c, base)} before tax**, plus ${region}'s ${t.hst ? `${t.hst}% HST` : t.pst ? `${t.gst}% GST and ${t.pst}% ${t.label.split(" + ")[1]}` : `${t.gst}% GST (no provincial sales tax)`}.`,
+        lead: `**About ${money(c, withProvinceTax(base, region!)!.total)}** for the 256GB ${m.name} at a store in ${placeName}: Apple's **${money(c, base)} before tax**, plus ${region}'s ${t.hst ? `${t.hst}% HST` : t.pst ? `${t.gst}% GST and ${t.pst}% ${t.label.split(" + ")[1]}` : `${t.gst}% GST, with no provincial tax on top`}.`,
         blocks: [table, { t: "note", text: "**The pickup store sets the rate:** its province decides the tax, not your home address." }],
       };
     }
@@ -100,8 +100,8 @@ export function priceSection(cc: CountryCode, placeName: string, region?: string
         t: "table",
         head: ["Province", "Tax", "Rate", `${m.short} 256GB with tax`],
         rows: provinces.map((p) => [p, CA_PROVINCE_TAX[p].label, `${CA_PROVINCE_TAX[p].total}%`, money(c, withProvinceTax(base, p)!.total)]),
-        caption: "Sales tax on an in-store pickup, in every province with an Apple Store",
-        source: `[${CA_TAX_SOURCE.label}](${CA_TAX_SOURCE.url}); prices from apple.com/ca`,
+        caption: "Provincial tax at the pickup counter, for each province that has an Apple Store",
+        source: `[${CA_TAX_SOURCE.label}](${CA_TAX_SOURCE.url}); Apple price list: apple.com/ca`,
       }],
     };
   }
@@ -118,7 +118,7 @@ export function priceSection(cc: CountryCode, placeName: string, region?: string
       head: r == null ? ["iPhone", "apple.com price"] : ["iPhone", "apple.com price", `Before ${r}% ${tn}`],
       rows: rows.map(([label, p]) => (r == null ? [label, money(c, p)] : [label, money(c, p), money(c, beforeTax(c, p))])),
       caption: `Apple's ${c.adjective} prices, as paid at pickup${r == null ? "" : ` (${tn} included)`}`,
-      source: `[${src.label}](${src.url}); prices from apple.com/${c.buyPath ?? c.shopPath}`,
+      source: `[${src.label}](${src.url}); Apple price list: apple.com/${c.buyPath ?? c.shopPath}`,
     }],
   };
 }
@@ -131,11 +131,11 @@ export function taxFaqIntl(cc: CountryCode, placeName: string, region?: string):
     const t = region ? withProvinceTax(duo, region) : null;
     return t
       ? { q: `What is the iPhone Duo's price in ${placeName} with tax?`, a: `About ${money(c, t.total)} for the 256GB: ${region}'s ${t.rate}% ${CA_PROVINCE_TAX[region!].label} on top of Apple's ${money(c, duo)}, charged by the pickup store.` }
-      : { q: "Is tax included in Apple's Canadian prices?", a: `No: the 256GB iPhone Duo is ${money(c, duo)} before tax. The pickup store's province adds GST, HST or provincial sales tax, from 5% in Alberta to 14.975% in Quebec.` };
+      : { q: "Is tax included in Apple's Canadian prices?", a: `No. Apple lists ${money(c, duo)} for the 256GB iPhone Duo, before tax; tax depends on the pickup province and runs 5% (Alberta) to 14.975% (Quebec), as GST, HST or PST.` };
   }
   const r = includedRate(c);
   return r == null
-    ? { q: "Do you pay sales tax on an iPhone in Hong Kong?", a: `No: Hong Kong has no sales tax or VAT. The 256GB iPhone Duo costs ${money(c, duo)} at pickup, exactly as listed on apple.com.` }
+    ? { q: "Is an iPhone tax-free in Hong Kong?", a: `Yes: Hong Kong charges neither VAT nor sales tax. You pay ${money(c, duo)} for the 256GB iPhone Duo at pickup, the apple.com figure to the cent.` }
     : { q: `Is ${taxName(c)} already in Apple's prices ${c.inName}?`, a: `Yes: the ${money(c, duo)} for a 256GB iPhone Duo includes ${r}% ${taxName(c)}. Nothing more is added at the pickup counter.` };
 }
 
@@ -236,7 +236,7 @@ function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
   if (st.lastRestock && last) items.push(`**Latest Duo restock here:** ${whenIn(i.cc, st.lastRestock.at)} at ${appleName(last)}`);
   if (have.length > 0 && st.month > 0) items.push(`**Confirmed ${sinceWhenIntl()}:** ${plural(st.month, "Duo restock")} across the stores in ${w}`);
   if (st.medianMs != null) items.push(`**How long a listing lasts:** about ${fmtDuration(st.medianMs)} at the median before the Duo sells out again`);
-  items.push(`**Fastest route to one:** [put the iPhone Duo on the wire in ${w}](${alert}) at the ${n <= 3 ? (n === 2 ? "two" : "three") : `${Math.min(n, 5)} nearest`} stores you would travel to; stores with alerts are read every 5 seconds`);
+  items.push(`**Fastest route to one:** [put the iPhone Duo on the wire in ${w}](${alert}) across the ${n <= 3 ? (n === 2 ? "two" : "three") : `${Math.min(n, 5)} nearest`} stores you would travel to; stores with alerts are read every 5 seconds`);
   items.push("**One alert rule** is one store × one exact configuration, and the push lands about 3 seconds after a second read confirms the restock");
   const blocks: Block[] = [];
   if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**That changes in a minute:** an alert sees the next restock long before a refresh of apple.com would." });
@@ -253,13 +253,13 @@ export function intlPlaceSections(i: IntlPlaceInput): KeywordSection[] {
   return [
     {
       id: "iphone-duo",
-      h2: `Which Apple Stores in ${w} have the iPhone Duo right now?`,
+      h2: `iPhone Duo in ${w}: which stores list it this minute?`,
       lead: duoLead(i),
       blocks: duoPoints(i, w, alert),
     },
     {
       id: "iphone-18-pro-max",
-      h2: `Is the iPhone 18 Pro Max in stock in ${w}?`,
+      h2: `iPhone 18 Pro Max stock in ${w}: listed or not?`,
       lead: i.stockNow["18-pro-max"] > 0
         ? `**Yes, at ${i.stockNow["18-pro-max"]} of ${n} stores**, with **${pairsPct(i, "18-pro-max")}%** of the ${n * pm} store × configuration pairs in ${w} listed at this minute.`
         : `**Not at this minute**: none of the ${n} stores in ${w} lists an iPhone 18 Pro Max for pickup.`,
@@ -294,13 +294,13 @@ export function homeH1(cc: CountryCode): string {
   return n === 1 ? `Live iPhone pickup stock at the Apple Store ${c.inName}` : `Live iPhone pickup stock at all ${n} Apple Stores ${c.inName}`;
 }
 
-/** "the 39 Apple Stores in the UK" / "the one Apple Store in Austria". */
+/** Country phrase: all N stores, or the only store. */
 export function allStoresPhrase(cc: CountryCode): string {
   const n = storesOf(cc).length;
-  return n === 1 ? `the one Apple Store ${COUNTRIES[cc].inName}` : `all ${n} Apple Stores ${COUNTRIES[cc].inName}`;
+  return n === 1 ? `the only Apple Store ${COUNTRIES[cc].inName}` : `all ${n} Apple Stores ${COUNTRIES[cc].inName}`;
 }
 
-/** Where a country's stores are, in one sentence ("in 22 cities across 6 provinces"). */
+/** Where a country's stores are: city and region counts in one phrase. */
 export function spreadPhrase(cc: CountryCode): string {
   const c = COUNTRIES[cc];
   const regions = statesWithStores(cc);
@@ -345,7 +345,7 @@ export function modelDescription(cc: CountryCode, model: ModelKey, inStock: numb
   ], 155);
 }
 
-/** Every model's stock line for the country home's table. */
+/** Table rows for the country home: one per model. */
 export function modelRows(cc: CountryCode, storesNow: Record<ModelKey, number>, restocks: Record<ModelKey, number>): string[][] {
   const prefix = cc === "us" ? "" : `/${cc}`;
   return MODELS.map((m) => [`[${m.name}](${prefix}/in-stock/${m.slug})`, String(catalogFor(m.key, cc).length), String(storesNow[m.key] ?? 0), String(restocks[m.key] ?? 0)]);
@@ -405,9 +405,9 @@ export function homeSections(i: HomeCopyInput): KeywordSection[] {
       lead: `You pick the store${n === 1 ? "" : "s"} and the exact phone; when ${n === 1 ? "the store" : "one of them"} lists it for in-store pickup, a push lands on your phone about 3 seconds after the restock is confirmed.`,
       blocks: [
         { t: "ol", items: [
-          n === 1 ? `Choose the iPhone, storage and color under **Get alerts**; the store is ${stores[0].name} in ${stores[0].city}.` : `Choose the iPhone, storage and color under **Get alerts**, then tick the stores you can reach; the nearest come first, with ${unit} by road and drive time.`,
+          n === 1 ? `Choose the iPhone, storage and color under **Get alerts**; the store is ${stores[0].name} in ${stores[0].city}.` : `Choose the iPhone, storage and color under **Get alerts**, then tick the stores you can reach; the nearest come first, with ${unit} on the road and minutes of driving shown.`,
           "On an iPhone, add RestockWire to your Home Screen and allow notifications; iOS delivers web push only to an installed app ([how to install](/phone-alerts)).",
-          "When the push lands, open apple.com from it and check out with in-store pickup at that store.",
+          "Tap the push, land on apple.com, and pay with in-store pickup at the store it named.",
         ] },
         { t: "table", head: ["Plan", "Monthly (USD)", "Alert rules"], rows: [["Plus", "$5", "10"], ["Pro", "$10", "20"], ["Max", "$20", "50"]], caption: "One rule = one store × one exact configuration; browsing stays free, and the speed is the same on every plan ([pricing](/pricing))" },
         { t: "note", text: "**Our read:** the Duo earns alerts at every store you can reach; for the 18 Pro and Pro Max, check the live counts first." },
@@ -434,8 +434,8 @@ export function homeFaq(cc: CountryCode, rt: RestockTimesBrief): Faq[] {
   const when = rt.n === 0
     ? `None confirmed yet since tracking began on November 2. [When does Apple restock the iPhone Duo ${c.inName}?](${rt.path}) counts each one by local hour and day as they come.`
     : rt.peakHour != null
-      ? `Most land around **${hourLabel(rt.peakHour)} local time**: ${rt.n.toLocaleString("en-US")} confirmed restocks at ${rt.stores} of ${rt.storesTotal} stores since November 2. [Hour by hour and day by day](${rt.path}).`
-      : `${rt.n.toLocaleString("en-US")} confirmed restocks at ${rt.stores} of ${rt.storesTotal} stores since November 2, on too few days to name a usual hour yet. [Hour by hour and day by day](${rt.path}).`;
+      ? `Most land around **${hourLabel(rt.peakHour)} local time**: ${rt.n.toLocaleString("en-US")} confirmed restocks at ${rt.stores} of ${rt.storesTotal} stores since November 2. [Restocks per hour and per day](${rt.path}).`
+      : `Since November 2: ${rt.n.toLocaleString("en-US")} confirmed restocks at ${rt.stores} of ${rt.storesTotal} stores. That is spread over too few days for a usual hour. [Restocks per hour and per day](${rt.path}).`;
   // Native versions add the restock-times answer as their own question (their own place builders); English
   // keeps it for later and spends its five questions on stock, speed, price, tax and holds.
   void when;
@@ -460,10 +460,10 @@ export const homeLabels = {
   selloutH2: (cc: CountryCode) => `How long does an iPhone restock last ${COUNTRIES[cc].inName}?`,
   selloutLabel: (cc: CountryCode) => `at Apple Stores ${COUNTRIES[cc].inName}`,
   last24Label: (cc: CountryCode) => COUNTRIES[cc].inName,
-  newsroom: "Apple Newsroom: iPhone Duo arrives at Apple Store locations worldwide (Oct 23, 2026)",
+  newsroom: "Apple Newsroom, Oct 23, 2026 — iPhone Duo arrives at Apple Store locations worldwide",
 };
 
-/** A store page's <title> and H1 ("Apple Ginza: iPhone Stock Today, Pickup & Hours"); `region`: the city or state in parentheses when the store is its only one. */
+/** A store page's <title> and H1 (the English store title); `region`: the city or state in parentheses when the store is its only one. */
 export function storeTitleIntl(s: Store, region?: string): string {
   return enStoreTitle(s, undefined, undefined, region);
 }

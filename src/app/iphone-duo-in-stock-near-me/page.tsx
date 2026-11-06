@@ -1,5 +1,5 @@
 /**
- * /iphone-duo-in-stock-near-me: "Which Apple Stores have the iPhone Duo near me right now?" The finder does the work; the
+ * /iphone-duo-in-stock-near-me: "Is the iPhone Duo in stock near me?" The finder does the work; the
  * sections under it keep one quotable answer sentence per question and show the rest as tiles, steps, swap cards,
  * tables and keyword lines. Every number is live and RestockWire's own.
  */
@@ -25,7 +25,7 @@ import { alertHref, itemListJsonLd, listWords, plural } from "@/lib/seo/enrich";
 
 export const dynamic = "force-dynamic";
 
-const TITLE = "iPhone Duo in Stock Near Me: Nearest Apple Stores Now";
+const TITLE = "iPhone Duo in Stock Near Me? Closest Apple Stores, Live";
 const DESCRIPTION = `The Apple Stores near you that list the iPhone Duo for pickup now, ranked by distance from you or your ZIP across all ${STORES.length} US stores, read every ${SPEED.checkSec} s.`;
 const APPLE_STORES = "https://www.apple.com/retail/storelist/";
 const CENSUS_GAZETTEER = "https://www.census.gov/geographies/reference-files/time-series/geo/gazetteer-files.html";
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   title: { absolute: `${TITLE} · RestockWire` },
   description: DESCRIPTION,
   alternates: { canonical: "/iphone-duo-in-stock-near-me" },
-  openGraph: { type: "article", siteName: "RestockWire", title: TITLE, description: DESCRIPTION, url: "/iphone-duo-in-stock-near-me" },
+  openGraph: { url: "/iphone-duo-in-stock-near-me", type: "article", siteName: "RestockWire", description: DESCRIPTION, title: TITLE },
 };
 
 const n = (x: number) => x.toLocaleString("en-US");
@@ -93,7 +93,7 @@ export default async function NearMePage() {
   const [rows, recent, rt, facts] = await Promise.all([stockByStore("duo"), recentByConfig({ country: "us" }), duoRestockTimes("us"), getFacts()]);
   const items = catalogFor("duo");
   const cfg = (p: string) => { const i = PART_INDEX.get(p); return i ? `${i.storage} ${i.color}` : p; };
-  // stockByStore answers [] both for "no rows" and for a read that failed; a status row exists for every tracked store, so [] means unreadable.
+  // Every tracked store always has a status row, so an empty stockByStore result can only mean the read failed.
   const unknown = rows.length === 0;
   const now: Now[] = rows
     .filter((r) => r.availableParts.length > 0)
@@ -112,7 +112,7 @@ export default async function NearMePage() {
   for (const t of rt.topStores.slice(0, 3)) { const store = storeByNumber(t.storeNumber); if (store) top.push({ store, restocks: t.restocks }); }
   const latest = recent.latest ? { ...recent.latest, store: storeByNumber(recent.latest.storeNumber) } : null;
   const sell = rt.sellout;
-  /** "about 60–80 seconds" from the timed sell-outs, or a wording that claims no number while there are none. */
+  /** Listing lifetime from timed sell-outs; with none timed yet, a phrase that names no figure. */
   const lasts = sell ? `about ${medianBand(sell.medianSec)}` : "seconds to a few minutes";
   const alert = alertHref({ model: "duo" });
 
@@ -148,17 +148,17 @@ export default async function NearMePage() {
 
   const site = "https://restockwire.com";
   const ld = [
-    { "@context": "https://schema.org", "@type": "WebPage", "@id": `${site}/iphone-duo-in-stock-near-me`, url: `${site}/iphone-duo-in-stock-near-me`, name: TITLE, description: DESCRIPTION, isPartOf: { "@id": `${site}/#website` }, about: { "@id": `${site}/#organization` }, dateModified: facts.at },
+    { "@context": "https://schema.org", "@type": "WebPage", "@id": `${site}/iphone-duo-in-stock-near-me`, url: `${site}/iphone-duo-in-stock-near-me`, name: TITLE, isPartOf: { "@id": `${site}/#website` }, description: DESCRIPTION, about: { "@id": `${site}/#organization` }, dateModified: facts.at },
     ...(count > 0 ? [itemListJsonLd(`US Apple Stores listing the iPhone Duo for pickup at ${asOf}`, now.map((x) => x.store))] : []),
   ];
 
   return (
     <div className="mx-auto max-w-3xl px-4 pt-10">
       <JsonLd data={ld} />
-      <h1 className="display text-3xl sm:text-5xl">Is the iPhone Duo in stock near me?</h1>
+      <h1 className="text-3xl sm:text-5xl display">Is the iPhone Duo in stock near me?</h1>
       <p className="mt-4 text-lg text-ink-2">
         {unknown
-          ? <>The live stock read did not load this time. The finder below still ranks all <b className="text-ink">{STORES.length}</b> US Apple Stores by distance from you or your ZIP.</>
+          ? <>The live stock read did not load this time. Distance still works: the finder below sorts every one of the <b className="text-ink">{STORES.length}</b> US Apple Stores from your spot or ZIP.</>
           : count > 0
             ? <><b className="text-ink">{count} of {STORES.length}</b> US Apple Stores list an iPhone Duo for pickup as of {asOf}: {listWords(now.map((x) => `${appleName(x.store)} (${stateCodeOf(x.store)})`), 5)}.</>
             : <><b className="text-ink">None of the {STORES.length}</b> US Apple Stores lists an iPhone Duo for pickup as of {asOf}. Your nearest stores are the ones to put on the wire.</>}
@@ -173,11 +173,11 @@ export default async function NearMePage() {
             : <Stat value="–" label="usual restock hour: not enough data yet" tone="muted" />}
       </StatGrid>
       <div className="mt-6"><NearMeFinder data={data} /></div>
-      <div className="mt-4 flex flex-wrap gap-3">
+      <div className="mt-4 flex gap-3 flex-wrap">
         <Link href={alert} className="btn btn-primary">Put my nearest stores on the wire</Link>
         <Link href="/live-map" className="btn btn-ghost">Live map</Link>
       </div>
-      <nav aria-label="On this page" className="mt-6 flex flex-wrap gap-2 text-sm">
+      <nav aria-label="On this page" className="mt-6 flex flex-wrap text-sm gap-2">
         {sections.map((x) => <a key={x.id} href={`#${x.id}`} className="chip px-3 py-1.5 text-xs">{x.nav}</a>)}
       </nav>
 
@@ -227,7 +227,7 @@ export default async function NearMePage() {
           <p><b>The finder at the top does it: all {STORES.length} US Apple Stores, ranked in your browser by distance from you or your ZIP, with live iPhone Duo stock on the ten closest.</b></p>
           <Steps steps={[
             { title: "Share your location or enter a ZIP", hint: "Ranking happens in your browser. Your location stays on your device; a ZIP only picks a small file of ZIP centers by its first three digits." },
-            { title: "Check each store's badge", hint: `"Duo in stock: 3 of ${items.length} configs" is what the store lists now; "none right now" is the normal, sold-out state.` },
+            { title: "Check each store's badge", hint: `A green badge counts the configurations listed now, out of ${items.length}; a grey one means sold out, which is the usual state.` },
             { title: "Put two or three reachable stores on the wire", hint: `They move to ${SPEED.fastSec}-second checks, and a confirmed restock reaches your phone about ${SPEED.alertSec} seconds later.` },
           ]} />
           <ChipLinks items={[

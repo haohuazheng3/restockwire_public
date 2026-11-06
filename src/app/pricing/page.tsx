@@ -22,11 +22,11 @@ export default async function Pricing() {
   const ds = (await siteFacts()).duoSellout;
   return (
     <div className="mx-auto max-w-5xl px-4 pt-10">
-      <h1 className="display text-3xl sm:text-5xl">{d.title}</h1>
+      <h1 className="text-3xl sm:text-5xl display">{d.title}</h1>
       <p className="mt-3 text-lg text-ink-2"><Md text={d.lead} tag="b" b="text-ink" /></p>
       <Chips className="mt-3" items={d.chips} />
 
-      <div className="pane mt-6 grid gap-5 p-5 sm:p-6 lg:grid-cols-[1fr_auto] lg:items-center">
+      <div className="pane mt-6 grid p-5 sm:p-6 gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
         <div>
           <div className="font-semibold">{d.fastest}</div>
           <Points className="mt-3" items={[
@@ -37,8 +37,8 @@ export default async function Pricing() {
           ]} />
         </div>
         <StatGrid cols={3} className="lg:min-w-[26rem]">
-          <Stat value={`${SPEED.fastSec}`} unit={u.s} label={d.rechecked} tone="accent" />
-          <Stat value={`~${SPEED.alertSec}`} unit={u.s} label={d.toPhone} tone="accent" />
+          <Stat tone="accent" label={d.rechecked} value={`${SPEED.fastSec}`} unit={u.s} />
+          <Stat tone="accent" label={d.toPhone} value={`~${SPEED.alertSec}`} unit={u.s} />
           <Stat value={ds ? `${ds.medianSec}` : "~60"} unit={u.s} label={d.listing} tone="warn" />
         </StatGrid>
       </div>
@@ -49,8 +49,8 @@ export default async function Pricing() {
           return (
             <div key={k} className={`pane flex flex-col p-6 ${k === "plus" ? "border-accent/40" : ""}`}>
               <div className="flex items-center justify-between"><div className="text-lg font-semibold">{plan.name}</div><span className="text-xs text-ink-3">{d.note[k]}</span></div>
-              <div className="mt-3 flex items-baseline gap-2"><span className="display text-5xl">${plan.priceUsd}</span><span className="text-ink-3">{d.month}</span></div>
-              <div className="mt-2 text-2xl font-semibold">{d.alerts(plan.limit)}</div>
+              <div className="mt-3 flex gap-2 items-baseline"><span className="display text-5xl">${plan.priceUsd}</span><span className="text-ink-3">{d.month}</span></div>
+              <div className="mt-2 font-semibold text-2xl">{d.alerts(plan.limit)}</div>
               <ul className="mt-4 space-y-1.5 text-sm text-ink-2">
                 {d.perks.map((p) => <li key={p} className="flex gap-2"><span className="text-accent" aria-hidden>✓</span>{p}</li>)}
                 <li className="flex gap-2"><span className="text-accent" aria-hidden>✓</span>{d.cancel}</li>

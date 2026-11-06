@@ -24,7 +24,7 @@ export const install: CDict["install"] = {
   steps: {
     title: "Mitteilungen einschalten",
     intro: {
-      ios: "iPhone und iPad stellen Mitteilungen nur an die Home-Bildschirm-App zu.",
+      ios: "Push gibt es auf iPhone und iPad nur in der App vom Home-Bildschirm, nicht in Safari.",
       android: "Auf Android kann Chrome selbst benachrichtigen; die Installation ist optional.",
       desktop: "Läuft im Browser, nichts zu installieren.",
     },
@@ -32,23 +32,23 @@ export const install: CDict["install"] = {
     tabs: { ios: "iPhone / iPad", android: "Android", desktop: "Computer" },
     ios: {
       safari: { title: "restockwire.com in Safari aufrufen", text: "Es muss Safari sein; Chrome und In-App-Browser können das nicht." },
-      share: { title: "Auf „Teilen“ tippen", text: "iPhone: untere Leiste. iPad: obere Leiste." },
-      choose: { title: "„Zum Home-Bildschirm“ wählen", text: "Nicht zu sehen? Das Menü nach unten scrollen." },
-      add: { title: "Auf „Hinzufügen“ tippen", text: "Den Namen RestockWire so lassen." },
-      open: { title: "Vom Home-Bildschirm starten und anmelden", text: "Die App meldet sich separat an; mit derselben E-Mail sind Ihre Alarme da." },
-      allow: { title: "Auf „Mitteilungen einschalten“ tippen, dann „Erlauben“", text: "Der Button steht auf Ihrer Alarmseite. Das iPhone fragt nur einmal." },
+      share: { title: "„Teilen“ antippen", text: "iPhone: untere Leiste. iPad: obere Leiste." },
+      choose: { title: "Im Menü: „Zum Home-Bildschirm“", text: "Nicht zu sehen? Das Menü nach unten scrollen." },
+      add: { title: "Mit „Hinzufügen“ bestätigen", text: "Den Namen RestockWire so lassen." },
+      open: { title: "App auf dem Home-Bildschirm öffnen, anmelden", text: "Die App meldet sich separat an; mit derselben E-Mail sind Ihre Alarme da." },
+      allow: { title: "Button „Mitteilungen einschalten“ → „Erlauben“", text: "Sie finden den Button unter „Meine Alarme“. Die Frage kommt genau einmal." },
     },
     android: {
       chrome: { title: "restockwire.com in Chrome aufrufen", text: "Samsung Internet und Edge funktionieren auch; In-App-Browser nicht." },
-      install: { title: "App installieren", text: "Ein Tippen, ganz ohne App Store." },
-      menu: { title: "Menü ⋮ → „Zum Startbildschirm hinzufügen“", text: "Auf manchen Handys heißt es **App installieren**." },
+      install: { title: "App installieren", text: "Direkt aus Chrome installiert, ohne Umweg über den Play Store." },
+      menu: { title: "Drei-Punkte-Menü: „Zum Startbildschirm hinzufügen“", text: "Auf manchen Handys heißt es **App installieren**." },
       open: { title: "RestockWire starten und anmelden", text: "Auf dem Startbildschirm oder in der App-Übersicht; dieselbe E-Mail bringt Ihre Alarme mit." },
-      allow: { title: "Auf „Mitteilungen einschalten“ tippen, dann „Zulassen“", text: "Android fragt nur einmal. Ein Chrome-Tab funktioniert auch." },
+      allow: { title: "Button „Mitteilungen einschalten“ → „Zulassen“", text: "Android fragt nur einmal. Ein Chrome-Tab funktioniert auch." },
     },
     desktop: {
-      allow: { title: "Auf „Mitteilungen einschalten“ klicken", text: "Funktioniert in Chrome, Edge, Firefox und Safari 16+; der Browser fragt nur einmal." },
+      allow: { title: "„Mitteilungen einschalten“ anklicken", text: "Funktioniert in Chrome, Edge, Firefox und Safari 16+; der Browser fragt nur einmal." },
       install: { title: "Optional: als App ausführen", text: "In Chrome oder Edge das Installieren-Symbol in der Adressleiste nutzen; Mitteilungen kommen dann auch bei geschlossenem Browser." },
-      phone: { title: "Auch Ihr Handy hinzufügen", text: "Melden Sie sich dort mit derselben E-Mail an. Jedes Gerät mit eingeschalteten Mitteilungen bekommt jeden Alarm." },
+      phone: { title: "Auch Ihr Handy hinzufügen", text: "Mit derselben E-Mail anmelden – dann erhält jedes Gerät mit aktiven Mitteilungen alle Alarme." },
     },
   },
   action: {
@@ -71,14 +71,14 @@ export const install: CDict["install"] = {
 
   mocks: {
     share: "Teilen",
-    shareSheet: { copy: "Kopieren", readingList: "Zur Leseliste hinzufügen", bookmark: "Lesezeichen hinzufügen", favorites: "Zu Favoriten hinzufügen", addToHome: "Zum Home-Bildschirm", markup: "Markierungen" },
-    addDialog: { cancel: "Abbrechen", title: "Zum Home-Bildschirm", add: "Hinzufügen", note: "Ein Symbol wird zu deinem Home-Bildschirm hinzugefügt, damit du schnell auf diese Website zugreifen kannst." },
-    iosAlert: { title: "„RestockWire“ möchte dir Mitteilungen senden", text: "Mitteilungen können Hinweise, Töne und Kennzeichensymbole enthalten. Diese können in „Einstellungen“ konfiguriert werden.", dontAllow: "Nicht erlauben", allow: "Erlauben" },
+    shareSheet: { copy: "Kopieren", readingList: "Zur Schnellnotiz hinzufügen", bookmark: "Lesezeichen hinzufügen", favorites: "Auf der Seite suchen", addToHome: "Zum Home-Bildschirm", markup: "Markierungen" },
+    addDialog: { cancel: "Abbrechen", title: "Zum Home-Bildschirm", add: "Hinzufügen", note: "Auf deinem Home-Bildschirm erscheint ein Symbol, mit dem du diese Website direkt öffnest." },
+    iosAlert: { title: "„RestockWire“ möchte dir Mitteilungen senden", text: "Möglich sind Hinweise, Töne und Kennzeichensymbole. Anpassen lässt sich das unter „Einstellungen“.", dontAllow: "Nicht erlauben", allow: "Erlauben" },
     chromeMenuLabel: "Menü",
     chromeMenu: { before: ["Neuer Tab", "Verlauf", "Downloads", "Lesezeichen", "Teilen…"], add: "Zum Startbildschirm hinzufügen", after: ["Desktopversion"] },
     androidAlert: { title: "RestockWire erlauben, dir Benachrichtigungen zu senden?", dontAllow: "Nicht zulassen", allow: "Zulassen" },
     desktopAlert: { wantsTo: "restockwire.com möchte", show: "Benachrichtigungen anzeigen", block: "Blockieren", allow: "Zulassen" },
-    desktopInstall: { callout: "Installieren", title: "RestockWire installieren", text: "Öffnet sich in einem eigenen Fenster", cancel: "Abbrechen", install: "Installieren" },
-    lockScreen: { date: "Donnerstag, 29. Oktober", now: "jetzt", title: "iPhone 18 Pro 256GB Schwarz", body: "Apple Kurfürstendamm · Berlin – Heute verfügbar. Auf apple.com öffnen und reservieren." },
+    desktopInstall: { callout: "Installieren", title: "RestockWire installieren", text: "Startet künftig als eigenes Fenster", cancel: "Abbrechen", install: "Installieren" },
+    lockScreen: { date: "Donnerstag, 29. Oktober", now: "jetzt", title: "iPhone 18 Pro Max 512GB Burgunder", body: "Apple Kurfürstendamm · Berlin – Heute verfügbar. Jetzt auf apple.com sichern." },
   },
 };

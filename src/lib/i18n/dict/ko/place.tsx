@@ -17,7 +17,7 @@ import { hourLabel } from "@/lib/content/siteFacts";
 import type { Block, Faq, Source } from "@/lib/content/types";
 import type { KeywordSection } from "@/components/content/KeywordSections";
 import type { Dict } from "../en";
-import { eulReul, eunNeun } from "./common";
+import { eulReul } from "./common";
 
 const L = "ko" as const;
 const n = (x: number) => num(L, x);
@@ -55,12 +55,12 @@ const cfgKo = (label: string) => {
 /** 한국 부가가치세율(10%)의 근거: 부가가치세법 제30조. */
 const KR_TAX: Source = { label: "국가법령정보센터: 부가가치세법 제30조(세율 10%)", url: "https://www.law.go.kr/%EB%B2%95%EB%A0%B9/%EB%B6%80%EA%B0%80%EA%B0%80%EC%B9%98%EC%84%B8%EB%B2%95" };
 const taxSource = (code: Exclude<CountryCode, "us">): Source => (code === "kr" ? KR_TAX : TAX_SOURCES[code]);
-const helpSource = (code: CountryCode): Source => ({ label: "Apple: 배송 및 픽업 도움말(픽업할 때 챙길 것)", url: pickupHelp(code).url });
+const helpSource = (code: CountryCode): Source => ({ label: "Apple 지원: 매장 픽업 시 필요한 것", url: pickupHelp(code).url });
 
 /* ------------------------------------------------------------------ 기간, 이름, 시각 */
 
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "11월 2일 추적 시작 이후" : "최근 30일 동안";
+  return now - Date.parse(`${INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "11월 2일 추적을 켠 뒤로" : "지난 30일 사이";
 }
 
 /** 미국 매장 도시·주와 이름이 같은 곳은 나라를 붙여요("Manchester(영국)"). */
@@ -121,7 +121,7 @@ function priceSection(code: CountryCode, placeName: string, region?: string, mod
       lead: `256GB ${m.name}는 **${regionLabel(code, cheapest, L)} ${money(code, withProvinceTax(base, cheapest)!.total)}부터 ${regionLabel(code, dearest, L)} ${money(code, withProvinceTax(base, dearest)!.total)}까지**예요. Apple 가격 ${money(code, base)}은 세전이고, 픽업 매장이 있는 주에 따라 ${CA_PROVINCE_TAX[cheapest].total}%~${CA_PROVINCE_TAX[dearest].total}%가 붙어요.`,
       blocks: [{
         t: "table",
-        head: ["주", "세금", "세율", `${m.short} 256GB 세금 포함`],
+        head: ["주", "세목", "합산 세율", `${m.short} 256GB 최종가`],
         rows: provinces.map((p) => [regionLabel(code, p, L), CA_PROVINCE_TAX[p].label, `${CA_PROVINCE_TAX[p].total}%`, money(code, withProvinceTax(base, p)!.total)]),
         caption: "Apple Store가 있는 모든 주의 매장 픽업 판매세",
         source: `[${CA_TAX_SOURCE.label}](${CA_TAX_SOURCE.url}); 가격: apple.com/ca`,
@@ -140,9 +140,9 @@ function priceSection(code: CountryCode, placeName: string, region?: string, mod
       : `${placeName}에서 256GB ${m.name}를 픽업하면 **${money(code, base)}**이고, **${tk} ${r}%가 이미 포함**돼 있어요(세전 ${money(code, beforeTax(c, base))}). 계산대에서 더 붙는 금액은 없어요.`,
     blocks: [{
       t: "table",
-      head: r == null ? ["iPhone", "apple.com 가격"] : ["iPhone", "apple.com 가격", `${tk} ${r}% 제외`],
+      head: r == null ? ["모델·용량", "apple.com 표시가"] : ["모델·용량", "apple.com 표시가", `${tk} ${r}% 뺀 금액`],
       rows: rows.map(([label, p]) => (r == null ? [label, money(code, p)] : [label, money(code, p), money(code, beforeTax(c, p))])),
-      caption: `픽업할 때 내는 Apple ${dom(code)} 가격${r == null ? "" : `(${tk} 포함)`}`,
+      caption: `Apple ${dom(code)} 표시가 = 픽업 때 결제액${r == null ? "" : ` · ${tk} 포함`}`,
       source: `[${src.label}](${src.url}); 가격: ${shop}`,
     }],
   };
@@ -153,13 +153,13 @@ function taxFaq(code: CountryCode, placeName: string, region?: string): FaqItem 
   if (code === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
     return t
-      ? { q: `${placeName}에서 iPhone Duo는 세금 포함 얼마인가요?`, a: `256GB 기준 약 ${money(code, t.total)}이에요. Apple 가격 ${money(code, duo)}에 ${regionLabel(code, region!, L)}의 ${t.rate}% ${CA_PROVINCE_TAX[region!].label}를 픽업 매장에서 더해요.` }
-      : { q: "Apple 캐나다 가격에 세금이 포함돼 있나요?", a: `아니요. 256GB iPhone Duo는 세전 ${money(code, duo)}이에요. 픽업 매장이 있는 주에 따라 GST, HST 또는 주 판매세가 붙고, 앨버타 5%부터 퀘벡 14.975%까지예요.` };
+      ? { q: `${placeName} 매장에서 iPhone Duo를 받으면 세금 포함 최종가는?`, a: `약 ${money(code, t.total)}(256GB)예요. 세전 ${money(code, duo)}에 ${regionLabel(code, region!, L)}의 ${CA_PROVINCE_TAX[region!].label} ${t.rate}%가 매장 기준으로 더해진 값이에요.` }
+      : { q: "캐나다 apple.com 가격은 세금이 빠진 금액인가요?", a: `네, 빠져 있어요. 256GB iPhone Duo 세전 ${money(code, duo)}에 픽업 매장이 속한 주의 GST·HST·주 판매세가 더해지고, 범위는 앨버타 5%에서 퀘벡 14.975%예요.` };
   }
   const r = includedRate(COUNTRIES[code]);
   return r == null
-    ? { q: "홍콩에서 iPhone을 사면 판매세를 내나요?", a: `아니요. 홍콩에는 판매세도 부가세도 없어요. 256GB iPhone Duo는 픽업할 때 apple.com에 나온 그대로 ${money(code, duo)}이에요.` }
-    : { q: `${dom(code)} Apple 가격에 ${taxKo(code)}가 이미 들어 있나요?`, a: `네. 256GB iPhone Duo ${money(code, duo)}에는 ${taxKo(code)} ${r}%가 포함돼 있어요. 픽업 카운터에서 더 내는 금액은 없어요.` };
+    ? { q: "홍콩 Apple Store에서 사면 세금이 따로 붙나요?", a: `안 붙어요. 홍콩은 판매세·부가세가 없어서, 256GB iPhone Duo는 apple.com 표시가 ${money(code, duo)}이 곧 결제액이에요.` }
+    : { q: `${dom(code)} apple.com 가격은 ${taxKo(code)} 포함인가요?`, a: `포함이에요. 256GB iPhone Duo ${money(code, duo)} 안에 ${taxKo(code)} ${r}%가 들어 있어서, 픽업 때 추가로 낼 돈은 없어요.` };
 }
 
 /* ------------------------------------------------------------------ 지역·도시 페이지 */
@@ -194,7 +194,7 @@ function placeDescription(i: IntlPlaceInput): string {
 function placeIntro(i: IntlPlaceInput): string {
   const k = i.stores.length;
   const w = nameOf(i);
-  const cities = i.kind === "state" && i.cities && i.cities > 1 ? `(도시 ${n(i.cities)}곳)` : "";
+  const cities = i.kind === "state" && i.cities && i.cities > 1 ? ` ${n(i.cities)}개 도시` : "";
   return `지금 이 순간 ${w}${cities}의 **Apple Store ${n(k)}곳** 중 **${n(i.stockNow.duo)}곳**에서 iPhone Duo(아이폰 듀오)를 매장 픽업할 수 있어요. iPhone 18 Pro Max는 **${n(i.stockNow["18-pro-max"])}곳**, iPhone 18 Pro는 **${n(i.stockNow["18-pro"])}곳**이에요.`;
 }
 
@@ -245,7 +245,7 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
         : `**지금은 없어요.** ${w}의 ${n(k)}곳 모두 iPhone 18 Pro Max를 픽업할 수 없어요.`,
       blocks: [{ t: "ul", items: [
         ...(scarce.length ? [`**지금 가장 구하기 어려운 구성:** ${list(L, scarce.map((x) => `${cfgKo(x.label)}(${n(k)}곳 중 ${n(x.stores)}곳)`))}`] : []),
-        `**iPhone 18 Pro:** ${n(k)}곳 중 ${n(i.stockNow["18-pro"])}곳, 매장 × 구성의 ${pct(L, pairsPct(i, "18-pro"))}에 재고`,
+        `**iPhone 18 Pro 쪽은:** 매장 ${n(i.stockNow["18-pro"])}/${n(k)}곳, 매장×구성 조합으로는 ${pct(L, pairsPct(i, "18-pro"))}가 픽업 가능`,
         `**${sinceWhen()} 확인:** ${i.max.month ? `18 Pro Max 재입고 ${n(i.max.month)}회` : "아직 18 Pro Max 재입고 없음"}`,
         ...(i.max.medianMs != null ? [`**재고가 떠 있는 시간:** 중앙값 기준 약 ${fmtDuration(i.max.medianMs, L)} 뒤에 Pro Max가 다시 품절돼요`] : []),
       ] }],
@@ -295,14 +295,14 @@ function spreadPhrase(code: CountryCode): string {
     return `${n(cities.length)}개 도시`;
   }
   if (regions.length <= 4) return regions.map((r) => ({ name: regionLabel(code, r.name, L), k: stores.filter((s) => s.state === r.name).length })).sort((a, b) => b.k - a.k).map((r) => `${r.name} ${n(r.k)}곳`).join(" · ");
-  return `${n(regions.length)}개 ${regionWord(code)}, ${n(cities.length)}개 도시`;
+  return `${regionWord(code)} ${n(regions.length)}곳에 걸친 도시 ${n(cities.length)}곳`;
 }
 
 function modelPageTitles(code: CountryCode, model: ModelKey): { title: string; h2: string[] } {
   const m = modelByKey(model)!;
   const k = storesOf(code).length;
-  const name = model === "duo" ? "iPhone Duo(아이폰 듀오)" : m.name;
-  const all = k === 1 ? "Apple Store" : `애플스토어 ${k}곳`;
+  const name = model === "duo" ? "아이폰 듀오(iPhone Duo)" : m.name;
+  const all = k === 1 ? "애플스토어" : `매장 ${k}곳`;
   return {
     title: fitTitleW([`${dom(code)} ${name} 재고 있나요? ${all} 실시간`, `${dom(code)} ${m.name} 재고 있나요? 실시간`, `${m.name} ${dom(code)} 재고`], 70),
     h2: [`지금 ${m.name}가 있는 ${dom(code)} Apple Store는 어디인가요?`, priceSection(code, dom(code), undefined, model).h2],
@@ -313,7 +313,7 @@ function modelIntro(code: CountryCode, model: ModelKey, inStock: number): string
   const m = modelByKey(model)!;
   const k = storesOf(code).length;
   const r = priceRange(code, model);
-  const p = code === "ca" ? `**세전 ${money(code, r.low)}**부터` : `**${money(code, r.low)}**부터(${taxNote(code)})`;
+  const p = code === "ca" ? `최저 **${money(code, r.low)}**(세전)` : `최저 **${money(code, r.low)}**(${taxNote(code)})`;
   return inStock === 0
     ? `지금 이 순간 ${eulReul(m.name)} 매장 픽업할 수 있는 ${dom(code)} Apple Store는 **없어요**(${k === 1 ? "단 한 곳" : `${n(k)}곳 모두`}, 모든 매장을 **15초 간격**으로 확인). 가격은 ${p}예요.`
     : `지금 이 순간 ${dom(code)} Apple Store **${n(k)}곳 중 ${n(inStock)}곳**에서 ${eulReul(m.name)} 매장 픽업할 수 있어요(모든 매장을 **15초 간격**으로 확인). 가격은 ${p}예요.`;
@@ -374,7 +374,7 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
         { t: "ol", items: [
           k === 1 ? `**알림 받기**에서 iPhone, 용량, 색상을 고르세요. 매장은 ${cityLabel(code, stores[0].city, L)}의 ${appleStoreLabel(stores[0], L)}예요.` : "**알림 받기**에서 iPhone, 용량, 색상을 고른 뒤 갈 수 있는 매장을 체크하세요. 가까운 순으로, 도로 거리(km)와 운전 시간이 함께 나와요.",
           "iPhone에서는 RestockWire를 홈 화면에 추가하고 알림을 허용하세요. iOS는 설치된 앱에만 웹 푸시를 보내요([설치 방법](/phone-alerts)).",
-          "푸시가 오면 거기서 apple.com을 열고, 그 매장의 매장 픽업으로 결제하세요.",
+          "푸시를 누르면 apple.com이 열려요. 결제 단계에서 ‘매장 픽업’과 알림 속 그 매장을 고르면 끝이에요.",
         ] },
         { t: "table", head: ["요금제", "월 요금(USD)", "알림 규칙"], rows: [["Plus", "$5", "10"], ["Pro", "$10", "20"], ["Max", "$20", "50"]], caption: "규칙 하나 = 매장 하나 × 정확한 구성 하나 · 둘러보기는 계속 무료, 속도는 모든 요금제가 같아요([요금제](/pricing))" },
         { t: "note", text: "**저희 판단:** Duo는 갈 수 있는 모든 매장에 알림을 걸 만해요. 18 Pro와 Pro Max는 실시간 수치부터 확인하세요." },
@@ -388,13 +388,13 @@ function homeFaq(code: CountryCode, rt: RestockTimesBrief): Faq[] {
   const k = storesOf(code).length;
   const p = code === "us" ? "" : `/${code}`;
   const when = rt.n === 0
-    ? `11월 2일 추적을 시작한 뒤로 아직 확인된 재입고가 없어요. [${dom(code)} iPhone Duo는 언제 재입고되나요?](${rt.path})에서 들어오는 대로 현지 시간·요일별로 세요.`
+    ? `아직 0건이에요. 11월 2일부터 추적 중이고, 첫 재입고가 확인되면 [${dom(code)} iPhone Duo 재입고 시간표](${rt.path})에 현지 시각과 요일로 쌓여요.`
     : rt.peakHour != null
-      ? `대부분 **현지 시간 ${hourLabel(rt.peakHour, L)} 전후**에 들어와요. 11월 2일 이후 매장 ${n(rt.storesTotal)}곳 중 ${n(rt.stores)}곳에서 확인된 재입고 ${n(rt.n)}회 기준이에요. [시간별·요일별 보기](${rt.path}).`
-      : `11월 2일 이후 매장 ${n(rt.storesTotal)}곳 중 ${n(rt.stores)}곳에서 재입고 ${n(rt.n)}회가 확인됐지만, 날짜가 아직 적어 보통 시간대를 말하긴 일러요. [시간별·요일별 보기](${rt.path}).`;
+      ? `**현지 ${hourLabel(rt.peakHour, L)} 무렵**이 가장 잦아요. 근거는 11월 2일 이후 확인된 재입고 ${n(rt.n)}건(매장 ${n(rt.stores)}/${n(rt.storesTotal)}곳)이에요. [시각·요일별 표](${rt.path}).`
+      : `11월 2일 이후 ${n(rt.n)}건(매장 ${n(rt.stores)}/${n(rt.storesTotal)}곳)이 확인됐어요. 날짜 수가 모자라 몰리는 시간을 짚기엔 아직 일러요. [시각·요일별 표](${rt.path}).`;
   return [
     { q: `지금 이 순간 iPhone Duo를 픽업할 수 있는 ${dom(code)} Apple Store는 어디인가요?`, a: `마지막 확인({{asOf}}) 기준 ${n(k)}곳 중 {{duo.storesNow}}곳이에요. [${dom(code)} iPhone Duo 재고](${p}/in-stock/iphone-duo)에 매장과 구성별로 나오고, 15초 간격으로 갱신돼요.` },
-    { q: `${dom(code)}에서 iPhone Duo는 언제 재입고되나요?`, a: when },
+    { q: `${dom(code)} 애플스토어에 iPhone Duo는 몇 시쯤 들어오나요?`, a: when },
     { q: `RestockWire는 ${dom(code)} 재입고를 얼마나 빨리 잡나요?`, a: `알림을 건 매장은 5초 간격, ${dom(code)}의 모든 Apple Store는 15초 간격으로 확인해요. 처음 보인 ‘재고 있음’은 1초 안에 다시 확인하고, 확정된 재입고는 약 3초 뒤 휴대폰에 도착해요.` },
     { q: "재고를 보려면 요금제가 필요한가요?", a: "아니요. 실시간 재고, 지도, 재입고 기록은 무료예요. 요금제는 알림 규칙을 더해 주고 미국 달러로 청구돼요. Plus 월 $5에 10개, Pro $10에 20개, Max $20에 50개이며 언제든 해지할 수 있어요([요금제](/pricing))." },
     taxFaq(code, dom(code)),
@@ -406,13 +406,13 @@ const homeLabels: Dict["place"]["home"] = {
   appName: (code: CountryCode) => `RestockWire iPhone 재고 확인 · ${cn(code)}`,
   offer: "실시간 재고, 지도, 재입고 기록은 무료, 알림 요금제는 월 $5부터",
   itemList: (code: CountryCode) => `${cn(code)} Apple Store`,
-  restockTimesChip: "재입고 시간",
+  restockTimesChip: "재입고 몰리는 시간",
   storesByRegion: (code: CountryCode) => `${regionWord(code)}별 매장`,
   browse: (code: CountryCode) => `${dom(code)} 지역별 재고`,
   selloutH2: (code: CountryCode) => `${dom(code)} iPhone 재입고 재고는 얼마나 버티나요?`,
   selloutLabel: (code: CountryCode) => `${dom(code)} Apple Store`,
   last24Label: (code: CountryCode) => dom(code),
-  newsroom: "Apple Newsroom: iPhone Duo, 전 세계 Apple Store 출시(2026년 10월 23일)",
+  newsroom: "Apple Newsroom(2026년 10월 23일): iPhone Duo 전 세계 Apple Store 판매 개시",
 };
 
 /** 매장 페이지 <title>·H1: "Apple 가로수길: 오늘 iPhone 재고·매장 픽업·영업시간" (도시의 유일한 매장이면 괄호에 도시). */
@@ -446,6 +446,6 @@ export const place: Dict["place"] = {
   homeFaq,
   home: homeLabels,
   storeTitle,
-  sources: (code: Exclude<CountryCode, "us">) => ({ pickupHelp: helpSource(code), storeList: { label: `Apple: 매장 목록(${cn(code)})`, url: storeListSource(code).url }, tax: taxSource(code) }),
+  sources: (code: Exclude<CountryCode, "us">) => ({ pickupHelp: helpSource(code), storeList: { label: `Apple ${cn(code)} 매장 찾기 목록`, url: storeListSource(code).url }, tax: taxSource(code) }),
 };
 

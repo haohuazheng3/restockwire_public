@@ -1,5 +1,5 @@
 /**
- * /where-to-buy-iphone-duo-today: "Where can you buy an iPhone Duo today?" for the person who wants a phone in hand today,
+ * /where-to-buy-iphone-duo-today: "Where can I buy an iPhone Duo today?" for the person who wants a phone in hand today,
  * does not know tracker sites exist and will take any legitimate channel. Every H2 is a question with one quotable
  * answer sentence under it; the rest is tiles, tables and keyword lines. Apple Store pickup is the one channel we
  * measure (apple.com pickup availability, every store every 15 s); apple.com delivery, carriers and retailers are
@@ -33,7 +33,7 @@ export const dynamic = "force-dynamic";
 const PATH = "/where-to-buy-iphone-duo-today";
 const SITE = "https://restockwire.com";
 /** 57 characters; the phrase people type, then the promise the page keeps. */
-const TITLE = "Where to Buy an iPhone Duo Today: Apple Stores With Stock";
+const TITLE = "Where Can I Buy an iPhone Duo Today? Live US Store List";
 const APPLE_PICKUP = "https://www.apple.com/shop/shipping-pickup";
 const APPLE_NEWSROOM = "https://www.apple.com/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/";
 const MACRUMORS = "https://macrumors.com/2026/10/24/apple-store-pickup-iphone-duo-us/";
@@ -55,13 +55,13 @@ const pct = (x: number) => (x > 0 && x < 0.005 ? "<1%" : `${Math.round(x * 100)}
 const LONG = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" });
 const longDate = (ymd: string) => LONG.format(new Date(`${ymd}T12:00:00Z`));
 const ET = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" });
-/** "9:31 AM" on the store's own clock. */
+/** Clock time in the store's own zone, e.g. 9:31 AM. */
 const clockAt = (iso: string, store: Store) => new Intl.DateTimeFormat("en-US", { timeZone: storeTimeZone(store), hour: "numeric", minute: "2-digit" }).format(new Date(iso));
 const cfgName = (i: CatalogItem) => `${i.storage} ${i.color}`;
 const cfgOf = (partNumber: string) => { const i = PART_INDEX.get(partNumber); return i ? cfgName(i) : partNumber; };
-const stores = (k: number) => `${k} ${k === 1 ? "store" : "stores"}`;
+const stores = (k: number) => (k === 1 ? "1 store" : `${k} stores`);
 
-/** One read per request, shared by the metadata and the page. */
+/** Reads run once per request; metadata and page share them. */
 const load = cache(async () => {
   const [stockNow, recent, f, facts, t, rows, feed, abroad] = await Promise.all([
     storesWithStockNow(undefined, "us"),
@@ -85,7 +85,7 @@ function add(map: Map<string, Set<string>>, key: string, value: string) {
   map.set(key, set);
 }
 
-/** Every number on the page, derived once from the reads; `stockUnknown` and `t.unknown` keep zeros from posing as facts. */
+/** All page numbers, derived once from the reads; the stockUnknown and t.unknown flags stop a failed read from showing as zero. */
 function derive(d: Awaited<ReturnType<typeof load>>) {
   const { stockNow, recent, f, facts, t, rows } = d;
   const items = catalogFor("duo");
@@ -143,8 +143,8 @@ function description(v: View): string {
     ], 158);
   }
   return fitTitle([
-    `iPhone Duo for pickup now at ${v.storesNow} of ${STORES.length} US Apple Stores, after ${n(v.recent.restocks)} restocks in 24 h${v.band ? `; each lasts about ${v.band}` : ""}. Where to buy one today, store by store.`,
-    `iPhone Duo for pickup now at ${v.storesNow} of ${STORES.length} US Apple Stores, after ${n(v.recent.restocks)} restocks in 24 h. Where to buy one today, store by store.`,
+    `Pickup stock now: ${v.storesNow} of ${STORES.length} US Apple Stores list the iPhone Duo; ${n(v.recent.restocks)} restocks over the past day${v.band ? `, each gone in about ${v.band}` : ""}. The buy-today list, by store.`,
+    `Pickup stock now: ${v.storesNow} of ${STORES.length} US Apple Stores list the iPhone Duo; ${n(v.recent.restocks)} restocks over the past day. The buy-today list, store by store.`,
     `iPhone Duo for pickup now at ${v.storesNow} of ${STORES.length} US Apple Stores. Where to buy one today, store by store, and what each channel offers.`,
   ], 158);
 }
@@ -156,7 +156,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { absolute: `${TITLE} · RestockWire` },
     description: d,
     alternates: { canonical: PATH },
-    openGraph: { type: "article", siteName: "RestockWire", title: TITLE, description: d, url: PATH },
+    openGraph: { url: PATH, type: "article", siteName: "RestockWire", description: d, title: TITLE },
   };
 }
 
@@ -166,7 +166,7 @@ const rowTh = "py-2 pe-3 text-start font-medium text-ink";
 
 function Table({ caption, head, children, min = "28rem" }: { caption: string; head: string[]; children: ReactNode; min?: string }) {
   return (
-    <div className="my-5 overflow-x-auto">
+    <div className="overflow-x-auto my-5">
       <table className="w-full border-collapse text-sm" style={{ minWidth: min }}>
         <caption className="mb-2 text-start text-xs text-ink-3">{caption}</caption>
         <thead><tr>{head.map((h) => <th key={h} scope="col" className={th}>{h}</th>)}</tr></thead>
@@ -199,9 +199,9 @@ export default async function WhereToBuyPage() {
   const { items, stockUnknown, storesNow, pairsNow, states, configs, topCfg, lastCfg, latest, latestStore, medianSec, band, top, topStore, topStores, bw, since, tracked, abroad, abroadNow, intlStores, recent, t, facts, feed } = v;
   const alert = alertHref({ model: "duo" });
   const asOf = `${ET.format(new Date(facts.at))} ET`;
-  const latestLine = latest && latestStore
-    ? `${cfgOf(latest.partNumber)} at ${appleName(latestStore)} (${cityLine(latestStore)}), ${localStamp(latest.at, latestStore)} store local time`
-    : "none logged yet";
+  const latestLine = !latest || !latestStore
+    ? "none logged yet"
+    : `${cfgOf(latest.partNumber)} at ${appleName(latestStore)} (${cityLine(latestStore)}), ${localStamp(latest.at, latestStore)} store local time`;
   const storeLink = (s: Store) => <Link href={storePath(s)} className="hover:underline">{appleName(s)}</Link>;
   const win = bw ? rangeLabel(bw.from, bw.to) : null;
 
@@ -225,13 +225,13 @@ export default async function WhereToBuyPage() {
     ? `The live count did not load this time. RestockWire reads all ${STORES.length} US Apple Stores every ${SPEED.checkSec} seconds; the confirmed restocks below are the freshest record of where an iPhone Duo just appeared.`
     : storesNow > 0
       ? `${storesNow} of ${STORES.length} US Apple Stores list at least one iPhone Duo configuration for pickup now (${n(pairsNow)} store × configuration listings)${states[0] ? `; ${states[0].name} leads with ${states[0].now} of its ${stores(states[0].total)}` : ""}. Last confirmed restock: ${latestLine}.`
-      : `None right now: 0 of ${STORES.length} US Apple Stores list an iPhone Duo for pickup at ${asOf}, the usual state between restocks. ${recent.unknown ? "" : `${n(recent.restocks)} came back in the last 24 hours; `}the last confirmed one was ${latestLine}.`;
+      : `None right now: 0 of ${STORES.length} US Apple Stores list an iPhone Duo for pickup at ${asOf}, the usual state between restocks. ${recent.unknown ? "" : `Past 24 hours: ${n(recent.restocks)} restocks. `}Most recent confirmed: ${latestLine}.`;
 
   const storeLead = top && topStore
-    ? `${appleName(topStore)} in ${cityLine(topStore)} has the most: ${n(top.restocks)} confirmed iPhone Duo restocks on ${top.days} ${top.days === 1 ? "day" : "days"} since ${since}${top.peakHour != null ? `, usually near ${hourLabel(top.peakHour)} local time` : ""}, the last at ${localStamp(top.lastAt, topStore)} store local time.`
+    ? `${appleName(topStore)} in ${cityLine(topStore)} tops the US count: ${n(top.restocks)} confirmed iPhone Duo restocks across ${top.days} ${top.days === 1 ? "day" : "days"} from ${since}${top.peakHour != null ? `, usually near ${hourLabel(top.peakHour)} local time` : ""}, the last at ${localStamp(top.lastAt, topStore)} store local time.`
     : t.unknown
       ? "The restock log did not load this time, so the ranking is empty until reload. The rule holds anyway: go to the store the alert names, not simply the nearest."
-      : `No US Apple Store has a confirmed iPhone Duo restock since ${since} yet; the first one appears here with its local time.`;
+      : `Zero confirmed iPhone Duo restocks at US Apple Stores from ${since} so far; the first will show here with its store time.`;
 
   const windowSentence = bw && win
     ? `Timing matters as much as the store: ${pct(bw.share)} of the ${n(t.n)} iPhone Duo restocks RestockWire confirmed at US Apple Stores since ${since} landed between ${win} store local time. The best store is the one that restocks most, in that window, with the pickup reservation placed from your phone first.`
@@ -240,7 +240,7 @@ export default async function WhereToBuyPage() {
       : `${n(t.n)} confirmed ${t.n === 1 ? "restock" : "restocks"} on ${t.days} ${t.days === 1 ? "day" : "days"} is not enough for a usual hour (RestockWire waits for ${PATTERN_MIN} over ${PATTERN_MIN_DAYS} days); the hour table builds itself on the restock-hours page.`;
 
   const configLead = topCfg
-    ? `${cfgName(topCfg.item)}, at ${fmtPrice(topCfg.item.price)} before sales tax: ${n(topCfg.restocks)} of the ${n(t.n)} confirmed US iPhone Duo restocks since ${since} (${pct(topCfg.restocks / Math.max(1, t.n))})${lastCfg ? `, against ${n(lastCfg.restocks)} for ${cfgName(lastCfg.item)}` : ""}, and ${stockUnknown ? "its live store count did not load" : `${stores(topCfg.now)} ${topCfg.now === 1 ? "lists" : "list"} it now`}.`
+    ? `${cfgName(topCfg.item)} (${fmtPrice(topCfg.item.price)} pre-tax) has returned most: ${pct(topCfg.restocks / Math.max(1, t.n))} of US restocks, ${n(topCfg.restocks)} of ${n(t.n)} from ${since}${lastCfg ? `, against ${n(lastCfg.restocks)} for ${cfgName(lastCfg.item)}` : ""}, and ${stockUnknown ? "its live store count did not load" : `${stores(topCfg.now)} ${topCfg.now === 1 ? "lists" : "list"} it now`}.`
     : t.unknown
       ? "No ranking this time: the restock log did not load. The table still has every configuration's price and apple.com order page."
       : `No configuration has a confirmed restock since ${since} yet; the table lists all ${items.length} with Apple's list price and order page, and ranks itself as restocks arrive.`;
@@ -255,8 +255,8 @@ export default async function WhereToBuyPage() {
       ? `A US Apple Store that lists one for pickup: reserve on apple.com with "I'll pick it up" and collect it there. RestockWire reads all ${STORES.length} stores every ${SPEED.checkSec} seconds (the live count did not load this time); the [live list](/in-stock/iphone-duo) is free.`
       : `A US Apple Store that lists one for pickup: ${storesNow} of ${STORES.length} do now and ${n(recent.restocks)} restocked in the last 24 hours. Reserve on apple.com with "I'll pick it up" and collect it there; the [live list](/in-stock/iphone-duo) is free.` },
     { q: "Do Apple Stores keep any iPhone Duo for walk-in buyers?", a: `Not reliably: Duo stock goes out as online pickup reservations, and ${band ? `a typical listing is gone in about ${band}` : "listings are short-lived"}, so the batch is reserved before you reach the counter. Reserve first and Apple holds the phone at that store ([Apple: Delivery and Pickup](${APPLE_PICKUP})).` },
-    { q: "Which iPhone Duo storage and color should I go for if I need it this week?", a: topCfg
-      ? `${cfgName(topCfg.item)}: ${n(topCfg.restocks)} of ${n(t.n)} confirmed US restocks since ${since} (${pct(topCfg.restocks / Math.max(1, t.n))})${stockUnknown ? "" : `, ${stores(topCfg.now)} listing it now`}${lastCfg ? `, while ${cfgName(lastCfg.item)} has ${n(lastCfg.restocks)}` : ""}. Fix the storage, accept any color, and see [the full ranking](/iphone-duo-most-restocked-stores).`
+    { q: "I need one this week: which storage and color should I pick?", a: topCfg
+      ? `${cfgName(topCfg.item)}, which accounts for ${pct(topCfg.restocks / Math.max(1, t.n))} of US restocks (${n(topCfg.restocks)} of ${n(t.n)} from ${since})${stockUnknown ? "" : `, ${stores(topCfg.now)} listing it now`}${lastCfg ? `, while ${cfgName(lastCfg.item)} has ${n(lastCfg.restocks)}` : ""}. Fix the storage, accept any color, and see [the full ranking](/iphone-duo-most-restocked-stores).`
       : `No ranking yet: no configuration has a confirmed restock since ${since} in a readable log. Fix the storage you need, accept any color, and watch [the ranking](/iphone-duo-most-restocked-stores) fill in.` },
     { q: "How do I hear about it when a store near me gets one?", a: `${PRICE_SENTENCE} Pick reachable stores on [iPhone Duo near me](/iphone-duo-in-stock-near-me); on iPhone, add RestockWire to your Home Screen first ([install guide](/phone-alerts)), and alerts come by e-mail while no device is set up.` },
   ];
@@ -274,14 +274,14 @@ export default async function WhereToBuyPage() {
   const ld = {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "WebPage", "@id": `${SITE}${PATH}`, url: `${SITE}${PATH}`, name: TITLE, description: desc, isPartOf: { "@id": `${SITE}/#website` }, about: { "@id": `${SITE}/#organization` }, dateModified: facts.at },
+      { "@type": "WebPage", "@id": `${SITE}${PATH}`, url: `${SITE}${PATH}`, name: TITLE, about: { "@id": `${SITE}/#organization` }, isPartOf: { "@id": `${SITE}/#website` }, description: desc, dateModified: facts.at },
       {
         "@type": "Dataset", "@id": `${SITE}${PATH}#dataset`, name: "Live iPhone Duo pickup availability at US Apple Stores",
-        description: `The US Apple Stores, of ${STORES.length}, listing each iPhone Duo configuration for in-store pickup now, read from apple.com every ${SPEED.checkSec} seconds (${SPEED.fastSec} at stores with alerts), with RestockWire's confirmed restocks since ${longDate(TRACKING_SINCE_US)} by state, store and configuration, and the stores listing one in ${INTL_CODES.length} other countries.`,
+        description: `The US Apple Stores, of ${STORES.length}, listing each iPhone Duo configuration for in-store pickup now, read from apple.com every ${SPEED.checkSec} seconds (${SPEED.fastSec} at stores with alerts), plus RestockWire's confirmed restocks from ${longDate(TRACKING_SINCE_US)} broken down per state, store and configuration, and live listings in ${INTL_CODES.length} more countries.`,
         url: `${SITE}${PATH}`, creator: { "@id": `${SITE}/#organization` }, isAccessibleForFree: true,
         temporalCoverage: `${TRACKING_SINCE_US}/..`, spatialCoverage: `Apple Stores in the United States, plus the ${INTL_CODES.length} other countries on the wire`,
-        variableMeasured: ["Apple Store", "US state", "iPhone Duo storage and color", "listed for pickup now", "confirmed restocks", "most recent restock (store local time)"],
-        measurementTechnique: `apple.com in-store pickup availability read every ${SPEED.checkSec} seconds at every store (${SPEED.fastSec} at stores with alerts); a restock counts only when two checks about a second apart agree; first sightings excluded`,
+        variableMeasured: ["Apple Store", "US state", "iPhone Duo configuration (storage, color)", "pickup listing at load time", "confirmed restocks", "most recent restock (store local time)"],
+        measurementTechnique: `Each store's apple.com pickup status is fetched on a ${SPEED.checkSec}-second loop (${SPEED.fastSec}-second where an alert points); two agreeing reads about a second apart confirm a restock; a first sighting never counts`,
         ...(t.n ? { size: `${n(t.n)} confirmed restocks` } : {}),
       },
     ],
@@ -290,14 +290,14 @@ export default async function WhereToBuyPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 pt-8">
       <JsonLd data={ld} />
-      <Breadcrumbs items={[{ href: "/", label: "RestockWire" }, { label: "Where to buy an iPhone Duo today" }]} />
-      <h1 className="display mt-3 text-3xl sm:text-5xl">Where to buy an iPhone Duo today</h1>
+      <Breadcrumbs items={[{ href: "/", label: "RestockWire" }, { label: "Buy an iPhone Duo today" }]} />
+      <h1 className="mt-3 text-3xl sm:text-5xl display">Where can I buy an iPhone Duo today?</h1>
       <p className="mt-4 text-lg leading-relaxed text-ink-2">{intro}</p>
       <p className="mt-3 text-sm text-ink-3">{STORES.length} Apple Stores on the wire, checked {CHECK_NOTE} · counting since {longDate(TRACKING_SINCE_US)} · last update {asOf}</p>
 
       <StatGrid cols={4} className="mt-6">
         <Stat value={stockUnknown ? "–" : `${storesNow}/${STORES.length}`} label="US Apple Stores with a Duo for pickup now" tone={!stockUnknown && storesNow > 0 ? "ok" : "muted"} live={!stockUnknown} />
-        <Stat value={recent.unknown ? "–" : n(recent.restocks)} label="restocks in the last 24 hours, all US stores" tone={recent.unknown ? "muted" : "plain"} />
+        <Stat label="US restocks, past 24 hours" value={recent.unknown ? "–" : n(recent.restocks)} tone={recent.unknown ? "muted" : "plain"} />
         {latest && latestStore
           ? <Stat size="sm" value={clockAt(latest.at, latestStore)} label={<>last restock · {cfgOf(latest.partNumber)} · {storeLink(latestStore)}, store local time</>} />
           : <Stat value="–" label="last restock: none logged yet" tone="muted" />}
@@ -309,11 +309,11 @@ export default async function WhereToBuyPage() {
         { text: <><b className="text-ink">apple.com delivery</b>: every configuration, with a date at checkout for your ZIP (not tracked here)</> },
         { text: <><b className="text-ink">Carriers and retailers</b>: they sell iPhones; check their pages for the Duo, since we read no stock there</>, step: true },
       ]} />
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-6 flex gap-3 flex-wrap">
         <Link href={alert} className="btn btn-primary">Put stores near me on the wire</Link>
         <Link href="/iphone-duo-in-stock-near-me" className="btn btn-ghost">Closest stores with one</Link>
       </div>
-      <nav aria-label="On this page" className="mt-6 flex flex-wrap gap-2 text-sm">
+      <nav aria-label="On this page" className="mt-6 flex flex-wrap text-sm gap-2">
         {sections.map((s) => <a key={s.id} href={`#${s.id}`} className="chip px-3 py-1.5 text-xs">{s.nav}</a>)}
       </nav>
       <Figure id="phone-card-payment" eager />
@@ -325,7 +325,7 @@ export default async function WhereToBuyPage() {
           <p><b>{nowLead}</b></p>
           <StatGrid cols={4} className="my-4">
             <Stat value={stockUnknown ? "–" : `${storesNow}/${STORES.length}`} label="stores with one now" tone={!stockUnknown && storesNow > 0 ? "ok" : "muted"} live={!stockUnknown} />
-            <Stat value={recent.unknown ? "–" : n(recent.restocks)} label="restocks, last 24 hours" />
+            <Stat label="past-day restocks" value={recent.unknown ? "–" : n(recent.restocks)} />
             {latest && latestStore
               ? <Stat size="sm" value={clockAt(latest.at, latestStore)} label={<>{storeLink(latestStore)} · last restock, local time</>} />
               : <Stat value="–" label="last restock: none logged yet" tone="muted" />}
@@ -462,7 +462,7 @@ export default async function WhereToBuyPage() {
           <h2>{h2("configuration")}</h2>
           <p><b>{configLead}</b></p>
           <p>Need it this week? Fix the storage and take any of its colors; holding out for one color can turn a one-week wait into three. The rows below differ in restocks, not in price, and every row is the same phone.</p>
-          <Table caption={`The ${items.length} iPhone Duo configurations: US Apple Stores listing each for pickup at ${asOf}, confirmed restocks since ${since}, Apple's list price before tax, and the apple.com order page`} head={["Configuration", "Stores now", `Restocks since ${since}`, "Price", "apple.com"]} min="36rem">
+          <Table caption={`The ${items.length} iPhone Duo configurations: US Apple Stores listing each for pickup at ${asOf}, confirmed restocks since ${since}, Apple's list price before tax, and the apple.com order page`} head={["Storage · color", "Listing it now", `Restocks since ${since}`, "Price", "apple.com"]} min="36rem">
             {configs.map((r) => (
               <tr key={r.item.partNumber} className={`border-b border-line ${r.restocks === 0 && r.now === 0 ? "text-ink-3" : ""}`}>
                 <th scope="row" className={rowTh}><span className="inline-flex items-center gap-2"><Swatch color={r.item.color} />{cfgName(r.item)}</span></th>
@@ -485,10 +485,10 @@ export default async function WhereToBuyPage() {
           <h2>{h2("the-minute")}</h2>
           <p><b>{minuteLead}</b></p>
           <p>{PRICE_SENTENCE}</p>
-          <StepStrip className="my-4 lg:grid-cols-4!" steps={[
+          <StepStrip className="lg:grid-cols-4! my-4" steps={[
             { title: "Choose stores and a configuration", hint: "two or three reachable stores; an alert is one store × one exact configuration" },
-            { title: "Turn on alerts in the Home Screen app", hint: <>on iPhone, add RestockWire to your Home Screen and allow notifications (<Link href="/phone-alerts">how</Link>)</> },
-            { title: "Stage Apple's checkout", hint: "signed in, Apple Pay or a saved card, the configuration's buy page open with pickup chosen" },
+            { title: "Add the Home Screen app, allow pushes", hint: <>on iPhone, add RestockWire to your Home Screen and allow notifications (<Link href="/phone-alerts">how</Link>)</> },
+            { title: "Stage Apple's checkout", hint: "be signed in with Apple Pay or a card saved, and leave the buy page open on pickup" },
             { title: "Act on the push in about 20 seconds", hint: "pick the store it names, confirm pickup, pay; the reservation is the order" },
           ]} />
           <Keys items={[
@@ -498,7 +498,7 @@ export default async function WhereToBuyPage() {
           ]} />
           <ChipLinks items={[
             { href: "/iphone-duo-restock-alerts", label: "What an alert does" },
-            { href: "/iphone-duo-restock-checkout-guide", label: "The 20-second checkout, tap by tap" },
+            { href: "/iphone-duo-restock-checkout-guide", label: "Checkout drill, four taps" },
             { href: "/phone-alerts", label: "Home Screen app" },
           ]} />
           <p><Link href={alert} className="btn btn-primary">Start an iPhone Duo alert</Link></p>
@@ -533,7 +533,7 @@ export default async function WhereToBuyPage() {
 
       <RelatedBlock>
         <LinkRow title="Other iPhone Duo questions, same data" links={[
-          { href: "/is-iphone-duo-back-in-stock", label: "Is the iPhone Duo back in stock?" },
+          { href: "/is-iphone-duo-back-in-stock", label: "Back in stock at this minute?" },
           { href: "/when-does-iphone-duo-restock", label: "When does the iPhone Duo restock?" },
           { href: "/how-fast-does-iphone-duo-sell-out", label: "How many seconds does a restock last?" },
           { href: "/iphone-duo-in-stock-near-me", label: "Closest store with a Duo" },
@@ -546,7 +546,7 @@ export default async function WhereToBuyPage() {
           { href: "/in-stock/iphone-duo", label: "Every US store, live" },
           { href: "/restock-log", label: "Restock log" },
           { href: "/live-map", label: "Live map" },
-          { href: "/apple-stores", label: "All 269 US Apple Stores" },
+          { href: "/apple-stores", label: "Every US Apple Store, by state" },
         ]} />
         <LinkRow title="Asked another way" links={[
           { href: "/iphone-duo-availability-checker", label: "iPhone Duo availability checker" },
@@ -554,8 +554,8 @@ export default async function WhereToBuyPage() {
         ]} />
       </RelatedBlock>
 
-      <div className="mt-10"><RichFaq items={faq} facts={facts} title="Where-to-buy questions" /></div>
-      <div className="mt-8"><SourceList sources={sources} facts={facts} where={`all ${STORES.length} US Apple Stores (and the stores of ${INTL_CODES.length} other countries since ${longDate(TRACKING_SINCE_INTL)})`} since={longDate(TRACKING_SINCE_US)} /></div>
+      <div className="mt-10"><RichFaq title="Where-to-buy questions" items={faq} facts={facts} /></div>
+      <div className="mt-8"><SourceList sources={sources} facts={facts} where={`${STORES.length} US Apple Stores, plus ${INTL_CODES.length} more countries from ${longDate(TRACKING_SINCE_INTL)}`} since={longDate(TRACKING_SINCE_US)} /></div>
     </div>
   );
 }

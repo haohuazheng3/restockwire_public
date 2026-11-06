@@ -73,17 +73,17 @@ export function localePrefix(loc: Locale): string {
   return loc.id ? `/${loc.id}` : "";
 }
 
-/** de-CH reads de, fr-CA reads fr, zh-HK and zh-TW read each other: the language family. */
+/** Language family: de-CH falls back to de, fr-CA to fr, and the two Chinese variants share zh. */
 export function baseLang(lang: Lang): string {
   return lang === "de-CH" ? "de" : lang === "fr-CA" ? "fr" : lang.startsWith("zh") ? "zh" : lang;
 }
-/** The native version of country `cc` a reader of `lang` should get, if any (exact language first, then its family). */
+/** Native locale of country cc that suits language lang, if one exists (exact match first, then same family). */
 export function nativeLocaleFor(cc: CountryCode, lang: Lang): Locale | undefined {
   if (lang === "en") return undefined;
   const of = NATIVE_LOCALES.filter((l) => l.cc === cc);
   return of.find((l) => l.lang === lang) ?? of.find((l) => baseLang(l.lang) === baseLang(lang));
 }
-/** The version of country `cc`'s pages for a reader of `lang`: native if it exists, else English. */
+/** Which version of country cc's pages a lang reader sees: the native one when available, English otherwise. */
 export function localeFor(cc: CountryCode, lang: Lang): Locale {
   return nativeLocaleFor(cc, lang) ?? englishLocale(cc);
 }
@@ -120,8 +120,8 @@ function splitTree(href: string): { loc: Locale; rest: string; tail: string } | 
 
 /**
  * An internal href written in its English form (what the page-tree helpers build: "/jp/apple-stores/…", "/ca?model=duo#notify")
- * as a reader of `lang` should get it: the same page in their language where it exists. US pages, app pages and
- * every other path stay as they are. A path already in a native version stays.
+ * rewritten for a lang reader: it points at the same page in their language when one exists. US pages, app pages
+ * and all other paths are returned unchanged, as is a path that is already native.
  */
 export function localizePath(href: string, lang: Lang): string {
   if (lang === "en") return href;
@@ -147,7 +147,7 @@ export function pathInLocale(href: string, to: Locale): string {
 }
 
 /**
- * The language a page renders in: a native tree its own, an app page the person's (`appLang`), anything else English.
+ * Render language of a page: a native tree uses its own, an app page uses the visitor's (appLang), anything else English.
  * PendingLink compares it with the current page's language: crossing languages is a full page load, so the header,
  * footer and <html lang> (rendered once by the root layout) always match the page.
  */

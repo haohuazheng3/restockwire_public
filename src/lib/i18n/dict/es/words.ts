@@ -1,7 +1,7 @@
 /**
- * Spanish (Spain) word helpers shared by the es server dictionaries: country phrases ("en España", "del Reino
- * Unido"), region nouns with their gender, the tax inside a price, hours ("las 9:00") and Apple's colour names
- * inside an English product name. Castilian, "tú", Apple España's wording («Recogida», «Disponible»).
+ * Shared Spanish (Spain) helpers for the es server dictionaries. Covers: country names with en/de and the article,
+ * gendered region nouns, the tax included in a price, clock hours with their article, and Apple's Spanish colour
+ * names inside an English product name. Register: Castilian, tú, Apple España's own terms for pickup and stock.
  */
 import { COUNTRIES, type Country, type CountryCode } from "@/lib/apple/countries";
 import { includedRate, taxName } from "@/content/country-tax";
@@ -10,29 +10,29 @@ import { colorLabel, countryLabel } from "@/lib/i18n/places";
 
 export const L = "es" as const;
 
-/** A number as Spain writes it ("1.234"; four digits stay "1234"). */
+/** Spanish number format; four-digit numbers stay unseparated. */
 export const n = (x: number): string => num(L, x);
-/** "21 %" (non-breaking space, any decimals kept: "14,975 %"). */
+/** Percent with a non-breaking space before the sign; decimals kept as given. */
 export const pc = (x: number): string => `${num(L, x)} %`;
-/** A price in the store country's currency, as Spain writes it ("2339 €"). */
+/** Price in the store country's currency, Spanish layout (amount, then symbol). */
 export const money = (c: Country | CountryCode, v: number): string => price(L, typeof c === "string" ? COUNTRIES[c] : c, v);
 
 /** Short Spanish names where Intl's are long. */
 const NAME: Partial<Record<CountryCode, string>> = { us: "Estados Unidos", hk: "Hong Kong" };
 /** Names that take an article in Spanish. */
 const ART: Partial<Record<CountryCode, string>> = { uk: "el Reino Unido", nl: "los Países Bajos", ae: "los Emiratos Árabes Unidos" };
-/** "España", "Reino Unido". */
+/** Bare country name, no article. */
 export const pais = (cc: CountryCode): string => NAME[cc] ?? countryLabel(cc, L);
 const withArt = (cc: CountryCode): string => ART[cc] ?? pais(cc);
-/** "en España", "en el Reino Unido". */
+/** en + country, article included where Spanish needs one. */
 export const enPais = (cc: CountryCode): string => `en ${withArt(cc)}`;
-/** "de España", "del Reino Unido", "de los Países Bajos". */
+/** de + country; de el contracts to del. */
 export const dePais = (cc: CountryCode): string => {
   const a = withArt(cc);
   return a.startsWith("el ") ? `del ${a.slice(3)}` : `de ${a}`;
 };
 
-/** A country's word for its regions (countries.ts regionNoun), with its gender. */
+/** Spanish noun for a country's subdivisions (from countries.ts regionNoun), plus grammatical gender. */
 export interface Noun { one: string; other: string; f: boolean }
 export const NOUNS: Record<string, Noun> = {
   state: { one: "estado", other: "estados", f: false },
@@ -63,19 +63,19 @@ export function taxNote(c: Country): string {
   return r == null ? "sin IVA ni impuesto sobre las ventas" : `${impuesto(c)} incluido (${pc(r)})`;
 }
 
-/** "9:00" for a local hour (format.hour's Spanish form), "0:00" at midnight. */
+/** Local clock hour, H:00, midnight as 0:00 (matches format.hour for es). */
 export const h = (x: number): string => `${((x % 24) + 24) % 24}:00`;
-/** "las 9:00" / "la 1:00". */
+/** Hour with its article: la for one o'clock, las for every other hour. */
 export const lasH = (x: number): string => `${((x % 24) + 24) % 24 === 1 ? "la" : "las"} ${h(x)}`;
-/** "9:00–11:00". */
+/** Hour range with an en dash. */
 export const range = (from: number, to: number): string => `${h(from)}–${h(to)}`;
-/** "entre las 9:00 y las 11:00". */
+/** Hour window as a phrase: entre ... y ... */
 export const between = (from: number, to: number): string => `entre ${lasH(from)} y ${lasH(to)}`;
 
-/** Apple's colour names inside an English product name: "iPhone Duo 256GB Night Sky" → "iPhone Duo 256GB Cielo nocturno". */
+/** Swap Apple's English colour names inside a product name for the Spanish ones from places.ts. */
 export const tc = (s: string): string => s.replace(/Night Sky|Star White|Black|Burgundy|Glacier|Silver/g, (m) => colorLabel(m, L));
 
-/** An English hour label that reached a Spanish sentence ("10 AM", "noon") → "10:00". */
+/** Convert an English hour label (10 AM, noon, midnight) that slipped into Spanish copy to H:00. */
 export function fixHour(s: string): string {
   if (s === "noon") return "12:00";
   if (s === "midnight") return "0:00";
@@ -86,37 +86,37 @@ export function fixHour(s: string): string {
 }
 const DAYS_EN = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const DAYS_ES = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
-/** An English weekday that reached a Spanish sentence → "lunes". */
+/** Convert an English weekday name that slipped into Spanish copy. */
 export const fixDay = (s: string): string => (DAYS_EN.includes(s) ? DAYS_ES[DAYS_EN.indexOf(s)] : s);
 
-/** "1 Apple Store" / "12 Apple Store": the brand stays invariable in Spanish, as Apple España writes it ("los Apple Store"). */
+/** Count of Apple Stores; Apple España keeps the brand name invariable in the plural. */
 export const apples = (x: number): string => `${n(x)} Apple Store`;
-/** "1 tienda" / "5 tiendas". */
+/** Count + tienda(s). */
 export const tiendas = (x: number): string => `${n(x)} ${x === 1 ? "tienda" : "tiendas"}`;
-/** "1 reposición" / "14 reposiciones". */
+/** Count + reposición(es). */
 export const reposiciones = (x: number): string => `${n(x)} ${x === 1 ? "reposición" : "reposiciones"}`;
-/** "1 ciudad" / "10 ciudades". */
+/** Count + ciudad(es). */
 export const ciudades = (x: number): string => `${n(x)} ${x === 1 ? "ciudad" : "ciudades"}`;
-/** "1 día" / "3 días". */
+/** Count + día(s). */
 export const dias = (x: number): string => `${n(x)} ${x === 1 ? "día" : "días"}`;
-/** Verb agreement: "tiene" / "tienen". */
+/** Pick the singular or plural verb form by count. */
 export const v = (x: number, one: string, many: string): string => (x === 1 ? one : many);
 
-/** Countries Spanish treats as feminine ("toda España") vs masculine ("todo Japón"). */
+/** Countries that take feminine agreement after todo/toda. */
 const FEM_COUNTRIES = new Set<CountryCode>(["es", "fr", "it", "de", "ch", "se", "at", "be", "au", "kr"]);
-/** "toda España", "todo Japón", "todo el Reino Unido", "todos los Países Bajos". */
+/** The whole country: toda/todo/todos + name, respecting article and gender. */
 export function todoPais(cc: CountryCode): string {
   const a = withArt(cc);
   if (a.startsWith("los ")) return `todos ${a}`;
   if (a.startsWith("el ")) return `todo ${a}`;
   return `${FEM_COUNTRIES.has(cc) ? "toda" : "todo"} ${a}`;
 }
-/** "los lunes", "los sábados". */
+/** Weekday in the plural with los (sábado and domingo add -s). */
 export const losDias = (day: string): string => { const d = fixDay(day); return /o$/.test(d) ? `los ${d}s` : `los ${d}`; };
-/** Other trackers' published check intervals (plans.ts OTHER_TRACKERS), in Spanish. */
+/** The interval range other trackers publish (plans.ts OTHER_TRACKERS), rendered in Spanish. */
 export function otherTrackers(en: string): string {
   const m = en.match(/^(\d+) seconds to (\d+) minutes$/);
   return m ? `de ${m[1]} segundos a ${m[2]} minutos` : en;
 }
-/** A duration after "about": "alrededor de 1 min", but "menos de un minuto" as it is. */
+/** Prefix a duration with alrededor de, unless it already reads menos de ... */
 export const aprox = (d: string): string => (/^menos /.test(d) ? d : `alrededor de ${d}`);

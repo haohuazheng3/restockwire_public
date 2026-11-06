@@ -81,10 +81,10 @@ export default async function HowItWorks() {
     ["Each confirmed restock and sell-out, with store, configuration and time", "[the restock log](/restock-log) and every store page"],
     ["Live pickup stock per storage and color", "every store, city and state page, with the last check time"],
     ["The usual restock hour and weekday, in local time", "\"When does … restock?\" on each store, city and state page"],
-    [`Restocks over 24 hours, 7 days and ${PATTERN_DAYS} days`, "store, city, state and iPhone model pages"],
-    ["How long a restock usually stays listed", "the same pages (\"stays ~N min\")"],
-    ["The configurations that return most", "\"Restocks by configuration\" on store pages"],
-    ["Local price including tax", "store and state pages"],
+    [`Restocks over 24 hours, 7 days and ${PATTERN_DAYS} days`, "pages for each store, city, state and iPhone model"],
+    ["How long a restock usually stays listed", "those pages too, as a \"stays ~N min\" note"],
+    ["The configurations that return most", "the per-configuration restock table on every store page"],
+    ["Local price including tax", "each store page and each state page"],
   ], caption: f.restocks ? `${n(f.restocks)} confirmed restocks and ${n(f.soldouts)} sell-outs on file` : "On file since tracking began", source: `RestockWire restock log (US since ${TRACKING_SINCE_US}, other countries since ${TRACKING_SINCE_INTL})` };
 
   const speedLead = `**${SPEED.fastSec} seconds** between checks at the stores in your alerts, ${SPEED.checkSec} seconds across all ${n(ALL_STORES.length)} stores, and about **${SPEED.alertSec} seconds** from a confirmed restock to your phone. ${SPEED.fastSec} seconds is the shortest interval any iPhone stock tracker we know of publishes.`;
@@ -106,7 +106,7 @@ export default async function HowItWorks() {
 
   const faq: Faq[] = [
     { q: "Why does RestockWire check twice before it alerts?", a: "Because apple.com sometimes returns a one-off wrong answer. A second ask about a second later must agree, so a glitch never reaches your phone ([restock log](/restock-log))." },
-    { q: "How does RestockWire's check interval compare with other trackers?", a: `The stores in your alerts are checked every ${SPEED.fastSec} seconds; other iPhone stock trackers publish ${OTHER_TRACKERS}. We compare published numbers only.` },
+    { q: "How does RestockWire's check interval compare with other trackers?", a: `The stores in your alerts are checked every ${SPEED.fastSec} seconds; other iPhone stock trackers publish ${OTHER_TRACKERS}. Only intervals each tracker states publicly are compared.` },
     { q: "Is there an official Apple restock schedule I can use instead?", a: "No. Apple shows pickup availability per store and configuration, never a schedule; RestockWire's restock hours are observed store by store ([Apple: Delivery and Pickup](https://www.apple.com/shop/shipping-pickup))." },
     { q: "Who runs RestockWire, and does Apple have a part in it?", a: "RestockWire is independent and not affiliated with Apple. It reads the same public pickup availability apple.com shows everyone, only far more often." },
   ];
@@ -123,9 +123,9 @@ export default async function HowItWorks() {
       {
         "@type": "HowTo", name: "Finding when your Apple Store restocks the iPhone",
         step: [
-          { "@type": "HowToStep", name: "Open your store's page", text: "Search by store, city or ZIP, or browse Apple Stores by state.", url: `${site}/apple-stores` },
+          { "@type": "HowToStep", name: "Open your store's page", text: "Type a store, city or ZIP into search, or pick a state from the Apple Stores list.", url: `${site}/apple-stores` },
           { "@type": "HowToStep", name: "Read “When does … restock?”", text: "It gives the usual local restock hour, the busiest weekday and the last 30 days." },
-          { "@type": "HowToStep", name: "Look at your configuration", text: "“Restocks by configuration” shows which storage and color return most." },
+          { "@type": "HowToStep", name: "Look at your configuration", text: "The per-configuration restock table ranks which storage and color come back most." },
           { "@type": "HowToStep", name: "Add an alert", text: `The store then moves to ${SPEED.fastSec}-second checks and your phone hears about a confirmed restock ${SPEED.alertSec} seconds later.` },
         ],
       },
@@ -133,7 +133,7 @@ export default async function HowItWorks() {
         "@type": "Dataset", "@id": `${site}/restock-log#dataset`, name: "RestockWire restock log: iPhone pickup at Apple Stores",
         description: "Each confirmed in-store pickup restock and sell-out of the iPhone Duo, iPhone 18 Pro and iPhone 18 Pro Max at Apple Stores in 19 countries, with store, configuration and time, from RestockWire's own checks.",
         url: `${site}/restock-log`, creator: { "@id": `${site}/#organization` }, isAccessibleForFree: true,
-        temporalCoverage: `${TRACKING_SINCE_US}/..`, spatialCoverage: "Apple Stores in the United States and 18 other countries",
+        temporalCoverage: `${TRACKING_SINCE_US}/..`, spatialCoverage: "Apple Stores across the United States plus 18 further countries",
         variableMeasured: ["Apple Store", "iPhone model, storage and color", "restock time", "sell-out time", "time in stock"],
         ...(f.restocks ? { size: `${f.restocks} restocks, ${f.soldouts} sell-outs` } : {}),
       },
@@ -213,7 +213,7 @@ export default async function HowItWorks() {
           <StepStrip className="mt-5 lg:grid-cols-4!" steps={[
             { title: "Open your store", hint: <Inline text="search by store, city or ZIP from any page, or go through [Apple Stores by state](/apple-stores)" facts={facts} /> },
             { title: "Read \"When does … restock?\"", hint: `the usual local hour, the busiest weekday, and the last ${PATTERN_DAYS} days` },
-            { title: "Scan \"Restocks by configuration\"", hint: "is your exact storage and color one that returns?" },
+            { title: "Check your configuration's row", hint: "does your exact storage and color come back often?" },
             { title: "Add an alert", hint: <>on that store and configuration, so the wire watches for you: {SPEED.fastSec}-second checks from then on</> },
           ]} />
           {ex ? (
@@ -251,9 +251,9 @@ export default async function HowItWorks() {
         {/* cost */}
         <Section id="cost" h2="How much do RestockWire alerts cost?" lead={costLead} facts={facts}>
           <StatGrid cols={3} className="mt-5">
-            <Stat value={`$${PLANS.plus.priceUsd}`} unit="/ month" label={<>Plus · {PLANS.plus.limit} alerts</>} tone="accent" />
-            <Stat value={`$${PLANS.pro.priceUsd}`} unit="/ month" label={<>Pro · {PLANS.pro.limit} alerts</>} />
-            <Stat value={`$${PLANS.max.priceUsd}`} unit="/ month" label={<>Max · {PLANS.max.limit} alerts</>} />
+            <Stat value={`$${PLANS.plus.priceUsd}`} unit="/ month" label={<>Plus: {PLANS.plus.limit} alert rules</>} tone="accent" />
+            <Stat value={`$${PLANS.pro.priceUsd}`} unit="/ month" label={<>Pro: {PLANS.pro.limit} alert rules</>} />
+            <Stat value={`$${PLANS.max.priceUsd}`} unit="/ month" label={<>Max: {PLANS.max.limit} alert rules</>} />
           </StatGrid>
           <Points className="mt-5" items={[
             { text: <>An alert is one store × one exact configuration</> },

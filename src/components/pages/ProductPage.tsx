@@ -85,7 +85,7 @@ const load = cache(async (cc: Country["cc"], slug: string, path: string) => {
   const inStock = lines.filter((l) => l.available.length > 0).length;
   // Index scope (the SEO plan §10, §12): the national page of a model (US: also a storage size or a color). Every
   // place-level product page and every exact configuration is noindex, follow: the /apple-stores page of that place
-  // is the one indexed page for "iPhone Duo in <place>", which keeps near-duplicates out of the index.
+  // is the single indexed page for the model in that place, which keeps near-duplicates out of the index.
   const indexable = isIndexedProductPage(product, place);
   return { kind: "page" as const, product, place, ix, lines, inStock, stats, clock, feed, reports, indexable, sell, heat, leaders };
 });
@@ -95,7 +95,7 @@ function intlBound(c: Country, product: Product, place: Place, P: Dict["place"])
   return c.cc !== "us" && place.level === "country" && product.kind === "model" ? P.modelPageTitles(c.cc, product.model) : undefined;
 }
 
-/** A place's name in the page's language (English: the tree's own name, or its breadcrumb label when `short`). */
+/** Place name for the page language; in English the tree name, or the breadcrumb label when `short`. */
 function placeName(place: Place, lang: Lang, short = false): string {
   if (lang === "en") return short ? place.label : place.name;
   const cc = place.country ?? "us";
@@ -199,7 +199,7 @@ export async function ProductPage({ country: c, params: p }: { country: Country;
     { label: V.lastRestock, value: lr ? <LiveAgo iso={lr.at} /> : V.noneYet, hint: lr && lrItem ? `${one ? "" : configLabel(lrItem, lang)}${lrStore && !atStore ? `${one ? "" : " · "}${storeLabel(lrStore, lang)}` : ""}` || V.thisConfig : V.inDays(stats.days) },
   ];
   const intlTop = !us && top;
-  const h1 = bound ? bound.main.h1 ?? bound.main.title : ib ? ib.title : top ? (us ? `${product.name} pickup stock` : V.h1Country(product.name, c)) : V.h1Place(product.name, where);
+  const h1 = bound ? bound.main.h1 ?? bound.main.title : ib ? ib.title : top ? (us ? `${product.name}: pickup stock by store` : V.h1Country(product.name, c)) : V.h1Place(product.name, where);
   const short = lang === "en" ? c.short : countryLabel(c.cc, lang);
   const photo = ib ? (INTL_PLACE_PHOTOS[c.cc] ?? "phone-map") : undefined;
 
@@ -225,7 +225,7 @@ export async function ProductPage({ country: c, params: p }: { country: Country;
       <div className="mt-4 flex flex-wrap gap-2">
         <Link href={placeAlert(product, place)} className="btn btn-primary btn-sm">{C.alertMe}</Link>
         {configItem && !atStore && <a href={appleBuyUrl(configItem, c.cc)} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm">{V.buyOnApple}</a>}
-        <Link href={placePagePath(place)} className="btn btn-ghost btn-sm max-w-full truncate">{top ? (us ? "All stores" : V.allStoresIn(c)) : atStore ? V.everyIphoneHere : V.everyIphone(where)}</Link>
+        <Link href={placePagePath(place)} className="btn btn-ghost btn-sm max-w-full truncate">{top ? (us ? "Every store" : V.allStoresIn(c)) : atStore ? V.everyIphoneHere : V.everyIphone(where)}</Link>
       </div>
       <AlertPanelFor href={placeAlert(product, place)} summary={V.panel(product.name, top ? (us ? null : inCountry) : where)} country={c.cc} />
 
@@ -268,7 +268,7 @@ export async function ProductPage({ country: c, params: p }: { country: Country;
             </section>
             {children.length > 0 && (
               <section className="pane p-5">
-                <h2 className="text-lg font-semibold">{top ? (us ? "By state" : V.byRegion(c)) : V.byCity}</h2>
+                <h2 className="text-lg font-semibold">{top ? (us ? "State by state" : V.byRegion(c)) : V.byCity}</h2>
                 <div className="mt-2"><PlaceCountList product={product} items={children} /></div>
               </section>
             )}
@@ -345,12 +345,12 @@ export async function ProductPage({ country: c, params: p }: { country: Country;
       )}
 
       <RelatedBlock title={V.nearby}>
-        {place.level === "state" && siblings.length > 0 && <LinkRow title={us ? "Neighboring states" : V.otherRegions(c)} links={siblings.map((s) => ({ href: productPath(product, s.place), label: placeName(s.place, lang), meta: `${s.inStock}/${s.stores}` }))} />}
+        {place.level === "state" && siblings.length > 0 && <LinkRow title={us ? "Next-door states" : V.otherRegions(c)} links={siblings.map((s) => ({ href: productPath(product, s.place), label: placeName(s.place, lang), meta: `${s.inStock}/${s.stores}` }))} />}
         {(place.level === "city" || place.level === "store") && place.state && t.regionPlace(place.state) && (
           <LinkRow title={V.elsewhereIn(regionLabel(c.cc, place.state, lang))} links={[t.regionPlace(place.state)!, ...(place.level === "store" && place.city ? [t.cityPlace(place.state, place.city)].filter((x): x is Place => Boolean(x)) : [])].map((x) => ({ href: productPath(product, x), label: placeName(x, lang) }))} />
         )}
         <LinkRow title={C.more} links={[
-          { href: placePagePath(place), label: top ? (us ? "Every Apple Store" : V.everyAppleStoreIn(c)) : V.everyIphone(where) },
+          { href: placePagePath(place), label: top ? (us ? "All US Apple Stores" : V.everyAppleStoreIn(c)) : V.everyIphone(where) },
           { href: `${restocksPath(c.cc)}?model=${product.model}`, label: C.restockLog },
           { href: `${mapPath(c.cc)}?model=${product.model}${place.store ? `&store=${place.store.storeNumber}` : ""}`, label: C.liveMap },
           ...(top ? [] : [{ href: productPath(product, t.root), label: V.across(bidi(product.short, lang), c) }]),

@@ -16,13 +16,13 @@ export interface ProductCopy {
   sources: Source[];
 }
 
-const APPLE_PICKUP: Source = { label: "Apple: Shipping & Pickup help (what to bring to a pickup)", url: "https://www.apple.com/shop/help/shipping_delivery" };
-const APPLE_DUO_SHOP: Source = { label: "Apple: Shop iPhone Duo (prices and monthly cost)", url: "https://www.apple.com/shop/buy-iphone/iphone-duo" };
-const APPLE_PRO_SHOP: Source = { label: "Apple: Shop iPhone 18 Pro and 18 Pro Max", url: "https://www.apple.com/shop/buy-iphone/iphone-18-pro" };
-const APPLE_PRO_SPECS: Source = { label: "Apple: iPhone 18 Pro and 18 Pro Max technical specifications", url: "https://www.apple.com/iphone-18-pro/specs/" };
-const DUO_LAUNCH: Source = { label: "Apple Newsroom: iPhone Duo arrives at Apple Store locations worldwide (Oct 23, 2026)", url: "https://www.apple.com/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/" };
-const COLOR_RUMORS: Source = { label: "MacRumors: every iPhone 18 Pro color rumor, including Dark Cherry", url: "https://www.macrumors.com/guide/iphone-18-pro-ultra-colors/" };
-const GLACIER_MACWORLD: Source = { label: "Macworld: the Glacier iPhone 18 Pro Max", url: "https://www.macworld.com/article/3240104/glacier-iphone-18-pro-max-is-anti-cosmic-orange.html" };
+const APPLE_PICKUP: Source = { label: "Apple Shipping & Pickup help — what to have with you at pickup", url: "https://www.apple.com/shop/help/shipping_delivery" };
+const APPLE_DUO_SHOP: Source = { label: "apple.com iPhone Duo store page — prices, monthly payments", url: "https://www.apple.com/shop/buy-iphone/iphone-duo" };
+const APPLE_PRO_SHOP: Source = { label: "apple.com store page for iPhone 18 Pro / 18 Pro Max", url: "https://www.apple.com/shop/buy-iphone/iphone-18-pro" };
+const APPLE_PRO_SPECS: Source = { label: "Apple tech specs, iPhone 18 Pro / 18 Pro Max", url: "https://www.apple.com/iphone-18-pro/specs/" };
+const DUO_LAUNCH: Source = { label: "Apple Newsroom, Oct 23, 2026 — iPhone Duo arrives at Apple Store locations worldwide", url: "https://www.apple.com/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/" };
+const COLOR_RUMORS: Source = { label: "MacRumors color rumor guide for the iPhone 18 Pro (Dark Cherry included)", url: "https://www.macrumors.com/guide/iphone-18-pro-ultra-colors/" };
+const GLACIER_MACWORLD: Source = { label: "Macworld on the Glacier finish of the iPhone 18 Pro Max", url: "https://www.macworld.com/article/3240104/glacier-iphone-18-pro-max-is-anti-cosmic-orange.html" };
 
 /** Storage × stores-now table for one color (rows filled by tokens). */
 function colorTable(prefix: "pm" | "pro", color: string, prices: [string, string][]): Block {
@@ -278,7 +278,7 @@ export const PRODUCT_COPY: Record<string, ProductCopy> = {
       "iphone duo 1tb price": {
         lead: "**$2,599** buys the 1TB iPhone Duo in either color, or **$108.29 a month** over 24 months on Apple Card Monthly Installments, before tax.",
         blocks: [
-          { t: "table", head: ["iPhone Duo", "Price", "Monthly (ACMI)", "Lease from"], rows: [["256GB", "$1,999", "$83.29", "$57.99"], ["512GB", "$2,199", "$91.62", "$63.80"], ["**1TB**", "**$2,599**", "**$108.29**", "**$75.40**"], ["2TB", "$3,199", "$133.29", "$92.81"]], caption: "iPhone Duo prices on apple.com, checked October 30, 2026 (before tax and trade-in)", source: "[Apple: Shop iPhone Duo](https://www.apple.com/shop/buy-iphone/iphone-duo)" },
+          { t: "table", head: ["iPhone Duo", "Price", "Monthly (ACMI)", "Lease from"], rows: [["256GB", "$1,999", "$83.29", "$57.99"], ["512GB", "$2,199", "$91.62", "$63.80"], ["**1TB**", "**$2,599**", "**$108.29**", "**$75.40**"], ["2TB", "$3,199", "$133.29", "$92.81"]], caption: "apple.com list prices for the iPhone Duo as of October 30, 2026, pre-tax, no trade-in", source: "[apple.com iPhone Duo store page](https://www.apple.com/shop/buy-iphone/iphone-duo)" },
           { t: "ul", items: [
             "**Against 512GB:** $400 more",
             "**Against 2TB:** $600 less",
@@ -303,7 +303,7 @@ export const PRODUCT_COPY: Record<string, ProductCopy> = {
       "iphone duo 2tb price": {
         lead: "**$3,199** buys the 2TB iPhone Duo in either color, or **$133.29 a month** over 24 months on Apple Card Monthly Installments, before tax.",
         blocks: [
-          { t: "table", head: ["Size", "Price", "Stores listing it now", "Confirmed restocks"], rows: [["2TB Night Sky", "$3,199", "{{duo.cfg:2TB Night Sky}}", "{{duo.rcfg:2TB Night Sky}}"], ["2TB Star White", "$3,199", "{{duo.cfg:2TB Star White}}", "{{duo.rcfg:2TB Star White}}"], ["1TB (either color)", "$2,599", "{{duo.storage:1TB}}", "{{duo.rstorage:1TB}}"]], caption: "iPhone Duo 2TB: price and live pickup stock", source: "[Apple: Shop iPhone Duo](https://www.apple.com/shop/buy-iphone/iphone-duo); RestockWire's live read" },
+          { t: "table", head: ["Size", "Price", "Stores listing it now", "Confirmed restocks"], rows: [["2TB Night Sky", "$3,199", "{{duo.cfg:2TB Night Sky}}", "{{duo.rcfg:2TB Night Sky}}"], ["2TB Star White", "$3,199", "{{duo.cfg:2TB Star White}}", "{{duo.rcfg:2TB Star White}}"], ["1TB (either color)", "$2,599", "{{duo.storage:1TB}}", "{{duo.rstorage:1TB}}"]], caption: "The 2TB Duo on the wire: list price, stores listing it, restocks logged", source: "[apple.com iPhone Duo store page](https://www.apple.com/shop/buy-iphone/iphone-duo); RestockWire's live read" },
           { t: "ul", items: [
             "**Is it ever in stock?** Rarely: 2TB has the fewest restocks of any Duo size",
             "**The count:** **{{duo.rstorage:2TB}}** 2TB restocks since {{trackingSince}}, against {{duo.rstorage:1TB}} for 1TB",

@@ -42,7 +42,7 @@ export const HOME_FAQ: Faq[] = [
 ];
 
 export const HOME_SOURCES: Source[] = [
-  { label: "Apple: Shipping & Pickup help (ID and QR code at the pickup counter)", url: "https://www.apple.com/shop/help/shipping_delivery" },
-  { label: "Apple: Delivery and Pickup (checking pickup availability on apple.com)", url: "https://www.apple.com/shop/shipping-pickup" },
-  { label: "Apple Newsroom: iPhone Duo arrives at Apple Store locations worldwide (Oct 23, 2026)", url: "https://www.apple.com/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/" },
+  { label: "Apple Shipping & Pickup help — bring ID and the QR code to the counter", url: "https://www.apple.com/shop/help/shipping_delivery" },
+  { label: "Apple Delivery and Pickup — how apple.com shows pickup availability", url: "https://www.apple.com/shop/shipping-pickup" },
+  { label: "Apple Newsroom, Oct 23, 2026 — iPhone Duo arrives at Apple Store locations worldwide", url: "https://www.apple.com/newsroom/2026/10/iphone-duo-arrives-at-apple-store-locations-worldwide/" },
 ];

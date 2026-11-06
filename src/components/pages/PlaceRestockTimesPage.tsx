@@ -1,6 +1,6 @@
 /**
- * /when-does-iphone-duo-restock/{state} and /when-does-iphone-duo-restock/{state}/{city}: "When does the iPhone Duo restock in
- * Los Angeles?" answered for one US state or two-plus-store city, in the shape an answer engine quotes (docs/research.md
+ * /when-does-iphone-duo-restock/{state} and /when-does-iphone-duo-restock/{state}/{city}: the restock-hour question for
+ * Los Angeles (or any place) answered for one US state or two-plus-store city, in the shape an answer engine quotes (docs/research.md
  * §8): the title is the question, the first sentence carries the share, the sample size, the since-date and the local
  * time, the date it was updated is visible, and every table is the place's own stores. Every number is RestockWire's
  * own confirmed observation over the place's stores (lib/content/restockTimes.ts, duoRestockTimesAt), compared with
@@ -148,9 +148,9 @@ function quotable(place: RestockPlace, t: RestockTimes, zone: string): string {
   if (t.n === 0) return `Not yet: RestockWire has read the ${where} every ${SPEED.checkSec} seconds since ${longDate(t.since)} and has confirmed no iPhone Duo pickup restock there.`;
   const w = busiestWindow(t.byHour);
   if (t.peakHour != null) {
-    return `Mostly between ${rangeLabel(w.from, w.to)} ${zone}: that window holds ${pct(w.share)} of the ${n(t.n)} iPhone Duo restocks RestockWire confirmed at the ${where} since ${longDate(t.since)}${t.sellout ? `, and a typical one sold out in ${about(t.sellout.medianSec)}` : ""}.`;
+    return `Mostly between ${rangeLabel(w.from, w.to)} ${zone}: that window holds ${pct(w.share)} of the ${n(t.n)} iPhone Duo restocks RestockWire confirmed at the ${where} since ${longDate(t.since)}${t.sellout ? `, with the median one gone in ${about(t.sellout.medianSec)}` : ""}.`;
   }
-  return `No usual hour yet: the ${where} have restocked the iPhone Duo ${plural(t.n, "time")} on ${plural(t.days, "day")} since ${longDate(t.since)}, and RestockWire names an hour only after ${PATTERN_MIN} restocks over ${PATTERN_MIN_DAYS} different days${t.sellout ? `; a typical one sold out in ${about(t.sellout.medianSec)}` : ""}.`;
+  return `No usual hour yet: the iPhone Duo came back ${plural(t.n, "time")} across the ${where} on ${plural(t.days, "day")} since ${longDate(t.since)}, and RestockWire names an hour only after ${PATTERN_MIN} restocks over ${PATTERN_MIN_DAYS} different days${t.sellout ? `; the median one was gone in ${about(t.sellout.medianSec)}` : ""}.`;
 }
 
 /**
@@ -159,8 +159,8 @@ function quotable(place: RestockPlace, t: RestockTimes, zone: string): string {
  * name keeps its full question.
  */
 function titleOf(place: RestockPlace): string {
-  const q = `When Does the iPhone Duo Restock in ${place.name}?`;
-  return q.length + " Hour by Hour".length + 16 <= 65 ? `${q} Hour by Hour` : q;
+  const q = `What Time Does the iPhone Duo Restock in ${place.name}?`;
+  return q.length + " By the Hour".length + 16 <= 65 ? `${q} By the Hour` : q;
 }
 
 export async function placeRestockTimesMetadata(place: RestockPlace): Promise<Metadata> {
@@ -168,7 +168,7 @@ export async function placeRestockTimesMetadata(place: RestockPlace): Promise<Me
   const title = titleOf(place);
   const zone = zoneWord(place.stores).word;
   const q = quotable(place, t, zone);
-  const description = fitTitle([q, `${q.split(";")[0].split(", and a typical")[0]}.`, `${n(t.n)} confirmed iPhone Duo restocks in ${place.name} since ${dateLabel(t.since, false)}: the hours, days and stores they landed at.`], 158);
+  const description = fitTitle([q, `${q.split(";")[0].split(", with the median")[0]}.`, `${n(t.n)} confirmed iPhone Duo restocks in ${place.name} since ${dateLabel(t.since, false)}: the hours, days and stores they landed at.`], 158);
   return {
     title: { absolute: `${title} · RestockWire` },
     description,
@@ -210,7 +210,7 @@ export async function PlaceRestockTimesPage({ place }: { place: RestockPlace }) 
   const share = t.n && us.n ? Math.round((t.n / us.n) * 1000) / 10 : 0;
   const lead = quotable(place, t, zone.word);
   const title = titleOf(place);
-  const h1 = `When does the iPhone Duo restock in ${place.name}?`;
+  const h1 = `What time does the iPhone Duo restock in ${place.name}?`;
   const [photo1, photo2] = placePhotos(city ? `${place.city}, ${place.state}` : place.state);
 
   // Sideways: the state's other cities with a page, the bordering states' pages; a city's nearest other cities' pages.
@@ -240,7 +240,7 @@ export async function PlaceRestockTimesPage({ place }: { place: RestockPlace }) 
       : `No weekend figure for ${place.name} yet; the day-by-day table fills in from the first confirmed restock.` },
     { q: `Which store in ${place.name} should I put an alert on first?`, a: top
       ? `[${appleName(top.store!)}](${storePath(top.store!)}) has the most: ${plural(top.restocks, "confirmed restock")} on ${plural(top.days, "day")} since ${longDate(t.since)}${top.peakHour != null ? `, usually near ${hourLabel(top.peakHour)} local time` : ""}, the last ${localStamp(top.lastAt, top.store!)}. ${storeRows.length > 1 ? `Each store restocks on its own, so add the others you can reach${quiet.length ? `; ${plural(quiet.length, "store")} in ${place.name} ${quiet.length === 1 ? "has" : "have"} had none yet` : ""}.` : ""}`
-      : `None yet: no Apple Store in ${place.name} has a confirmed iPhone Duo restock since ${longDate(t.since)}, and all ${k} stay on the wire every ${SPEED.checkSec} seconds.` },
+      : `None yet: since ${longDate(t.since)}, not one Apple Store in ${place.name} has shown a confirmed iPhone Duo restock, and all ${k} stay on the wire every ${SPEED.checkSec} seconds.` },
     { q: `How many seconds do I have once a ${place.name} restock lands?`, a: sell
       ? `About ${secs(sell.medianSec)}: that is the [median](${WIKI_MEDIAN}) of ${n(sell.n)} timed restocks in ${place.name}, with ${pct(sell.within2min)} gone inside 2 minutes and ${pct(sell.within20min)} inside 20 (US median ${us.sellout ? secs(us.sellout.medianSec) : "about a minute"}). Each figure runs from the check that saw the listing to the check that saw it gone, so it is an upper bound.`
       : `Not enough local data: fewer than 10 ${place.name} restocks are timed to a sell-out, and nationally half are gone within ${us.sellout ? secs(us.sellout.medianSec) : "about a minute"} ([sell-out times](/how-fast-does-iphone-duo-sell-out)).` },
@@ -285,7 +285,7 @@ export async function PlaceRestockTimesPage({ place }: { place: RestockPlace }) 
         : <Stat key="d" value={`${t.days}/${tracked}`} label="days with a restock / days tracked" />,
       <Stat key="now" value={`${duoNow}/${k}`} label="stores listing one for pickup now" live />,
       today
-        ? <Stat key="today" value={n(today.restocks)} label={`so far today (${dateLabel(today.date)}), at ${plural(today.stores, "store")}`} />
+        ? <Stat key="today" value={n(today.restocks)} label={`today so far (${dateLabel(today.date)}) · ${plural(today.stores, "store")}`} />
         : sell
           ? <Stat key="sell" value={sell.medianSec} unit="s" label="median seconds before a restock sold out" tone="warn" />
           : <Stat key="d2" value={`${t.days}/${tracked}`} label="days with a restock / days tracked" />,
@@ -299,9 +299,9 @@ export async function PlaceRestockTimesPage({ place }: { place: RestockPlace }) 
       <h1 className="display mt-3 text-3xl sm:text-5xl">{h1}</h1>
       <p className="mt-4 text-lg leading-relaxed text-ink-2">
         {t.unknown || t.n === 0 ? lead : pattern ? (
-          <>Mostly <b className="text-ink">between {rangeLabel(w.from, w.to)} {zone.word}</b>: that window holds <b className="text-ink">{pct(w.share)} of the {n(t.n)} iPhone Duo restocks</b> RestockWire confirmed at the {k} Apple Stores in {place.name} since {longDate(t.since)}{sell ? <>, and a typical one sold out in <b className="text-ink">{about(sell.medianSec)}</b></> : null}.</>
+          <>Mostly <b className="text-ink">between {rangeLabel(w.from, w.to)} {zone.word}</b>: that window holds <b className="text-ink">{pct(w.share)} of the {n(t.n)} iPhone Duo restocks</b> RestockWire confirmed at the {k} Apple Stores in {place.name} since {longDate(t.since)}{sell ? <>, with the median one gone in <b className="text-ink">{about(sell.medianSec)}</b></> : null}.</>
         ) : (
-          <>No usual hour yet: the {k} Apple Stores in {place.name} have restocked the iPhone Duo <b className="text-ink">{plural(t.n, "time")} since {longDate(t.since)}</b> on {plural(t.days, "day")}, and we name an hour only after {PATTERN_MIN} restocks over {PATTERN_MIN_DAYS} different days{sell ? <>; a typical one sold out in <b className="text-ink">{about(sell.medianSec)}</b></> : null}.</>
+          <>No usual hour yet: the iPhone Duo came back <b className="text-ink">{plural(t.n, "time")} since {longDate(t.since)}</b> across the {k} Apple Stores in {place.name}, on {plural(t.days, "day")}, and we name an hour only after {PATTERN_MIN} restocks over {PATTERN_MIN_DAYS} different days{sell ? <>; the median one was gone in <b className="text-ink">{about(sell.medianSec)}</b></> : null}.</>
         )}
       </p>
       <p className="mt-2 text-sm text-ink-3">{plural(k, "Apple Store")} on the wire, checked {CHECK_NOTE} · counting since {longDate(t.since)} · last update {updatedStamp(t.at, zone.tz)}</p>
@@ -410,7 +410,7 @@ export async function PlaceRestockTimesPage({ place }: { place: RestockPlace }) 
           {top ? (
             <p><b className="text-ink"><Link href={storePath(top.store!)}>{appleName(top.store!)}</Link></b>, with <b className="text-ink">{n(top.restocks)} confirmed restocks</b> on {plural(top.days, "day")}{top.peakHour != null ? <>, most often near {hourLabel(top.peakHour)}</> : null}. {storeRows.length} of the {k} stores in {place.name} {storeRows.length === 1 ? "has" : "have"} restocked at least once{quiet.length ? <>; {plural(quiet.length, "store")} still {quiet.length === 1 ? "waits" : "wait"}</> : null}.</p>
           ) : (
-            <p>None so far: no Apple Store in {place.name} has a confirmed iPhone Duo restock since {longDate(t.since)}. The first one starts the table.</p>
+            <p>None so far: since {longDate(t.since)}, not one Apple Store in {place.name} has shown a confirmed iPhone Duo restock. The first one starts the table.</p>
           )}
           {!city && t.byCity.length > 1 && (
             <Table caption={`${place.name} cities by iPhone Duo restocks since ${dateLabel(t.since, false)}; a one-store city links straight to its store`} head={["City", "Restocks", "Stores", "Most recent"]} min="30rem">
@@ -505,7 +505,7 @@ export async function PlaceRestockTimesPage({ place }: { place: RestockPlace }) 
         {/* ---------------------------------------------------------------- right now */}
         <section id="right-now" className="scroll-mt-24">
           <h2>{h2Of("right-now")}</h2>
-          <p>{recent.unknown ? <>The live read did not load this time. {place.name} stays on the wire; reload for the current count.</> : <><b className="text-ink">{duoNow} of the {k}</b> Apple Stores in {place.name} {duoNow === 1 ? "lists" : "list"} an iPhone Duo for pickup at this moment; the last 24 hours brought <b className="text-ink">{plural(recent.restocks, "restock")}</b> at {plural(recent.stores, "store")}{recent.latest && storeByNumber(recent.latest.storeNumber) ? <>, most recently {cfg(recent.latest.partNumber)} at <Link href={storePath(storeByNumber(recent.latest.storeNumber)!)}>{appleName(storeByNumber(recent.latest.storeNumber)!)}</Link>, {localStamp(recent.latest.at, storeByNumber(recent.latest.storeNumber)!)}</> : null}.</>}</p>
+          <p>{recent.unknown ? <>The live read did not load this time. {place.name} stays on the wire; reload for the current count.</> : <><b className="text-ink">{duoNow} of {k}</b> {place.name} Apple Stores {duoNow === 1 ? "lists" : "list"} an iPhone Duo for pickup at this moment; the last 24 hours brought <b className="text-ink">{plural(recent.restocks, "restock")}</b> at {plural(recent.stores, "store")}{recent.latest && storeByNumber(recent.latest.storeNumber) ? <>, most recently {cfg(recent.latest.partNumber)} at <Link href={storePath(storeByNumber(recent.latest.storeNumber)!)}>{appleName(storeByNumber(recent.latest.storeNumber)!)}</Link>, {localStamp(recent.latest.at, storeByNumber(recent.latest.storeNumber)!)}</> : null}.</>}</p>
           <StatGrid cols={3} className="my-4">
             <Stat value={`${duoNow}/${k}`} label="stores with pickup stock now" live tone={duoNow > 0 ? "ok" : "plain"} />
             <Stat value={n(recent.restocks)} label="restocks, last 24 hours" tone={recent.restocks > 0 ? "plain" : "muted"} />
@@ -550,11 +550,11 @@ export async function PlaceRestockTimesPage({ place }: { place: RestockPlace }) 
       </div>
 
       <RelatedBlock title="Restock hours in other places">
-        {city && stateHref && <LinkRow title={`${place.state}, statewide`} links={[{ href: stateHref, label: `When does the iPhone Duo restock in ${SAID[`state:${place.state}`] ?? place.state}?` }]} />}
+        {city && stateHref && <LinkRow title={`${place.state}, statewide`} links={[{ href: stateHref, label: `What time does the iPhone Duo restock in ${SAID[`state:${place.state}`] ?? place.state}?` }]} />}
         {cityPages.length > 0 && <LinkRow title={city ? `More ${place.state} cities` : `${place.name}, city by city`} links={cityPages} />}
         {nearPages.length > 0 && <LinkRow title="Cities nearby" links={nearPages} />}
         {neighborPages.length > 0 && <LinkRow title="States next door" links={neighborPages} />}
-        <LinkRow title="Across the US" links={[{ href: "/when-does-iphone-duo-restock", label: "When does the iPhone Duo restock in the US?", meta: t.n && us.n ? `${place.name}: ${share}% of US restocks` : undefined }]} />
+        <LinkRow title="Across the US" links={[{ href: "/when-does-iphone-duo-restock", label: "What time does the iPhone Duo restock across the US?", meta: t.n && us.n ? `${place.name}: ${share}% of US restocks` : undefined }]} />
         <LinkRow title={`${place.name} right now`} links={[
           { href: place.storesHref, label: `${place.name} Apple Stores` },
           { href: `/restock-log?model=duo&state=${place.stateSlug}`, label: `Restock log: ${place.state}` },

@@ -1,8 +1,7 @@
 /**
- * French helpers shared by the French dictionaries (France, Belgium, Switzerland, Canada): the language tag for a
- * country's formats (Canada reads fr-CA: "1 649 $", "9 h 04"), country names with their preposition ("en France",
- * "au Canada"), region nouns with their gender, place prepositions ("dans le Rhône", "au Québec") and French
- * typography (narrow no-break space before ; ? ! %, no-break space before : and inside « »). Client-safe, no React.
+ * Outils communs aux dictionnaires français (France, Belgique, Suisse, Canada). Contenu : langue de formatage par pays
+ * (fr-CA pour le Canada), noms de pays avec préposition, noms de subdivisions et leur genre, prépositions de lieu,
+ * typographie française (espaces insécables et fines). Utilisable côté client, sans React.
  */
 import type { Country, CountryCode } from "@/lib/apple/countries";
 import type { Lang } from "@/lib/i18n/locales";
@@ -10,7 +9,7 @@ import type { Lang } from "@/lib/i18n/locales";
 /** The format language for a country's numbers, prices and dates. */
 export const L = (cc?: CountryCode | null): Lang => (cc === "ca" ? "fr-CA" : "fr");
 
-/** Country names as French writes them (Intl says "R.A.S. chinoise de Hong Kong"). */
+/** Noms de pays usuels en français (Intl renvoie des formes administratives pour Hong Kong). */
 export const NAME: Record<CountryCode, string> = {
   us: "États-Unis", ca: "Canada", au: "Australie", uk: "Royaume-Uni", de: "Allemagne", fr: "France", it: "Italie", es: "Espagne",
   jp: "Japon", sg: "Singapour", hk: "Hong Kong", ae: "Émirats arabes unis", ch: "Suisse", nl: "Pays-Bas", se: "Suède",
@@ -29,7 +28,7 @@ export const OF: Record<CountryCode, string> = {
   nl: "des Pays-Bas", se: "de Suède", at: "d’Autriche", be: "de Belgique", kr: "de Corée du Sud", tw: "de Taïwan",
 };
 
-/** A country's word for its regions (Apple's store-list level), singular and plural, and whether it is feminine. */
+/** Nom des subdivisions d’un pays (niveau de la liste Apple), au singulier et au pluriel, avec le genre. */
 export interface Noun { one: string; other: string; f: boolean }
 const NOUNS: Record<string, Noun> = {
   state: { one: "État", other: "États", f: false },
@@ -52,9 +51,8 @@ export const NOUN_FORMS = NOUNS;
 export const cap = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
 
 /**
- * "dans le Rhône", "en Gironde", "au Québec", "à Paris": a place after "in". Regions of the French-speaking countries
- * take their own preposition; anything else (a city) takes "à". Quebec City has no city page, so "Québec" here is
- * always the province.
+ * Préposition de lieu : chaque subdivision francophone a la sienne, toute autre entrée (une ville) prend « à ».
+ * « Québec » désigne toujours la province ici, la ville n’ayant pas de page.
  */
 const PREP: Record<string, string> = {
   "Alpes-Maritimes": "dans les Alpes-Maritimes",
@@ -80,10 +78,10 @@ const PREP: Record<string, string> = {
   Québec: "au Québec",
 };
 const COUNTRY_IN = new Map(Object.entries(NAME).map(([k, v]) => [v, IN[k as CountryCode]]));
-/** A country's own name ("France", "Canada") takes its preposition too: "en France", "au Canada". */
+/** Un nom de pays reçoit lui aussi sa préposition (table IN). */
 export const dans = (place: string): string => PREP[place] ?? COUNTRY_IN.get(place) ?? `à ${place}`;
 
-/** French typography on a finished string: no-break spaces before : » and after «, narrow ones before ; ? ! %. */
+/** Typographie française sur une chaîne finie : insécable avant : et », après « ; fine avant ; ? ! %. */
 export function typo(s: string): string {
   return s.replace(/ ([:;?!%»])/g, (_m, p: string) => `${p === ":" || p === "»" ? " " : " "}${p}`).replace(/« /g, "« ");
 }

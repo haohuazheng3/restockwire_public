@@ -23,36 +23,36 @@ export function Footer({ loc }: { loc: Locale }) {
             <p className="mt-3 text-xs text-ink-3">RestockWire is independent: not affiliated with or endorsed by Apple Inc. Apple, iPhone and Apple Store are Apple Inc. trademarks.</p>
           </div>
           <div className="text-sm">
-            <div className="eyebrow mb-3">Product</div>
+            <div className="eyebrow mb-3">Live data</div>
             <ul className="space-y-2 text-ink-2">
-              <li><Link href="/in-stock/iphone-duo" className="hover:text-ink">iPhone Duo stock</Link></li>
-              <li><Link href="/in-stock/iphone-18-pro" className="hover:text-ink">iPhone 18 Pro stock</Link></li>
-              <li><Link href="/in-stock/iphone-18-pro-max" className="hover:text-ink">iPhone 18 Pro Max stock</Link></li>
-              <li><Link href="/restock-log" className="hover:text-ink">Restock log</Link></li>
-              <li><Link href="/live-map" className="hover:text-ink">Live map</Link></li>
-              <li><Link href="/apple-stores" className="hover:text-ink">Stores by state</Link></li>
+              <li><Link href="/in-stock/iphone-duo" className="hover:text-ink">iPhone Duo: live stock</Link></li>
+              <li><Link href="/in-stock/iphone-18-pro" className="hover:text-ink">iPhone 18 Pro: live stock</Link></li>
+              <li><Link href="/in-stock/iphone-18-pro-max" className="hover:text-ink">iPhone 18 Pro Max: live stock</Link></li>
+              <li><Link href="/restock-log" className="hover:text-ink">The restock wire</Link></li>
+              <li><Link href="/live-map" className="hover:text-ink">Stock map</Link></li>
+              <li><Link href="/apple-stores" className="hover:text-ink">Every Apple Store, state by state</Link></li>
               <li><Link href="/pricing" className="hover:text-ink">Pricing</Link></li>
             </ul>
           </div>
           <div className="text-sm">
-            <div className="eyebrow mb-3">Company</div>
+            <div className="eyebrow mb-3">RestockWire</div>
             <ul className="space-y-2 text-ink-2">
-              <li><Link href="/how-restock-alerts-work" className="hover:text-ink">How it works</Link></li>
-              <li className="not-in-app"><Link href="/phone-alerts" className="hover:text-ink">Get the app</Link></li>
+              <li><Link href="/how-restock-alerts-work" className="hover:text-ink">How the alerts work</Link></li>
+              <li className="not-in-app"><Link href="/phone-alerts" className="hover:text-ink">Alerts on your phone</Link></li>
               <li><Link href="/about" className="hover:text-ink">About</Link></li>
               <li><Link href="/blog" className="hover:text-ink">Blog</Link></li>
               <li><Link href="/contact" className="hover:text-ink">Contact</Link></li>
             </ul>
           </div>
           <div className="text-sm">
-            <div className="eyebrow mb-3">Stores by state</div>
+            <div className="eyebrow mb-3">States with the most stores</div>
             <ul className="space-y-2 text-ink-2">
               {topStates(8).map((s) => <li key={s.slug}><Link href={s.href} className="hover:text-ink">{s.name}</Link></li>)}
-              <li><Link href="/apple-stores" className="hover:text-ink">All states & cities →</Link></li>
+              <li><Link href="/apple-stores" className="hover:text-ink">Every state and city →</Link></li>
             </ul>
           </div>
           <div className="text-sm">
-            <div className="eyebrow mb-3">Legal</div>
+            <div className="eyebrow mb-3">The fine print</div>
             <ul className="space-y-2 text-ink-2">
               <li><Link href="/privacy" className="hover:text-ink">Privacy</Link></li>
               <li><Link href="/terms" className="hover:text-ink">Terms</Link></li>
@@ -62,30 +62,30 @@ export function Footer({ loc }: { loc: Locale }) {
           </div>
         </div>
         <div className="hairline mt-8 pt-5 text-sm">
-          <div className="eyebrow mb-3">iPhone Duo questions</div>
+          <div className="eyebrow mb-3">Asked about the iPhone Duo</div>
           <ul className="flex flex-wrap gap-x-4 gap-y-2 text-ink-2">
-            <li><Link href="/when-does-iphone-duo-restock" className="hover:text-ink">When does Apple restock the iPhone Duo?</Link></li>
-            <li><Link href="/how-fast-does-iphone-duo-sell-out" className="hover:text-ink">How fast does it sell out?</Link></li>
-            <li><Link href="/iphone-duo-restock-alerts" className="hover:text-ink">Fastest way to get notified</Link></li>
-            <li><Link href="/iphone-duo-in-stock-near-me" className="hover:text-ink">iPhone Duo in stock near me</Link></li>
-            <li><Link href="/how-to-buy-an-iphone-duo-in-store" className="hover:text-ink">How to get an iPhone Duo</Link></li>
-            <li><Link href="/iphone-duo-restock-checkout-guide" className="hover:text-ink">Grab a restock in 20 seconds</Link></li>
-            <li><Link href="/iphone-duo-most-restocked-stores" className="hover:text-ink">Which configuration restocks most?</Link></li>
-            <li><Link href="/apple-store-pickup-explained" className="hover:text-ink">What “unavailable for pickup” means</Link></li>
-            <li><Link href="/is-iphone-duo-back-in-stock" className="hover:text-ink">Is it back in stock right now?</Link></li>
-            <li><Link href="/iphone-duo-availability-checker" className="hover:text-ink">iPhone Duo stock checker</Link></li>
-            <li><Link href="/where-to-buy-iphone-duo-today" className="hover:text-ink">Where to buy one today</Link></li>
+            <li><Link href="/when-does-iphone-duo-restock" className="hover:text-ink">What time does the iPhone Duo restock?</Link></li>
+            <li><Link href="/how-fast-does-iphone-duo-sell-out" className="hover:text-ink">How long does a restock last?</Link></li>
+            <li><Link href="/iphone-duo-restock-alerts" className="hover:text-ink">Restock alerts, 5-second checks</Link></li>
+            <li><Link href="/iphone-duo-in-stock-near-me" className="hover:text-ink">Which stores near me have it?</Link></li>
+            <li><Link href="/how-to-buy-an-iphone-duo-in-store" className="hover:text-ink">Buying an iPhone Duo in store</Link></li>
+            <li><Link href="/iphone-duo-restock-checkout-guide" className="hover:text-ink">Checking out a restock, step by step</Link></li>
+            <li><Link href="/iphone-duo-most-restocked-stores" className="hover:text-ink">Most-restocked stores and configs</Link></li>
+            <li><Link href="/apple-store-pickup-explained" className="hover:text-ink">“Unavailable for pickup”, explained</Link></li>
+            <li><Link href="/is-iphone-duo-back-in-stock" className="hover:text-ink">Is the iPhone Duo back yet?</Link></li>
+            <li><Link href="/iphone-duo-availability-checker" className="hover:text-ink">Check iPhone Duo availability</Link></li>
+            <li><Link href="/where-to-buy-iphone-duo-today" className="hover:text-ink">Where to buy it today</Link></li>
           </ul>
         </div>
         <div className="hairline mt-6 pt-5 text-sm">
-          <div className="eyebrow mb-3">Countries</div>
+          <div className="eyebrow mb-3">Other countries</div>
           <ul className="flex flex-wrap gap-x-4 gap-y-2 text-ink-2">
             {switchCountries().map((c) => <li key={c.cc}><Link href={c.cc === "us" ? "/" : `/${c.cc}`} className="hover:text-ink">{c.name}</Link></li>)}
           </ul>
         </div>
         <div className="hairline mt-6 flex flex-wrap items-center justify-between gap-3 pt-5 text-xs text-ink-3">
           <span>© {new Date().getFullYear()} RestockWire</span>
-          <Link href="/api/health" className="hover:text-ink">Status</Link>
+          <Link href="/api/health" className="hover:text-ink">Wire status</Link>
         </div>
       </div>
     </footer>

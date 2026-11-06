@@ -1,5 +1,5 @@
 /**
- * The /[cc] segment of a country page: "jp" (its English tree) or "ja-jp" (a native version, docs/i18n.md §6).
+ * A country page's /[cc] segment: "jp" for the English tree, "ja-jp" for a native version (docs/i18n.md §6).
  * Route files resolve it here, set it as the page's locale for the components, and hand it to the metadata.
  */
 import { COUNTRIES, type Country } from "@/lib/apple/countries";

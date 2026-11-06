@@ -174,7 +174,7 @@ export default async function SellOutTimesPage() {
 
   const sections = [
     { id: "stay", nav: "Seconds listed", h2: "How many seconds does an iPhone Duo listing last?" },
-    { id: "configurations", nav: "Storage and color", h2: "Which iPhone Duo configuration sells out fastest?" },
+    { id: "configurations", nav: "Storage and color", h2: "Which iPhone Duo storage and color goes quickest?" },
     { id: "states", nav: "State by state", h2: "Do some states sell out faster than others?" },
     { id: "countries", nav: "Abroad", h2: "How long does a Duo restock last outside the US?" },
     { id: "trackers", nav: "Slow checks", h2: "How much does a tracker on a five-minute check miss?" },
@@ -187,7 +187,7 @@ export default async function SellOutTimesPage() {
       ? `Only with checkout already staged: half of the ${n(s.n)} restocks timed ${sinceLabel} were gone within ${s.medianSec} seconds, ${pct(s.within30)} within 30, the quickest in ${s.fastestSec}. Have the buy page open with pickup chosen before the push, not after it.`
       : "Only with checkout already staged. No sold-out restock sits in the current window to time, but every earlier iPhone Duo restock we logged lasted seconds between two checks, and this answer refills with the next one." },
     { q: "Does storage or color change how fast a Duo sells out?", a: fastCfg
-      ? `By seconds, not minutes: ${cfgName(fastCfg.item)} has the shortest median at ${fastCfg.s.medianSec} seconds over ${fastCfg.s.n} sold-out restocks${slowCfg && slowCfg !== fastCfg ? `, ${cfgName(slowCfg.item)} the longest among rows with at least ${SOLID}, at ${slowCfg.s.medianSec}` : ""}. Every configuration is gone in about a minute, so buy the one you want.`
+      ? `By seconds, not minutes: ${cfgName(fastCfg.item)} has the shortest median at ${fastCfg.s.medianSec} seconds over ${fastCfg.s.n} restocks that sold out${slowCfg && slowCfg !== fastCfg ? `, ${cfgName(slowCfg.item)} the longest among rows with at least ${SOLID}, at ${slowCfg.s.medianSec}` : ""}. Every configuration is gone in about a minute, so buy the one you want.`
       : `Not measurably yet: no configuration has ${SOLID} timed sell-outs in the window, and RestockWire does not rank a handful. The table marks sparse rows and this answer fills in on its own.` },
     { q: "Do weekend restocks of the iPhone Duo last longer?", a: weekendKnown
       ? `Barely: a median of ${wk.weekend.medianSec} seconds on Saturdays and Sundays (${wk.weekend.n} timed) against ${wk.weekday.medianSec} on weekdays (${wk.weekday.n}), in each store's own local day over ${wk.spanDays} days.`
@@ -199,7 +199,7 @@ export default async function SellOutTimesPage() {
   ];
   const sources: Source[] = [
     { label: "Apple: Delivery and Pickup (in-store pickup availability and holds)", url: APPLE_PICKUP },
-    { label: "Apple Newsroom: iPhone Duo arrives at Apple Store locations worldwide (October 23, 2026)", url: APPLE_NEWSROOM },
+    { label: "Apple Newsroom, October 23, 2026: the iPhone Duo reaches Apple Stores", url: APPLE_NEWSROOM },
     { label: "Wikipedia: Median (the middle value)", url: WIKI_MEDIAN },
   ];
 
@@ -213,7 +213,7 @@ export default async function SellOutTimesPage() {
         description: `For every confirmed iPhone Duo in-store pickup restock at a US Apple Store, the seconds between the RestockWire check that saw it listed and the check that saw it gone (checks ${SPEED.fastSec}–${SPEED.checkSec} seconds apart), summarised as the median and the shares gone within 30 seconds, 1 minute, 2 minutes and 20 minutes, by configuration, state and country.`,
         url: `${site}/how-fast-does-iphone-duo-sell-out`, creator: { "@id": `${site}/#organization` }, isAccessibleForFree: true,
         temporalCoverage: `${TRACKING_SINCE_US}/..`, spatialCoverage: "US Apple Stores; Canada, the UK, Australia, Japan, Germany and France as a comparison",
-        variableMeasured: ["Apple Store", "iPhone Duo storage and color", "time of the restock", "time of the sell-out", "seconds listed (lower and upper bound)"],
+        variableMeasured: ["Apple Store", "iPhone Duo configuration (storage, color)", "time of the restock", "time of the sell-out", "listing lifetime in seconds, as a lower and an upper bound"],
         measurementTechnique: `Two agreeing RestockWire checks about a second apart open a listing, the first check that no longer sees it closes it; every US Apple Store is read every ${SPEED.checkSec} seconds and stores with alerts every ${SPEED.fastSec}; first sightings are excluded`,
         ...(have ? { size: `${s.n} sold-out restocks` } : {}),
       },
@@ -262,7 +262,7 @@ export default async function SellOutTimesPage() {
           <Keys items={[
             { text: <><b className="text-ink">still listed</b> = not sold out yet; the figure keeps counting</> },
             { text: <>A range such as <b className="text-ink">45–60 s</b> = gone somewhere between two checks; a single figure = both checks agreed</> },
-            { text: <>Each line is <b className="text-ink">one restock at one store</b>, in that store&apos;s local time</> },
+            { text: <>Every line = <b className="text-ink">a single store, a single restock</b>, timed in the store&apos;s own zone</> },
             { text: <>Store by store, the same list sits on <Link href="/apple-stores">every store page</Link></>, step: true },
           ]} />
           <div className="my-5"><SellOutTimes data={us} label="at US Apple Stores" showStore limit={12} /></div>
@@ -284,7 +284,7 @@ export default async function SellOutTimesPage() {
           <p><b>{solidConfigs.length >= 2 && fastCfg && slowCfg
             ? `${cfgName(fastCfg.item)}, by a few seconds: among configurations with at least ${SOLID} timed sell-outs its median is ${fastCfg.s.medianSec} seconds, and ${cfgName(slowCfg.item)} is the slowest at ${slowCfg.s.medianSec}; nothing worth planning around.`
             : solidConfigs.length === 1 && fastCfg
-              ? `Only ${cfgName(fastCfg.item)} has ${SOLID} or more timed sell-outs so far (median ${fastCfg.s.medianSec} seconds over ${fastCfg.s.n}); the other rows hold a handful of restocks each, so there is no ranking yet.`
+              ? `${cfgName(fastCfg.item)} is the lone configuration past ${SOLID} timed sell-outs (${fastCfg.s.n} of them, median ${fastCfg.s.medianSec} seconds); the other rows hold a handful of restocks each, so there is no ranking yet.`
               : `No ranking yet: no configuration has reached ${SOLID} timed sell-outs in the window, so the rows below are single stories rather than a pattern.`}</b></p>
           <LifeTable head="Configuration" caption={`Seconds each iPhone Duo configuration stayed listed before it sold out at US Apple Stores, last ${days} days; "sparse" marks fewer than ${SOLID} sell-outs`} rows={configRows.map((r) => ({ label: cfgName(r.item), s: r.s }))} />
           <Keys items={[
@@ -301,7 +301,7 @@ export default async function SellOutTimesPage() {
         <section id="states" className="scroll-mt-24">
           <h2>{sections[2].h2}</h2>
           <p><b>{regions[0]
-            ? `${regions[0].key} has the most timed sell-outs (${regions[0].s.n}, median ${regions[0].s.medianSec} seconds against ${s.medianSec} nationally)${solidRegions.length >= 2 && fastSt && slowSt && fastSt !== slowSt ? `; of the states with at least ${SOLID}, ${fastSt.key} is quickest at a median of ${fastSt.s.medianSec} seconds and ${slowSt.key} slowest at ${slowSt.s.medianSec}.` : "; no second state has enough timed sell-outs yet for a fair comparison."}`
+            ? `${regions[0].key} has the most timed sell-outs (${regions[0].s.n}, median ${regions[0].s.medianSec} seconds against ${s.medianSec} nationally)${solidRegions.length >= 2 && fastSt && slowSt && fastSt !== slowSt ? `; of the states with at least ${SOLID}, ${fastSt.key} clears fastest (median ${fastSt.s.medianSec} seconds) and ${slowSt.key} slowest (${slowSt.s.medianSec}).` : "; no second state has enough timed sell-outs yet for a fair comparison."}`
             : `Nothing to compare yet: no state has a timed iPhone Duo sell-out inside the last ${days} days.`}</b></p>
           {regions.length > 0 && (
             <LifeTable head="State" caption={`The ${regions.length} states with the most timed iPhone Duo sell-outs over the last ${days} days`} rows={regions.map((r) => ({ label: <Link href={statePath(r.key)} className="underline-offset-2 hover:underline">{r.key}</Link>, s: r.s }))} />
@@ -318,7 +318,7 @@ export default async function SellOutTimesPage() {
         <section id="countries" className="scroll-mt-24">
           <h2>{sections[3].h2}</h2>
           <p><b>{timedAbroad[0]
-            ? `Early figures only, since tracking abroad began ${longDate(TRACKING_SINCE_INTL)}: ${COUNTRIES[timedAbroad[0].cc].name} has the most timed iPhone Duo sell-outs so far (${timedAbroad[0].s.n}, median ${timedAbroad[0].s.medianSec} seconds)${have ? `, against ${s.medianSec} seconds in the US` : ""}.`
+            ? `Early figures only, since tracking abroad began ${longDate(TRACKING_SINCE_INTL)}: ${COUNTRIES[timedAbroad[0].cc].name} leads the count of timed Duo sell-outs abroad (${timedAbroad[0].s.n}, median ${timedAbroad[0].s.medianSec} seconds)${have ? `, against ${s.medianSec} seconds in the US` : ""}.`
             : `No figure yet: no sold-out iPhone Duo restock has been timed outside the US since tracking of the other ${INTL_CODES.length} countries began on ${longDate(TRACKING_SINCE_INTL)}.`}</b></p>
           <LifeTable head="Country" caption={`iPhone Duo sell-out times by country: the US since ${longDate(TRACKING_SINCE_US)}, the others since ${longDate(TRACKING_SINCE_INTL)}`} rows={[
             { label: <Link href="/" className="underline-offset-2 hover:underline">United States</Link>, s },
@@ -351,7 +351,7 @@ export default async function SellOutTimesPage() {
           </ol>
           <Keys items={[
             { text: <>Published intervals elsewhere run from <b className="text-ink">{OTHER_TRACKERS}</b>; we quote published numbers only</> },
-            { text: <><Link href="/iphone-duo-restock-alerts">What one alert covers</Link> · <Link href="/pricing">what it costs</Link></>, step: true },
+            { text: <><Link href="/iphone-duo-restock-alerts">One alert, explained</Link> · <Link href="/pricing">what it costs</Link></>, step: true },
           ]} />
           <Measured>
             A listing that lasts d seconds is seen by a check that comes round every T seconds with probability d over T, capped at one. Our durations are upper bounds, because the sell-out happened some time before the check that saw it gone, so these rates flatter the slow trackers and never RestockWire.
@@ -365,11 +365,11 @@ export default async function SellOutTimesPage() {
           <p><b>By counting the seconds between the check that first saw a configuration listed for pickup and the check that first saw it gone, at every US Apple Store since {longDate(TRACKING_SINCE_US)}.</b></p>
           <KeyTable rows={[
             ["still listed", <>Not sold out yet; the figure counts upward</>],
-            ["60 s", <>Both checks agreed to the second</>],
+            ["60 s", <>The two checks match to the exact second</>],
             ["45–60 s", <>Still there at the check 45 seconds after it appeared, gone at the check 60 seconds after</>],
             ["≈", <>The oldest rows: bounded by the {ROUND_SEC}-second round rather than two exact checks</>],
             ["sparse", <>Fewer than {SOLID} sell-outs; shown, not ranked</>],
-            ["median", <>The <a href={WIKI_MEDIAN} target="_blank" rel="noopener">middle value</a>: half lasted less, half more; never the average</>],
+            ["median", <>The <a href={WIKI_MEDIAN} target="_blank" rel="noopener">middle value</a>: half the listings ended sooner, half later; we never quote a mean</>],
           ]} />
           <Keys items={[
             { text: <>Stores with alerts every <b className="text-ink">{SPEED.fastSec} seconds</b>, every other store every <b className="text-ink">{ROUND_SEC}</b></> },
@@ -392,13 +392,13 @@ export default async function SellOutTimesPage() {
           <Keys items={[
             { text: <>Sold faster than it arrives: <b className="text-ink">unavailable</b> is the Duo&apos;s normal state</>, no: true },
             { text: <><a href={APPLE_PICKUP} target="_blank" rel="noopener">Apple&apos;s pickup page</a> shows what a store can hand over <b className="text-ink">right now</b>, never when the next lot lands</> },
-            { text: <>In Apple Stores since <a href={APPLE_NEWSROOM} target="_blank" rel="noopener"><b className="text-ink">October 23, 2026</b></a></> },
+            { text: <>On sale at Apple Stores from <a href={APPLE_NEWSROOM} target="_blank" rel="noopener"><b className="text-ink">October 23, 2026</b></a></> },
             { text: <>RestockWire&apos;s job: telling you within seconds, while the listing is still there to reserve</>, step: true },
           ]} />
           <ChipLinks items={[
             { href: "/when-does-iphone-duo-restock", label: "The hours Apple restocks the iPhone Duo" },
             { href: "/apple-store-pickup-explained", label: "What pickup availability means" },
-            { href: "/how-to-buy-an-iphone-duo-in-store", label: "How to get an iPhone Duo" },
+            { href: "/how-to-buy-an-iphone-duo-in-store", label: "Buying a Duo in store" },
           ]} />
           <Figure id="apple-store-crowd-inside" />
           <p className="text-sm text-ink-3">Cite this page: quote these figures freely with a link back. RestockWire is independent and not affiliated with Apple; it reads the same pickup availability apple.com shows anyone, only far more often.</p>
@@ -406,7 +406,7 @@ export default async function SellOutTimesPage() {
         <p><Link href="/#notify" className="btn btn-primary">Alert me before it is gone</Link></p>
       </div>
       <div className="mt-10"><RichFaq items={faq} facts={facts} title="More on sell-out speed" /></div>
-      <div className="mt-8"><SourceList sources={sources} facts={facts} where={`all ${STORES.length} US Apple Stores (and the stores of ${INTL_CODES.length} other countries since ${longDate(TRACKING_SINCE_INTL)})`} since={longDate(TRACKING_SINCE_US)} /></div>
+      <div className="mt-8"><SourceList sources={sources} facts={facts} where={`every one of the ${STORES.length} US Apple Stores, and from ${longDate(TRACKING_SINCE_INTL)} at Apple Stores in ${INTL_CODES.length} further countries`} since={longDate(TRACKING_SINCE_US)} /></div>
     </div>
   );
 }

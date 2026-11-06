@@ -100,7 +100,7 @@ function onlyInCity(s: Store): boolean {
   return !storesOf(s.country).some((x) => x.state === s.state && x.city === s.city && x.storeNumber !== s.storeNumber);
 }
 
-/** The title's parenthesis: US state for a state's only store, else the city; elsewhere the city ("Apple Kärntner Straße (Vienna)"). */
+/** Title suffix in brackets: a lone-store US state gets the state, a lone-store city the city; abroad, only the city. */
 function soleRegion(s: Store): string | undefined {
   if (s.country !== "us") return onlyInCity(s) ? s.city : undefined;
   return isOneStoreState(s.state) ? s.state : onlyInCity(s) ? s.city : undefined;
@@ -158,7 +158,7 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
   const questions = faq({ kind: "store", place, stores: [s], stockNow: d.stockNow, stats: d.pstats, peak: peakOf(d.stats, lang), nearest: d.nearby, hours: compressHours(week, lang), todayText: `${hoursText(today.today, lang)} (${lang === "en" ? today.label.toLowerCase() : today.label})`, omit: ["lasts", "nearest"] }, lang);
   const tax = us ? SALES_TAX[s.state] : undefined;
   const duoTaxed = us ? withTax(1999, s.state) : null;
-  if (tax) questions.push({ q: `How much is the iPhone Duo with tax at ${place}?`, a: tax.combined === 0 ? `$1,999 for the 256GB: ${s.state} has no sales tax, so the apple.com price is what you pay at pickup.` : `About $${withTax(1999, s.state)!.total.toLocaleString("en-US")} for the 256GB, using ${s.state}'s average combined rate of ${tax.combined}% (local rates vary). In-store pickup is taxed where the store is.` });
+  if (tax) questions.push({ q: `What does the iPhone Duo cost after tax at ${place}?`, a: tax.combined === 0 ? `$1,999 for the 256GB. ${s.state} charges no sales tax, so you pay the apple.com price at pickup.` : `Roughly $${withTax(1999, s.state)!.total.toLocaleString("en-US")} for the 256GB, at ${s.state}'s ${tax.combined}% average combined rate. Local rates differ, and a pickup order is taxed at the store's address.` });
   if (!us) { const tf = P.taxFaq(cc, place, cc === "ca" ? s.state : undefined); questions.push({ q: cc === "ca" ? S.taxQ(place) : tf.q, a: tf.a }); }
   questions.push({ q: S.pickupQ(place), a: S.pickupA(place) });
   const alone = onlyInCity(s);
@@ -169,7 +169,7 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
   const sole = soleRegion(s);
   const title = loc.native ? P.storeTitle(s, sole === s.state ? sRegion : sole ? N.city(sole) : undefined) : storeTitle(s, code, d.stockNow.duo, sole);
   const taxLine = us
-    ? (!tax ? "" : tax.combined === 0 ? `${s.state} has no sales tax, so a 256GB iPhone Duo costs $1,999 out the door here.` : `With ${s.state}'s average ${tax.combined}% sales tax, a 256GB iPhone Duo comes to about $${duoTaxed!.total.toLocaleString("en-US")} here.`)
+    ? (!tax ? "" : tax.combined === 0 ? `No sales tax in ${s.state}: the 256GB iPhone Duo is $1,999 at the counter.` : `256GB iPhone Duo here: about $${duoTaxed!.total.toLocaleString("en-US")} after ${s.state}'s ${tax.combined}% average sales tax.`)
     : P.taxSentence(cc, cc === "ca" ? s.state : undefined);
   const [photo1, photo2] = storePhotos(s);
   const facts = lang === "en" ? emptyFacts(cc) : { ...emptyFacts(cc), lang };
@@ -193,7 +193,7 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
       id: slugId(`apple store ${soleInState ? s.state : s.city}`),
       h2: S.onlyH2(soleInState ? s.state : sCity, place),
       lead: soleInState
-        ? `${s.state} has one Apple Store, ${place} in ${s.city}.${d.outside.length ? ` The closest ones across the state line are ${listWords(d.outside.slice(0, 2).map((b) => `${appleName(b)} in ${b.city}, ${stateCodeOf(b)} (${Math.round(b.distance)} mi)`))}.` : ""}${tax && tax.combined === 0 ? ` With no sales tax here, many buyers make the drive on purpose.` : ""}`
+        ? `${place} in ${s.city} is the only Apple Store in ${s.state}.${d.outside.length ? ` Nearest over the state line: ${listWords(d.outside.slice(0, 2).map((b) => `${appleName(b)} in ${b.city}, ${stateCodeOf(b)} (${Math.round(b.distance)} mi)`))}.` : ""}${tax && tax.combined === 0 ? ` No sales tax here, which is why some buyers drive in from out of state.` : ""}`
         : soleInCountry
           ? S.onlyInCountry(place, cc)
           : S.onlyInCity(sCity, place, backups.length ? (lang === "en" ? listWords : (x: string[]) => listIn(lang, x))(backups.map((b) => S.backup(N.apple(b), N.city(b.city), dist(b.distance)))) : ""),
@@ -250,7 +250,7 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
           <section className="pane p-5">
             <h2 className="text-xl font-semibold">{S.whenRestock(N.store(s))}</h2>
             <div className="mt-3"><RestockClock stats={d.stats} label={G.here} reports={d.reports} /></div>
-            {rtLink && <p className="mt-3 text-sm"><Link href={rtLink.href} className="font-medium text-ink underline-offset-2 hover:underline">When does the iPhone Duo restock in {rtLink.place}? Every store, hour by hour →</Link></p>}
+            {rtLink && <p className="mt-3 text-sm"><Link href={rtLink.href} className="font-medium text-ink underline-offset-2 hover:underline">{rtLink.place}: the hours the iPhone Duo comes back, store by store →</Link></p>}
           </section>
           <RestockHeatmap data={d.heat} label={G.here} stores={[s]} />
           <RestockStreak data={d.streak} label={G.here} />

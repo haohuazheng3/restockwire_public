@@ -75,24 +75,24 @@ export function NearMeFinder({ data }: { data: NearMeData }) {
   const alertFor = (storeNumber: string) => data.alertPattern.replace("STORE_NUMBER", storeNumber);
 
   const status = anchor
-    ? (anchor.kind === "here" ? "Nearest to you" : anchor.approx ? "ZIP not found; nearest to that area" : zipPt ? `Nearest to ${anchor.label}` : `Nearest to the ${anchor.label} area`)
-      + (origin ? ` · miles by road from ${origin}, estimated` : " · finish the ZIP for distances")
-    : loc === "asking" ? "Finding stores near you…"
-      : loc === "denied" ? "Location is off for this site. Type a ZIP instead."
-        : loc === "unavailable" ? "This browser has no location service. Type a ZIP instead."
+    ? (anchor.kind === "here" ? "Closest stores to you" : anchor.approx ? "No such ZIP; showing stores around that area" : zipPt ? `Closest stores to ${anchor.label}` : `Closest stores around ${anchor.label}`)
+      + (origin ? ` · estimated road miles from ${origin}` : " · all five ZIP digits give distances")
+    : loc === "asking" ? "Locating the closest stores…"
+      : loc === "denied" ? "This site cannot read your location. Enter a ZIP."
+        : loc === "unavailable" ? "No location service in this browser. Enter a ZIP."
           : withStock.length > 0
-            ? `Listing the iPhone Duo right now (${data.asOf}) · Use my location or a ZIP sorts all ${STORES.length} US stores by distance from you`
-            : `None lists the iPhone Duo right now (${data.asOf}) · Use my location or a ZIP sorts all ${STORES.length} US stores by distance; the nearest are the ones to watch`;
+            ? `Stores with the iPhone Duo on the shelf (${data.asOf}) · your location or a ZIP ranks all ${STORES.length} US stores by distance`
+            : `No store lists the iPhone Duo at the moment (${data.asOf}) · your location or a ZIP ranks all ${STORES.length} US stores by distance, so you know which to watch`;
 
   return (
     <div className="pane p-4 sm:p-5" data-tool="near-me">
       <div className="flex gap-2">
-        <label className="sr-only" htmlFor="nm-zip">ZIP code</label>
-        <input id="nm-zip" className="input" inputMode="numeric" autoComplete="postal-code" maxLength={10} placeholder="ZIP code" value={q} onChange={(e) => setQ(e.target.value)} />
-        <button type="button" className="btn btn-ghost shrink-0 px-4" onClick={locate} aria-label="Use my location">{loc === "asking" ? "…" : "📍 Use my location"}</button>
+        <label className="sr-only" htmlFor="nm-zip">Your ZIP</label>
+        <input id="nm-zip" className="input" inputMode="numeric" autoComplete="postal-code" maxLength={10} placeholder="Your ZIP" value={q} onChange={(e) => setQ(e.target.value)} />
+        <button type="button" className="btn btn-ghost shrink-0 px-4" onClick={locate} aria-label="Locate me">{loc === "asking" ? "…" : "📍 Locate me"}</button>
       </div>
       <p className="mt-3 text-sm text-ink-2" aria-live="polite">{status}</p>
-      {q.trim() && !digits && <p className="mt-1 text-xs text-ink-3">Type a 5-digit ZIP; letters are not matched here.</p>}
+      {q.trim() && !digits && <p className="mt-1 text-xs text-ink-3">ZIPs are five digits; letters will not match.</p>}
       {rows.length > 0 && (
         <ul className="mt-3 divide-y divide-line">
           {rows.map((s) => {
@@ -102,12 +102,12 @@ export function NearMeFinder({ data }: { data: NearMeData }) {
               <li key={s.storeNumber} className="flex items-start justify-between gap-3 py-2.5">
                 <div className="min-w-0">
                   <Link href={storePath(s)} className="block truncate font-medium text-ink underline-offset-2 hover:underline">{appleName(s)}</Link>
-                  <div className="truncate text-xs text-ink-3">{cityLine(s)}{origin && s.distance >= 0 ? ` · ≈${formatRoad(s.distance)} · ${formatDrive(s.distance)} drive` : ""}</div>
+                  <div className="truncate text-xs text-ink-3">{cityLine(s)}{origin && s.distance >= 0 ? ` · ≈${formatRoad(s.distance)} · ${formatDrive(s.distance)} by car` : ""}</div>
                   {k > 0 && <div className="mt-0.5 text-xs text-ink-2">{configs.join(", ")}</div>}
                 </div>
                 <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${k > 0 ? "bg-ok text-[var(--ok-ink)]" : "bg-ink/10 text-ink-2"}`}>{k > 0 ? `Duo in stock: ${k} of ${data.total} configs` : "none right now"}</span>
-                  <Link href={alertFor(s.storeNumber)} className="text-xs font-medium text-ink underline-offset-2 hover:underline">Alert me</Link>
+                  <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${k > 0 ? "bg-ok text-[var(--ok-ink)]" : "bg-ink/10 text-ink-2"}`}>{k > 0 ? `${k} of ${data.total} Duo configs in stock` : "no Duo now"}</span>
+                  <Link href={alertFor(s.storeNumber)} className="text-xs font-medium text-ink underline-offset-2 hover:underline">Set an alert</Link>
                 </div>
               </li>
             );
@@ -115,7 +115,7 @@ export function NearMeFinder({ data }: { data: NearMeData }) {
         </ul>
       )}
       <p className="mt-3 text-xs leading-relaxed text-ink-3">
-        Stock as of {data.asOf} · every store checked every 15 s, alert stores every 5 s · ranked in your browser; your location never leaves this device, and a ZIP only selects a small file of ZIP centers by its first three digits
+        Snapshot: {data.asOf} · alert stores on a 5 s check, the rest on 15 s · sorting happens in this browser; your position stays on the device, and a ZIP only fetches one small file of ZIP centers keyed by its first three digits
       </p>
     </div>
   );

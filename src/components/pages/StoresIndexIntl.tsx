@@ -51,7 +51,7 @@ async function IntlStoresIndex({ c }: { c: Country }) {
   const cities = citiesWithStores(cc);
   const hasRegions = Boolean(c.regionNoun) && regions.length > 1;
   const alert = alertHref({ model: DEFAULT_MODEL, country: cc });
-  // The country as a place name in the page's language ("the UK"; native: Intl's name).
+  // Country name for sentences: English uses forms like "the UK", native pages use the Intl display name.
   const where = lang === "en" ? theName(c) : countryLabel(cc, lang);
   const short = lang === "en" ? c.short : countryLabel(cc, lang);
   const input: IntlPlaceInput = { cc, kind: "state", name: where, region: "", regionSlug: "", stores, cities: cities.length, stockNow: d.stockNow, stock: d.stock, duo: d.duo!, max: d.max! };

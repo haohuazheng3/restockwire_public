@@ -1,12 +1,12 @@
 /**
- * Spanish (Spain): pages — the home board and the region, city and store pages of /es-es/… Place names arrive in
- * Spanish. Labels handed to the restock modules read "en Madrid" / "en Apple Puerta del Sol" / "aquí".
+ * Spanish (Spain): pages — home board plus the region, city and store pages under /es-es/. Place names come in
+ * Spanish; the labels passed to restock modules carry their own preposition (en + place) or are just aquí.
  */
 import type { Dict } from "../en";
 import { COUNTRIES, type CountryCode } from "@/lib/apple/countries";
 import { n, enPais, dePais, pais, noun, cap, reposiciones, tiendas, ciudades } from "./words";
 
-const CHECK_NOTE = "cada 15 s; 5 s con alerta";
+const CHECK_NOTE = "ronda de 15 s · 5 s si tiene alerta";
 
 export const pages: Dict["pages"] = {
   common: {
@@ -17,7 +17,7 @@ export const pages: Dict["pages"] = {
     fullLog: "Registro completo →",
     restocksBy: "Qué configuraciones se reponen",
     lastDays: (days: number) => `${n(days)} días de reposiciones, una barra por día`,
-    nearbyCities: "Ciudades cercanas con Apple Store",
+    nearbyCities: "Otras ciudades con Apple Store a poca distancia",
     neighboringStates: "Estados limítrofes",
     acrossStateLine: "Justo al otro lado del límite estatal",
     allUsRestocks: "Todas las reposiciones de EE. UU.",
@@ -52,7 +52,7 @@ export const pages: Dict["pages"] = {
     storesWith: (short: string) => `tiendas con el ${short}`,
     restocks24: "reposiciones, últimas 24 h",
     week: (k: number) => ` · ${n(k)} en 7 días`,
-    lastCheck: "última comprobación",
+    lastCheck: "revisado por última vez",
     more: (k: number) => `y ${n(k)} más`,
     latest: (short: string) => `${short}: últimas reposiciones`,
     none: (short: string) => `De momento no se ha repuesto nada del ${short}.`,
@@ -72,7 +72,7 @@ export const pages: Dict["pages"] = {
     nearbyHint: (place: string) => `Distancia medida desde el punto medio de las tiendas de ${place}.`,
     beyond: (place: string) => `Fuera de ${place}`,
     everyStore: (place: string) => `${place}, tienda a tienda`,
-    nearestRegions: (cc: CountryCode) => { const nn = noun(COUNTRIES[cc]); return `${cap(nn.other)} ${nn.f ? "vecinas" : "vecinos"} ${enPais(cc)}`; },
+    nearestRegions: (cc: CountryCode) => { const nn = noun(COUNTRIES[cc]); return `${cap(nn.other)} colindantes ${enPais(cc)}`; },
   },
   city: {
     counts: (stores: number) => `${tiendas(stores)} · comprobadas ${CHECK_NOTE}`,
@@ -95,18 +95,18 @@ export const pages: Dict["pages"] = {
     pickupA: (place: string) => `Sí: al pagar, elige «Recogida» y ${place}, espera a que Apple te avise de que el pedido está listo y lleva el número de pedido, un documento de identidad oficial con foto y el código QR o el pase de Wallet (no se acepta una captura de pantalla del código).`,
     storeWord: (name: string) => (/^apple\b/i.test(name) ? name.replace(/^apple\s*/i, "Apple Store ") : `Apple Store ${name}`),
     hoursH2: (storeWord: string) => `${storeWord}: horario, dirección y normas de recogida`,
-    hoursLead: (place: string, address: string, phone: string | undefined, today: string, week: string) => `La dirección de ${place} es ${address}${phone ? `; teléfono ${phone}` : ""}. Horario de hoy: ${today}. Durante la semana: ${week}.`,
+    hoursLead: (place: string, address: string, phone: string | undefined, today: string, week: string) => `Hoy, ${today}. Resto de la semana: ${week}. ${cap(place)} está en ${address}${phone ? ` (tel. ${phone})` : ""}.`,
     pickupRules: (helpUrl: string) => [
       `**Ve a la tienda solo cuando Apple te avise de que puedes recoger** ([normas de recogida de Apple](${helpUrl}))`,
       "**Lleva contigo:** el número de pedido · un documento de identidad oficial con foto · el código QR o el pase de Wallet",
-      "**No se acepta:** una captura de pantalla del código",
+      "**No vale:** el código en una captura de pantalla",
       "**¿Va otra persona?** Solo quien hayas indicado como contacto de recogida al pagar",
     ],
-    directions: (place: string, dirUrl: string, appleUrl?: string) => `[Cómo llegar a ${place}](${dirUrl})${appleUrl ? ` · [Esta tienda en apple.com](${appleUrl})` : ""}`,
-    onlyH2: (where: string, place: string) => `${place}: el único Apple Store ${where}`,
-    onlyInCountry: (place: string, cc: CountryCode) => `Todas las recogidas en tienda ${enPais(cc)} pasan por ${place}, el único Apple Store del país. Cuando aparece aquí una configuración no hay tienda de reserva, así que una alerta en esta tienda es todo el plan.`,
-    onlyInCity: (city: string, place: string, backups: string) => `${place} es el único Apple Store de ${city}.${backups ? ` Los siguientes más cercanos: ${backups}.` : ""}`,
-    backup: (apple: string, city: string, dist: string) => `${apple}, en ${city} (${dist})`,
+    directions: (place: string, dirUrl: string, appleUrl?: string) => `[Ruta hasta ${place}](${dirUrl})${appleUrl ? ` · [Esta tienda en apple.com](${appleUrl})` : ""}`,
+    onlyH2: (where: string, place: string) => `${place}: no hay otro Apple Store ${where}`,
+    onlyInCountry: (place: string, cc: CountryCode) => `${cap(place)} es la única puerta para recoger en tienda ${enPais(cc)}. Sin segunda tienda a la que recurrir, una alerta aquí lo cubre todo.`,
+    onlyInCity: (city: string, place: string, backups: string) => `${city} solo tiene un Apple Store: ${place}.${backups ? ` Alternativas más próximas: ${backups}.` : ""}`,
+    backup: (apple: string, city: string, dist: string) => `${apple} (${city}, a ${dist})`,
     onlyBlockCountry: (place: string) => `Una alerta es una tienda más una configuración exacta; cuando ${place} pone la tuya disponible para recogida, tu móvil se entera en segundos.`,
     onlyBlock: (place: string) => `Cuando ${place} no tiene tu configuración, esas alternativas también merecen una alerta: cada alerta es una tienda más una configuración exacta, y el aviso llega segundos después de que esa tienda la ponga disponible.`,
     intro: (a: { place: string; street: string; duo: number; duoOf: number; pro: number; proOf: number; pm: number; pmOf: number; peak: string | null }) => (

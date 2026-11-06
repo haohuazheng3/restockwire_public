@@ -13,7 +13,7 @@ export default async function NotFound() {
       <div className="eyebrow">404</div>
       <h1 className="display mt-2 text-3xl sm:text-5xl">{F.title}</h1>
       <p className="mt-4 text-ink-2">{F.body(<Link href={`${p}/apple-stores`} className={cls}>{F.stores}</Link>, <Link href={`${p}/live-map`} className={cls}>{F.map}</Link>)}</p>
-      <Link href={p || "/"} className="btn btn-primary mt-6">{F.home}</Link>
+      <Link href={p || "/"} className="mt-6 btn btn-primary">{F.home}</Link>
     </div>
   );
 }

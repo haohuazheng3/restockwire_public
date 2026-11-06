@@ -27,7 +27,7 @@ export function pct(lang: Lang, n: number): string {
   return new Intl.NumberFormat(LANG_TAG[lang], { style: "percent", maximumFractionDigits: 1 }).format(n / 100);
 }
 
-/** Plural forms of one phrase; languages without plurals give `other` only. */
+/** Plural forms of one phrase; a language with no plural distinction supplies only the other form. */
 export interface Forms { zero?: string; one?: string; two?: string; few?: string; many?: string; other: string }
 const rules = new Map<string, Intl.PluralRules>();
 /** The form for n, with "#" replaced by the formatted number. */
@@ -46,12 +46,12 @@ export function plural(lang: Lang, n: number, f: Forms | string): string {
  */
 export const bidi = (s: string, lang: Lang): string => (lang === "ar" ? `\u2068${s}\u2069` : s);
 
-/** "{n} stores" → filled; unknown keys stay. */
+/** Fills {key} placeholders such as "{n} stores"; keys without a value are left as written. */
 export function fill(s: string, vars: Record<string, string | number>): string {
   return s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
 }
 
-/** Short duration units. */
+/** Abbreviated duration units per language family. */
 const UNITS: Record<string, { s: string; m: string; h: string; d: string; sep: string; tight?: boolean }> = {
   en: { s: "s", m: "min", h: "h", d: "d", sep: " " },
   ja: { s: "秒", m: "分", h: "時間", d: "日", sep: "", tight: true },
@@ -71,7 +71,7 @@ export function unit(lang: Lang, n: number, u: "s" | "m" | "h" | "d"): string {
   const t = unitsOf(lang);
   return `${num(lang, n)}${t.tight ? "" : " "}${t[u]}`;
 }
-/** Seconds as the restock modules write them: "45 s", "2 min", "1 h 5 min". */
+/** Seconds in the restock-module style (45 s, 2 min, 1 h 5 min). */
 export function secs(lang: Lang, s: number): string {
   const t = unitsOf(lang);
   const r = Math.round(s);
@@ -103,7 +103,7 @@ function df(tag: string, o: Intl.DateTimeFormatOptions): Intl.DateTimeFormat {
   if (!f) { f = new Intl.DateTimeFormat(tag, o); dtf.set(k, f); }
   return f;
 }
-/** "Nov 2, 8:48 AM" / "11月2日 8:48" in a zone. */
+/** Short date plus time in the given zone (Nov 2, 8:48 AM). */
 export function stamp(lang: Lang, iso: string | Date, timeZone: string, zoneName = false): string {
   return df(LANG_TAG[lang], { timeZone, month: "short", day: "numeric", hour: "numeric", minute: "2-digit", ...(zoneName ? { timeZoneName: "short" } : {}) }).format(new Date(iso));
 }
@@ -121,7 +121,7 @@ export function weekdays(lang: Lang, style: "long" | "short" = "long"): string[]
   return Array.from({ length: 7 }, (_, i) => f.format(new Date(Date.UTC(2026, 10, 1 + i)))); // Nov 1, 2026 is a Sunday
 }
 
-/** "a, b and c" (Intl list), beyond `max`: the first `max` and "+N" in the language's words. */
+/** Joins items with Intl list words; past max items it keeps the first max and appends the language's "N more". */
 export function list(lang: Lang, items: string[], max = 6, more?: (n: number) => string): string {
   if (items.length === 0) return "";
   const lf = new Intl.ListFormat(LANG_TAG[lang], { style: "long", type: "conjunction" });
@@ -133,7 +133,7 @@ export function list(lang: Lang, items: string[], max = 6, more?: (n: number) =>
   return out([...items.slice(0, max), more ? more(rest) : `+${rest}`]);
 }
 
-/** "7s ago" / "7秒前" / "vor 7 Sek." — the live "checked … ago" (seconds tick). */
+/** Words for the ticking "checked … ago" label, per language family. */
 const AGO: Record<string, { tpl: string; now: string; never: string }> = {
   en: { tpl: "{d} ago", now: "just now", never: "never" },
   ja: { tpl: "{d}前", now: "たった今", never: "まだありません" },
@@ -150,7 +150,7 @@ const AGO: Record<string, { tpl: string; now: string; never: string }> = {
 const agoOf = (lang: Lang) => AGO[baseLang(lang)] ?? AGO.en;
 export function never(lang: Lang): string { return agoOf(lang).never; }
 export function justNow(lang: Lang): string { return agoOf(lang).now; }
-/** Elapsed seconds → "7 Sek." / "3 Min. 5 Sek." (the part inside "ago"). */
+/** Elapsed seconds as the inner part of the ago label (7 Sek., 3 Min. 5 Sek.). */
 function elapsed(lang: Lang, s: number, fine: boolean): string {
   const t = unitsOf(lang);
   if (s < 60) return unit(lang, s, "s");
@@ -160,7 +160,7 @@ function elapsed(lang: Lang, s: number, fine: boolean): string {
   if (s < 86400) return unit(lang, Math.floor(s / 3600), "h");
   return unit(lang, Math.floor(s / 86400), "d");
 }
-/** "checked … ago" that ticks (LiveAgo): never rounded to "just now". */
+/** Ticking ago label for LiveAgo; it never collapses to the just-now word. */
 export function agoFine(lang: Lang, d: Date | string | null | undefined, now: number): string {
   if (!d) return never(lang);
   const s = Math.max(0, Math.round((now - new Date(d).getTime()) / 1000));
@@ -189,7 +189,7 @@ export function ago(lang: Lang, d: Date | string | null | undefined, now = Date.
 
 /* ---------------------------------------------------------------- money and distance */
 
-/** A price in the store country's currency, written for a reader of `lang` (English: the site's own C$ / A$ forms). */
+/** Price in the store country's currency, formatted for the reader's language (English keeps C$ and A$). */
 export function price(lang: Lang, c: Country, amount: number): string {
   if (lang === "en") return formatPrice(c, amount);
   const whole = Number.isInteger(amount);

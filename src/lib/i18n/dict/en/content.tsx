@@ -4,78 +4,80 @@
  * (lib/content/facts.ts), the restock-pattern sentence (lib/content/siteFacts.ts) and photo alt text.
  *
  * For translators: arguments arrive already written for the language — numbers formatted, durations, distances,
- * store, city and colour names in their local form, counts with their noun ("31 restocks", built from the `{ one,
- * other }` forms here, "#" = the number). A translation arranges words around them. Functions that return JSX keep
- * the same elements: only the words around `{…}` change. Never translate model names (iPhone Duo, 18 Pro, 18 Pro Max),
+ * store, city and colour names in their local form, counts with their noun (e.g. "31 restocks", made from the plural
+ * objects below, where "#" stands for the number). A translation only places words around them. JSX-returning functions
+ * keep their elements; translators change the words between braces and nothing else. Never translate model names (iPhone Duo, 18 Pro, 18 Pro Max),
  * storage sizes, "Apple Store", "RestockWire" or apple.com. Check intervals are only ever 15 and 5 seconds.
  */
 import type { ReactNode } from "react";
 import type { Forms } from "@/lib/i18n/format";
 import photoList from "@/content/images.json";
 
-/** Plural forms of one phrase ("#" = the number); a language without plurals gives `other` only. */
+/** Plural forms of one phrase ("#" = the number); a language without plurals fills in just the other form. */
 const f = (x: Forms): Forms => x;
 
-/** The page a FAQ or explainer is about. */
+/** Which kind of page the FAQ or explainer belongs to. */
 type Kind = "state" | "city" | "store" | "model";
 
 export const content = {
   /* ------------------------------------------------------------ lib/seo/enrich.ts: opening hours (24-hour times) */
   hours: {
     closed: "Closed",
-    /** All seven days the same: "Every day 10:00–21:00". */
+    /** Same hours all week, e.g. "Every day 10:00–21:00". */
     everyDay: (hours: string) => `Every day ${hours}`,
     tomorrow: "tomorrow",
-    /** The next opening on a later day: "Sun at 11:00" (`day` is a short weekday name). */
+    /** Next opening on a later day, e.g. "Sun at 11:00" (day = short weekday name). */
     dayAt: (day: string, time: string) => `${day} at ${time}`,
-    /** `next`: "tomorrow at 10:00" / "Sun at 11:00". */
+    /** next: e.g. "tomorrow at 10:00" or "Sun at 11:00". */
     closedTodayOpens: (next: string) => `Closed today · opens ${next}`,
+    /** Status labels for today (tests pin these exact words). */
     closedToday: "Closed today",
     opensAt: (time: string) => `Opens at ${time}`,
     openNow: (closes: string) => `Open now · closes ${closes}`,
     closedNowOpens: (next: string) => `Closed now · opens ${next}`,
+    /** Closed, with no later opening known. */
     closedNow: "Closed now",
   },
 
-  /* ------------------------------------------------------------ enrich.ts: small formatters */
+  /* ------------------------------------------------------------ enrich.ts: little format helpers */
   duration: {
     /** How long stock stayed listed, below one minute. */
     underAMinute: "under a minute",
     /** Two parts of one duration: "2 h" + "15 min" → "2 h 15 min". */
     pair: (a: string, b: string) => `${a} ${b}`,
   },
-  /** The last item of a list cut short: "a, b, c and 4 more". */
+  /** Tail of a shortened list ("a, b, c and 4 more"). */
   listMore: (n: string) => `${n} more`,
-  /** "Austin, TX (12 mi)" / "Toronto (19 km)": a nearby store's city and its distance. */
+  /** City of a nearby store plus distance, e.g. "Toronto (19 km)". */
   nearLine: (place: string, distance: string) => `${place} (${distance})`,
 
-  /* ------------------------------------------------------------ enrich.ts: FAQ (one sentence per answer) */
+  /* ------------------------------------------------------------ enrich.ts: FAQ entries (each answer is one sentence) */
   faq: {
-    /** How answers name the page: "at Apple The Summit", "for the iPhone Duo", "in Texas". */
+    /** The place phrase answers use, e.g. "at Apple The Summit", "for the iPhone Duo", "in Texas". */
     where: (kind: Kind, place: string) => (kind === "store" ? `at ${place}` : kind === "model" ? `for the ${place}` : `in ${place}`),
     nRestocks: f({ one: "# restock", other: "# restocks" }),
     /**
-     * How often a place restocks. `count`: "31 restocks", or null when none was logged; `where` from faq.where;
-     * `peak`: the usual local hour ("10 AM") and busiest weekday ("Tuesday"), when the data shows one.
+     * Restock frequency answer. count is e.g. "31 restocks" (null if nothing was logged); where comes from faq.where;
+     * peak holds the usual local hour and the busiest weekday whenever the data supports one.
      */
     restockA: ({ count, where, days, week, peak }: { count: string | null; where: string; days: string; week: string; peak: { hour: string; day: string | null } | null }) =>
-      `${count == null ? `Zero restocks ${where} over the last ${days} days` : `${count} ${where} over the last ${days} days (${week} in the past week)`}${peak ? `, clustered around ${peak.hour} local time${peak.day ? `, with ${peak.day}s the busiest` : ""}` : ""}; Apple itself announces no schedule.`,
+      `${count == null ? `Zero restocks ${where} over the last ${days} days` : `${count} ${where} over the last ${days} days (${week} in the past week)`}${peak ? `, the bulk of them${peak.day ? ` on ${peak.day}s and` : ""} around ${peak.hour} local time` : ""}; Apple itself announces no schedule.`,
     lastsNone: (where: string) => `Not enough restocks ${where} have sold out yet to put a number on it.`,
-    /** `duration`: "2 h 15 min". */
+    /** duration arrives formatted, e.g. "2 h 15 min". */
     lasts: (days: string, duration: string) => `About ${duration} at the median: that is how long a restocked configuration stayed listed before selling out, over the last ${days} days.`,
-    /** One nearby store in an answer: "Apple Bridge Street in Huntsville, AL (90 mi)". */
+    /** A nearby store inside an answer, store name then its city line. */
     storeIn: (store: string, line: string) => `${store} in ${line}`,
-    /** The answer listing the nearest stores ("A, B and C"). */
+    /** Answer that just lists the closest stores. */
     nearestA: (stores: string) => `${stores}.`,
 
-    // model pages (the US)
+    // US model pages
     modelStockQ: (model: string) => `Where is the ${model} in stock for pickup right now?`,
     modelStockNone: (model: string) => `No US Apple Store listed it at the latest check; this page lists the first one the moment the ${model} appears for pickup.`,
     nUsStores: f({ one: "# US Apple Store", other: "# US Apple Stores" }),
-    /** `count`: "3 US Apple Stores". */
+    /** count arrives as e.g. "3 US Apple Stores". */
     modelStockSome: (count: string) => `${count} at the latest check, each listed on this page with its configurations.`,
     priceQ: (model: string) => `What does the ${model} cost?`,
-    /** `storages`: "256GB, 512GB, 1TB"; `colors`: "Night Sky and Star White". */
+    /** storages and colors arrive as ready-made lists. */
     priceA: (low: string, high: string, storages: string, colors: string) => `${low} to ${high} unlocked, set by storage (${storages}), in ${colors}.`,
     modelRestockQ: (model: string) => `How often is the ${model} restocked?`,
     modelLastsQ: (model: string) => `Once the ${model} is back, how long does it stay listed?`,
@@ -85,37 +87,38 @@ export const content = {
     // store pages
     storeStockQ: (store: string, model: string) => `Is the ${model} in stock at ${store}?`,
     nConfigs: f({ one: "# configuration", other: "# configurations" }),
-    /** `count`: "2 configurations". */
+    /** count arrives as e.g. "2 configurations". */
     storeStockYes: (count: string) => `Yes: ${count} at the latest check, with storage and color in the table on this page.`,
-    /** No Duo: `pro` / `proMax` = configurations of the 18 Pro / 18 Pro Max listed now (null when both are 0). */
+    /** Duo absent. other carries the current 18 Pro and 18 Pro Max config counts, or is null when both are zero. */
     storeStockNo: (other: { pro: string; proMax: string } | null) => `No, not at the latest check${other ? `; it does list ${other.pro} iPhone 18 Pro and ${other.proMax} 18 Pro Max configurations` : ", and it has no 18 Pro or 18 Pro Max configuration either"}.`,
     hoursQ: (store: string) => `When is ${store} open?`,
-    /** `hours`: the week ("Mon–Sat 10:00–21:00 · Sun 11:00–18:00") or null; `today`: "10:00–21:00 (open now)" or null. */
+    /** hours is the weekly line or null; today is today's hours with the open/closed note, or null. */
     hoursA: ({ hours, today, address, phone }: { hours: string | null; today: string | null; address: string; phone: string | null }) =>
       `${hours ?? "See the hours table on this page"}${today ? `; today ${today}` : ""}; address: ${address}${phone ? `, phone ${phone}` : ""}.`,
     storeRestockQ: (store: string) => `How often is the iPhone restocked at ${store}?`,
     storeLastsQ: (store: string) => `How long does a restock stay listed at ${store}?`,
     storeNearestQ: (store: string) => `Which Apple Stores are closest to ${store}?`,
 
-    // state, city and country pages
+    // region, city and country pages
     placeStockQ: (place: string, model: string) => `Which Apple Stores in ${place} list the ${model} for pickup right now?`,
+    /** Nothing listed anywhere in the place. */
     placeStockNone: (place: string, model: string) => `None at the latest check; the moment a store in ${place} lists the ${model}, it appears on this page.`,
     nStores: f({ one: "# store", other: "# stores" }),
-    /** `count`: "2 stores"; `stores`: their names, listed. */
+    /** count like "2 stores", followed by the store names. */
     placeStockSome: (count: string, stores: string) => `${count} at the latest check: ${stores}.`,
     countQ: (place: string) => `How many Apple Stores are there in ${place}?`,
     nAppleStores: f({ one: "# Apple Store", other: "# Apple Stores" }),
-    /** Several stores: "5 Apple Stores, including A, B and C". `stores`: up to three names (state pages add "in {city}"). */
+    /** More than one store: the count, then at most three names (state pages append the city). */
     countMany: (count: string, stores: string) => `${count}, among them ${stores}.`,
-    /** One store: "1 Apple Store: Apple The Summit". */
+    /** Exactly one store: the count, then its name. */
     countOne: (count: string, store: string) => `${count}: ${store}.`,
     placeRestockQ: (place: string) => `How often is the iPhone restocked in ${place}?`,
     placeLastsQ: (place: string) => `How long does stock last in ${place} once it is back?`,
     placeNearestQ: (place: string) => `Which Apple Stores outside ${place} are closest?`,
   },
 
-  /* ------------------------------------------------------------ enrich.ts: explainer and the alert rule */
-  /** "In-store pickup at …": three short paragraphs. */
+  /* ------------------------------------------------------------ enrich.ts: pickup explainer + alert definition */
+  /** Three short paragraphs on how in-store pickup and our checks work. */
   explainer: (kind: Kind, place: string) => {
     const at = kind === "store" ? place : kind === "model" ? "every US Apple Store" : `Apple Stores in ${place}`;
     return [
@@ -134,14 +137,14 @@ export const content = {
       `Apple Stores in ${name} – iPhone Duo stock now`,
       `${name} Apple Stores – live iPhone stock`,
     ],
-    /** `code`: the state's two-letter code. */
+    /** code is the two-letter state abbreviation. */
     city: (city: string, code: string, duoNow: string, stores: string) => [
       `Apple Stores in ${city}, ${code}: iPhone Duo at ${duoNow} of ${stores}`,
       `Apple Stores in ${city}, ${code} – live iPhone Duo pickup`,
       `Apple Stores in ${city}, ${code} – iPhone Duo stock now`,
       `${city} Apple Stores – live iPhone stock`,
     ],
-    /** Store page <title> and H1: "Apple {name}" first (what people search), then the promise. `region`: the only store's city or state, or null. */
+    /** Store <title> and H1: the store name leads (the search term), the promise follows. region is the city or state when the store is its only one, else null. */
     store: (name: string, region: string | null) => {
       const r = region ? ` (${region})` : "";
       return [
@@ -173,17 +176,17 @@ export const content = {
 
   /* ------------------------------------------------------------ lib/content/siteFacts.ts: one store's restock pattern */
   pattern: {
-    /** `days`: the window (30). */
+    /** days is the look-back window, 30. */
     none: (days: string) => `Zero confirmed restocks over the last ${days} days.`,
     nConfirmed: f({ one: "# confirmed restock", other: "# confirmed restocks" }),
-    /** `count`: "30 confirmed restocks". */
+    /** count arrives as e.g. "30 confirmed restocks". */
     countIn: (count: string, days: string) => `${count} over the last ${days} days`,
-    /** Median minutes a restock stayed listed. */
+    /** Median listing time of a restock, in minutes. */
     stay: (minutes: string) => `; a restock usually stays listed ~${minutes} min`,
     nDays: f({ one: "# day", other: "# days" }),
-    /** Restocks on too few local days to call a pattern: `onDays` "2 days" or null. */
+    /** Restocks spread over too few local days for a pattern; onDays is e.g. "2 days", or null. */
     tooFew: (count: string, onDays: string | null, stay: string) => `${count}${onDays ? ` on ${onDays}` : ""}, not yet enough for a usual hour${stay}.`,
-    /** `hour`: "8 AM" / "noon"; `weekday`: "Friday" or null. */
+    /** hour like "8 AM" or "noon"; weekday is a day name or null. */
     usual: (hour: string, weekday: string | null, count: string, stay: string) => `Usual restock hour: ${hour} local time${weekday ? `, with ${weekday} the busiest day` : ""}; ${count}${stay}.`,
   },
 
@@ -215,18 +218,18 @@ export const content = {
     liveByModel: "Live stock, model by model",
     modelStock: (model: string) => `${model} stock`,
     thisPage: "this page",
-    /** `short`: "Duo", "18 Pro", "18 Pro Max". */
+    /** short is the short model name (Duo, 18 Pro, 18 Pro Max). */
     restockLog: (short: string) => `${short} restock record`,
     liveMap: "Live map",
     mostStores: "Largest store counts",
     allStates: "All states",
     bigCities: "Major cities",
     cities: "Cities",
-    /** `region`: the country's word for its regions (regionNouns), singular. */
+    /** region is the singular region noun from regionNouns. */
     storesBy: (region: string) => `Stores by ${region}`,
-    /** `inName` is English only ("in the UK"); other languages use `country`, the country's name. */
+    /** inName ("in the UK") exists in English only; translations use country, the plain country name. */
     allStoresIn: ({ inName }: { inName: string; country: string }) => <>Every Apple Store {inName} →</>,
-    /** `regions`: the region word, plural. */
+    /** regions is the plural region noun. */
     allRegions: (regions: string) => `Every one of the ${regions}`,
   },
   modelCards: "Pick an iPhone",
@@ -241,7 +244,7 @@ export const content = {
     stores: "Stores",
     nCities: f({ one: "# city", other: "# cities" }),
     tracked: "on the wire",
-    /** `short`: "Duo", "18 Pro"… */
+    /** short model name, e.g. Duo. */
     modelNow: (short: string) => `${short} now`,
     configsInStock: "configs listed",
     storesWithStock: f({ one: "store listing stock", other: "stores listing stock" }),
@@ -290,12 +293,12 @@ export const content = {
   /* ------------------------------------------------------------ components/content/* */
   /** Table source line under a content table. */
   source: (source: ReactNode) => <>Data: {source}</>,
-  /** Photo credit: `link` is "{photographer} / Pexels". */
+  /** Photo credit; link renders as photographer / Pexels. */
   photoCredit: (link: ReactNode) => <>Photo: {link}</>,
   sources: "Sources",
   /** Default `where` of the tracker line. */
   allUsStores: "every one of the 269 US Apple Stores",
-  /** The first source: our own tracker. `since`: the date tracking began; `asOf`: when this page's numbers were read. */
+  /** First source line, our own tracker. since = tracking start date; asOf = when the numbers on the page were read. */
   trackerSource: (where: ReactNode, since: ReactNode, asOf: ReactNode) => <>RestockWire&apos;s own live checks since {since}: each iPhone Duo, 18 Pro and 18 Pro Max configuration at {where}, read every 15 seconds (every 5 seconds where an alert is set); figures on this page read at {asOf}.</>,
   live: {
     configsCaption: (stores: ReactNode, model: ReactNode) => <>Live: how many of {stores} Apple Stores list each {model} configuration for pickup</>,
@@ -304,7 +307,7 @@ export const content = {
     price: "Price",
     bestColor: "Most-listed color, stores now",
     noRestock: (model: string) => `The ${model} has no restock on record yet.`,
-    /** RestockClock label: "for the iPhone Duo nationwide". */
+    /** RestockClock label for a model across the whole country. */
     clockLabel: (model: string) => `for the ${model} across the country`,
     storesWithIt: "Stores listing it now",
     pairsInStock: "Store × config pairs listed",

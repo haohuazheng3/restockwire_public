@@ -25,19 +25,19 @@ const money = (code: CountryCode, v: number) => price(L(code), COUNTRIES[code], 
 const N = (code: CountryCode | undefined, v: number) => num(L(code), v);
 const rate = (code: CountryCode, r: number) => `${num(L(code), r)} %`;
 const apple = (s: Store) => appleStoreLabel(s, L(s.country));
-/** "TVA", "TPS", "taxe à la consommation": the tax inside a price. */
+/** Nom français de la taxe incluse dans un prix. */
 function taxFr(c: Country): string {
   const t = taxName(c);
   return t === "VAT" ? "TVA" : t === "GST" ? "TPS" : t === "consumption tax" ? "taxe à la consommation" : "taxe";
 }
-/** "TVA (20 %) incluse" / "avant taxes" (Canada) / "sans taxe de vente" (Hong Kong). */
+/** Mention fiscale accolée à un prix, selon que le pays l’inclut ou non. */
 export function taxNote(code: CountryCode): string {
   const c = COUNTRIES[code];
-  if (!c.pricesIncludeTax) return code === "ca" ? "avant taxes (TPS/TVH et taxe provinciale)" : "avant taxe de vente";
+  if (!c.pricesIncludeTax) return code === "ca" ? "hors taxes (TPS/TVH et part provinciale à ajouter)" : "hors taxe de vente";
   const r = includedRate(c);
-  return r == null ? "sans taxe de vente" : `${taxFr(c)} (${rate(code, r)}) incluse`;
+  return r == null ? "sans taxe de vente" : `${taxFr(c)} ${rate(code, r)} comprise`;
 }
-/** A place given in French: the country itself reads "en France", anything else "à Paris", "au Québec". */
+/** Lieu en français avec préposition ; le pays lui-même prend la forme de la table IN. */
 function where(code: CountryCode, place: string): string {
   return place === NAME[code] || place === COUNTRIES[code].name ? IN[code] : dans(place);
 }
@@ -60,12 +60,12 @@ function caLabel(p: string): string {
   const t = CA_PROVINCE_TAX[p];
   return t.hst ? "TVH" : t.pst ? `TPS + ${PST[p] ?? "taxe provinciale"}` : "TPS";
 }
-/** "la TPS de 5 % et la TVQ de 9,975 %". */
+/** Les parts fédérale et provinciale en toutes lettres : "la TPS de 5 % et la TVQ de 9,975 %". */
 function caParts(p: string): string {
   const t = CA_PROVINCE_TAX[p];
   if (t.hst) return `la TVH de ${rate("ca", t.hst)}`;
   if (t.pst) return `la TPS de ${rate("ca", t.gst)} et la ${PST[p] ?? "taxe provinciale"} de ${rate("ca", t.pst)}`;
-  return `la TPS de ${rate("ca", t.gst)}, sans taxe de vente provinciale`;
+  return `la TPS de ${rate("ca", t.gst)}, et aucune part provinciale`;
 }
 
 /* ------------------------------------------------------------------ sources in French */
@@ -73,12 +73,12 @@ function caParts(p: string): string {
 /** Apple's online store path for French readers (prices, pickup help). */
 const SHOP: Partial<Record<CountryCode, string>> = { fr: "fr", be: "be-fr", ch: "ch-fr", ca: "ca" };
 const RETAIL: Partial<Record<CountryCode, string>> = { fr: "fr", be: "befr", ch: "chfr", ca: "ca/fr" };
-const EU_FR: Source = { label: "Your Europe (Union européenne) : taux de TVA appliqués dans les pays de l’UE", url: "https://europa.eu/youreurope/business/taxation/vat/vat-rules-rates/index_fr.htm" };
+const EU_FR: Source = { label: "Your Europe, portail de l’UE — barème des taux de TVA par État membre", url: "https://europa.eu/youreurope/business/taxation/vat/vat-rules-rates/index_fr.htm" };
 const TAX_FR: Partial<Record<CountryCode, Source>> = {
   fr: EU_FR,
   be: EU_FR,
-  ch: { label: "Administration fédérale des contributions (AFC) : taux de TVA en Suisse", url: "https://www.estv.admin.ch/estv/fr/accueil/taxe-sur-la-valeur-ajoutee/taux-tva-suisse.html" },
-  ca: { label: "Agence du revenu du Canada : calculatrice de la TPS/TVH et tableau des taux", url: "https://www.canada.ca/fr/agence-revenu/services/impot/entreprises/sujets/tps-tvh-entreprises/facturer-percevoir-quel-taux/calculatrice.html" },
+  ch: { label: "AFC, Confédération suisse — taux de TVA en vigueur", url: "https://www.estv.admin.ch/estv/fr/accueil/taxe-sur-la-valeur-ajoutee/taux-tva-suisse.html" },
+  ca: { label: "ARC, gouvernement du Canada — taux de TPS/TVH par province et calculatrice", url: "https://www.canada.ca/fr/agence-revenu/services/impot/entreprises/sujets/tps-tvh-entreprises/facturer-percevoir-quel-taux/calculatrice.html" },
 };
 function taxSource(code: Exclude<CountryCode, "us">): Source {
   return TAX_FR[code] ?? { label: `${TAX_SOURCES[code].label} (en anglais)`, url: TAX_SOURCES[code].url };
@@ -86,21 +86,21 @@ function taxSource(code: Exclude<CountryCode, "us">): Source {
 function pickupHelpFr(code: CountryCode): Source {
   const p = SHOP[code];
   // Apple's Canadian help page exists in English only (the /ca/fr/shop help answers 404).
-  if (p && code !== "ca") return { label: `Apple : aide Livraison et retrait (${NAME[code]}), ce qu’il faut apporter au retrait`, url: `https://www.apple.com/${p}/shop/help/shipping_delivery` };
+  if (p && code !== "ca") return { label: `Apple (${NAME[code]}) — page d’aide sur le retrait : pièces à présenter`, url: `https://www.apple.com/${p}/shop/help/shipping_delivery` };
   const en = pickupHelp(code);
-  return { label: `Apple : aide Livraison et retrait (${NAME[code]}, en anglais), ce qu’il faut apporter au retrait`, url: en.url };
+  return { label: `Apple (${NAME[code]}, page en anglais) — page d’aide sur le retrait : pièces à présenter`, url: en.url };
 }
 function storeListFr(code: CountryCode): Source {
   const p = RETAIL[code];
-  if (p) return { label: `Apple : liste des magasins (${NAME[code]})`, url: `https://www.apple.com/${p}/retail/storelist/` };
-  return { label: `Apple : liste des magasins (${NAME[code]}, en anglais)`, url: storeListSource(code).url };
+  if (p) return { label: `Apple (${NAME[code]}) — annuaire officiel des magasins`, url: `https://www.apple.com/${p}/retail/storelist/` };
+  return { label: `Apple (${NAME[code]}, page en anglais) — annuaire officiel des magasins`, url: storeListSource(code).url };
 }
 const shopPath = (code: CountryCode) => SHOP[code] ?? COUNTRIES[code].buyPath ?? COUNTRIES[code].shopPath;
 
 /* ------------------------------------------------------------------ time */
 
 function sinceWhen(now = Date.now()): string {
-  return now - Date.parse(`${cc.INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "depuis le début du suivi, le 2 novembre" : "sur les 30 derniers jours";
+  return now - Date.parse(`${cc.INTL_TRACKING_SINCE}T00:00:00Z`) < 30 * 86400_000 ? "depuis l’ouverture du fil, le 2 novembre" : "en 30 jours";
 }
 function whenIn(code: CountryCode, iso: string | Date): string {
   return stamp(L(code), iso, COUNTRIES[code].timeZone, true);
@@ -114,12 +114,12 @@ function taxSentence(code: CountryCode, region?: string): string {
   if (duo == null) return "";
   if (code === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
-    if (t) return `Un iPhone Duo 256GB revient à environ ${money(code, t.total)} ${dans(provinceFr(region!))} : les ${money(code, duo)} d’Apple plus ${rate(code, t.rate)} de ${caLabel(region!)}.`;
-    return `Un iPhone Duo 256GB est à ${money(code, duo)} avant taxes ; la province du magasin de retrait ajoute de 5 % à 15 % au comptoir.`;
+    if (t) return `${cap(dans(provinceFr(region!)))}, l’iPhone Duo 256GB sort à ${money(code, t.total)} environ. Calcul : ${money(code, duo)} chez Apple + ${rate(code, t.rate)} de ${caLabel(region!)}.`;
+    return `iPhone Duo 256GB : ${money(code, duo)} hors taxes. Au comptoir, la province du magasin ajoute entre 5 % et 15 %.`;
   }
   const r = includedRate(c);
-  if (r == null) return `${money(code, duo)}, c’est le prix total d’un iPhone Duo 256GB au retrait : il n’y a pas de taxe de vente ${IN[code]}.`;
-  return `${money(code, duo)}, c’est le prix total d’un iPhone Duo 256GB au retrait ${IN[code]}, ${taxFr(c)} de ${rate(code, r)} incluse.`;
+  if (r == null) return `iPhone Duo 256GB au retrait : ${money(code, duo)}, point final. Pas de taxe de vente ${IN[code]}.`;
+  return `iPhone Duo 256GB au retrait ${IN[code]} : ${money(code, duo)} tout compris (${taxFr(c)} ${rate(code, r)}).`;
 }
 
 const PRICE_ROWS: [ModelKey, string][] = [["duo", "256GB"], ["duo", "1TB"], ["18-pro-max", "256GB"], ["18-pro-max", "1TB"], ["18-pro", "256GB"]];
@@ -136,16 +136,16 @@ function priceSection(code: CountryCode, placeName: string, region?: string, mod
       const R = provinceFr(region!);
       const table: Block = {
         t: "table",
-        head: ["iPhone", "Prix apple.com", `Avec ${rate(code, t.total)} de ${caLabel(region!)}`],
+        head: ["Modèle", "apple.com (hors taxes)", `${caLabel(region!)} ${rate(code, t.total)} comprise`],
         rows: rows.map(([label, p]) => [label, money(code, p), money(code, withProvinceTax(p, region!)!.total)]),
-        caption: `Ce que coûte chaque iPhone ${dans(R)} avec la ${caLabel(region!)} (${rate(code, t.total)})`,
-        source: `[${src.label}](${src.url}) ; prix d’apple.com/ca`,
+        caption: `${cap(dans(R))} : prix réel de chaque iPhone, ${caLabel(region!)} de ${rate(code, t.total)} ajoutée`,
+        source: `[${src.label}](${src.url}) · tarifs relevés sur apple.com/ca`,
       };
       return {
         id: "price-with-tax",
-        h2: `Combien coûte l’${m.name} ${dans(placeName)} une fois les taxes ajoutées ?`,
-        lead: `**Environ ${money(code, withProvinceTax(base, region!)!.total)}** pour l’${m.name} 256GB dans un magasin ${dans(placeName)} : les **${money(code, base)} avant taxes** d’Apple, plus ${caParts(region!)}${placeName !== R ? ` (${R})` : ""}.`,
-        blocks: [table, { t: "note", text: "**C’est le magasin de retrait qui fixe le taux :** sa province décide de la taxe, pas votre adresse." }],
+        h2: `${m.name} ${dans(placeName)} : quel prix à la caisse, taxes incluses ?`,
+        lead: `**${money(code, withProvinceTax(base, region!)!.total)} environ** : l’${m.name} 256GB retiré ${dans(placeName)}. Apple affiche **${money(code, base)} hors taxes** ; s’y ajoute ${caParts(region!)}${placeName !== R ? ` (${R})` : ""}.`,
+        blocks: [table, { t: "note", text: "**Le taux suit le magasin, pas vous :** c’est la province du point de retrait qui compte, quelle que soit votre adresse." }],
       };
     }
     const provinces = Object.keys(CA_PROVINCE_TAX).filter((p) => storesOf("ca").some((s) => s.state === p));
@@ -153,14 +153,14 @@ function priceSection(code: CountryCode, placeName: string, region?: string, mod
     const dearest = provinces.reduce((a, b) => (CA_PROVINCE_TAX[b].total > CA_PROVINCE_TAX[a].total ? b : a));
     return {
       id: "price-with-tax",
-      h2: `Combien coûte l’${m.name} au Canada une fois les taxes ajoutées, province par province ?`,
-      lead: `**De ${money(code, withProvinceTax(base, cheapest)!.total)} ${dans(provinceFr(cheapest))} à ${money(code, withProvinceTax(base, dearest)!.total)} ${dans(provinceFr(dearest))}** pour un ${m.name} 256GB : les ${money(code, base)} d’Apple s’entendent hors taxes, et la province du magasin de retrait ajoute de ${rate(code, CA_PROVINCE_TAX[cheapest].total)} à ${rate(code, CA_PROVINCE_TAX[dearest].total)}.`,
+      h2: `${m.name} au Canada : le prix taxes incluses dans chaque province`,
+      lead: `**${m.name} 256GB : ${money(code, withProvinceTax(base, cheapest)!.total)} au mieux ${dans(provinceFr(cheapest))}, ${money(code, withProvinceTax(base, dearest)!.total)} au pire ${dans(provinceFr(dearest))}.** Base Apple : ${money(code, base)} hors taxes. Écart provincial : de ${rate(code, CA_PROVINCE_TAX[cheapest].total)} à ${rate(code, CA_PROVINCE_TAX[dearest].total)}, selon le magasin de retrait.`,
       blocks: [{
         t: "table",
-        head: ["Province", "Taxe", "Taux", `${m.short} 256GB taxes comprises`],
+        head: ["Province", "Taxe applicable", "Taux total", `${m.short} 256GB, prix final`],
         rows: provinces.map((p) => [provinceFr(p), caLabel(p), rate(code, CA_PROVINCE_TAX[p].total), money(code, withProvinceTax(base, p)!.total)]),
-        caption: "Taxe de vente sur un retrait en magasin, dans chaque province qui compte un Apple Store",
-        source: `[${src.label}](${src.url}) ; prix d’apple.com/ca`,
+        caption: "Provinces dotées d’un Apple Store : la taxe prélevée au retrait",
+        source: `[${src.label}](${src.url}) · tarifs relevés sur apple.com/ca`,
       }],
     };
   }
@@ -168,16 +168,16 @@ function priceSection(code: CountryCode, placeName: string, region?: string, mod
   const tn = taxFr(c);
   return {
     id: "price",
-    h2: `Combien coûte l’${m.name} ${IN[code]} ? ${money(code, base)}, ${taxNote(code)}`,
+    h2: `${m.name} ${IN[code]} : ${money(code, base)}, ${taxNote(code)}`,
     lead: r == null
-      ? `**${money(code, base)}, exactement le prix d’apple.com**, pour l’${m.name} 256GB au retrait ${where(code, placeName)} : il n’y a **ni taxe de vente** ni TVA ${IN[code]}.`
-      : `**${money(code, base)}** pour l’${m.name} 256GB au retrait ${where(code, placeName)}, **${tn} de ${rate(code, r)} déjà incluse** (${money(code, beforeTax(c, base))} hors taxes) ; rien ne s’ajoute au comptoir.`,
+      ? `**${money(code, base)} au retrait ${where(code, placeName)}**, au centime près le prix d’apple.com pour l’${m.name} 256GB. ${cap(IN[code])}, **aucune taxe de vente**, aucune TVA.`
+      : `**${money(code, base)} au retrait ${where(code, placeName)}** pour l’${m.name} 256GB. La **${tn} de ${rate(code, r)} est dedans** (${money(code, beforeTax(c, base))} sans elle) : aucun supplément au comptoir.`,
     blocks: [{
       t: "table",
-      head: r == null ? ["iPhone", "Prix apple.com"] : ["iPhone", "Prix apple.com", `Hors ${tn} de ${rate(code, r)}`],
+      head: r == null ? ["Modèle", "Tarif apple.com"] : ["Modèle", "Tarif apple.com", `Sans la ${tn} (${rate(code, r)})`],
       rows: rows.map(([label, p]) => (r == null ? [label, money(code, p)] : [label, money(code, p), money(code, beforeTax(c, p))])),
-      caption: `Prix d’Apple ${IN[code]}, tels que payés au retrait${r == null ? "" : ` (${tn} incluse)`}`,
-      source: `[${src.label}](${src.url}) ; prix d’apple.com/${shopPath(code)}`,
+      caption: `${cap(IN[code])} : ce que vous payez au retrait${r == null ? "" : `, ${tn} comprise`}`,
+      source: `[${src.label}](${src.url}) · tarifs relevés sur apple.com/${shopPath(code)}`,
     }],
   };
 }
@@ -188,13 +188,13 @@ function taxFaq(code: CountryCode, placeName: string, region?: string): FaqItem 
   if (code === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
     return t
-      ? { q: `Quel est le prix de l’iPhone Duo ${dans(placeName)}, taxes comprises ?`, a: `Environ ${money(code, t.total)} pour le 256GB : ${rate(code, t.rate)} de ${caLabel(region!)} (${provinceFr(region!)}) en plus des ${money(code, duo)} d’Apple, perçus par le magasin de retrait.` }
-      : { q: "Les prix canadiens d’Apple incluent-ils les taxes ?", a: `Non : l’iPhone Duo 256GB est à ${money(code, duo)} avant taxes. La province du magasin de retrait ajoute la TPS, la TVH ou la taxe provinciale, de 5 % en Alberta à 14,975 % au Québec.` };
+      ? { q: `${cap(dans(placeName))}, combien coûte l’iPhone Duo une fois taxé ?`, a: `${money(code, t.total)} environ pour le 256GB. Le magasin de retrait ajoute ${rate(code, t.rate)} de ${caLabel(region!)} (${provinceFr(region!)}) aux ${money(code, duo)} affichés par Apple.` }
+      : { q: "Au Canada, le prix Apple est-il taxes comprises ?", a: `Non. ${money(code, duo)} pour l’iPhone Duo 256GB, hors taxes. TPS, TVH ou part provinciale s’y ajoutent selon le magasin : 5 % en Alberta, jusqu’à 14,975 % au Québec.` };
   }
   const r = includedRate(c);
   return r == null
-    ? { q: `Paie-t-on une taxe de vente sur un iPhone ${IN[code]} ?`, a: `Non : il n’y a ni taxe de vente ni TVA ${IN[code]}. L’iPhone Duo 256GB coûte ${money(code, duo)} au retrait, exactement le prix affiché sur apple.com.` }
-    : { q: `La ${taxFr(c)} est-elle déjà comprise dans les prix d’Apple ${IN[code]} ?`, a: `Oui : les ${money(code, duo)} d’un iPhone Duo 256GB comprennent ${rate(code, r)} de ${taxFr(c)}. Rien de plus ne s’ajoute au comptoir de retrait.` };
+    ? { q: `${cap(IN[code])}, une taxe s’ajoute-t-elle au prix de l’iPhone ?`, a: `Aucune : ni taxe de vente ni TVA. ${money(code, duo)} pour l’iPhone Duo 256GB, comme sur apple.com.` }
+    : { q: `${cap(IN[code])}, faut-il ajouter la ${taxFr(c)} au prix Apple ?`, a: `Non, elle y est déjà : ${rate(code, r)} inclus dans les ${money(code, duo)} de l’iPhone Duo 256GB. Pas de supplément au retrait.` };
 }
 
 /* ------------------------------------------------------------------ region / city pages */
@@ -203,18 +203,18 @@ function placeTitle(i: IntlPlaceInput): string {
   const k = i.stores.length;
   const w = labelOf(i.cc, placeName(i));
   return fitTitleW([
-    ...(k > 1 ? [`Apple Store ${w} : retrait iPhone Duo dans ${k === 2 ? "les deux" : `les ${N(i.cc, k)}`}, en direct`] : []),
-    `Apple Store ${w} : retrait iPhone Duo en direct`,
-    `Apple Store ${w} : stock iPhone maintenant`,
-    `Apple Store ${w} : stock iPhone`,
+    ...(k > 1 ? [`${w} : ${N(i.cc, k)} Apple Store, l’iPhone Duo à la minute`] : []),
+    `${w} : l’iPhone Duo en Apple Store, à la minute`,
+    `${w} : où est l’iPhone en Apple Store ?`,
+    `${w} : iPhone en Apple Store`,
   ]);
 }
 
 function priceBit(code: CountryCode, region?: string): string {
   const duo = cc.priceOf(code, "duo");
   if (duo == null) return "";
-  if (code === "ca") { const t = region ? withProvinceTax(duo, region) : null; return t ? `, et le Duo à environ ${money(code, t.total)} avec les taxes ${dans(provinceFr(region!))}` : `, et le Duo à ${money(code, duo)} avant taxes`; }
-  return `, et le Duo à ${money(code, duo)}, ${taxNote(code)}`;
+  if (code === "ca") { const t = region ? withProvinceTax(duo, region) : null; return t ? ` Duo : ${money(code, t.total)} environ, taxes ${dans(provinceFr(region!))} comprises.` : ` Duo : ${money(code, duo)} hors taxes.`; }
+  return ` Duo : ${money(code, duo)}, ${taxNote(code)}.`;
 }
 
 function placeDescription(i: IntlPlaceInput): string {
@@ -222,19 +222,19 @@ function placeDescription(i: IntlPlaceInput): string {
   const w = dans(labelOf(i.cc, placeName(i)));
   const duo = i.stockNow.duo;
   return fitTitleW([
-    `${N(i.cc, duo)} des ${k} Apple Store ${w} ${duo > 1 ? "proposent" : "propose"} l’iPhone Duo en retrait maintenant, ${N(i.cc, i.stockNow["18-pro-max"])} le 18 Pro Max. Magasin par magasin, avec les heures de retour en stock${priceBit(i.cc, i.region)}.`,
-    `${N(i.cc, duo)} des ${k} Apple Store ${w} ${duo > 1 ? "proposent" : "propose"} l’iPhone Duo maintenant, ${N(i.cc, i.stockNow["18-pro-max"])} le 18 Pro Max. En direct par magasin, avec les heures de retour en stock.`,
+    `${cap(w)}, retrait à la minute : iPhone Duo dans ${N(i.cc, duo)} Apple Store sur ${k}, 18 Pro Max dans ${N(i.cc, i.stockNow["18-pro-max"])}. Créneaux de remise en stock par magasin.${priceBit(i.cc, i.region)}`,
+    `${cap(w)} : iPhone Duo en retrait dans ${N(i.cc, duo)} Apple Store sur ${k}, 18 Pro Max dans ${N(i.cc, i.stockNow["18-pro-max"])}. Suivi magasin par magasin, créneaux de remise en stock inclus.`,
   ], 155);
 }
 
 function placeIntro(i: IntlPlaceInput): string {
   const lg = L(i.cc);
   const duo = i.stockNow.duo;
-  const cities = i.kind === "state" && i.cities && i.cities > 1 ? `, répartis dans ${plural(lg, i.cities, { one: "# ville", other: "# villes" })},` : "";
-  return `**${N(i.cc, duo)}** des **${plural(lg, i.stores.length, { one: "# Apple Store", other: "# Apple Store" })}** ${dans(placeName(i))}${cities} ${duo > 1 ? "proposent" : "propose"} un iPhone Duo en retrait à cette minute ; l’iPhone 18 Pro Max est à **${N(i.cc, i.stockNow["18-pro-max"])}**, l’iPhone 18 Pro à **${N(i.cc, i.stockNow["18-pro"])}**.`;
+  const cities = i.kind === "state" && i.cities && i.cities > 1 ? ` (${plural(lg, i.cities, { one: "# ville", other: "# villes" })})` : "";
+  return `${cap(dans(placeName(i)))}, retrait ouvert à l’instant : iPhone Duo **${N(i.cc, duo)}**, iPhone 18 Pro Max **${N(i.cc, i.stockNow["18-pro-max"])}**, iPhone 18 Pro **${N(i.cc, i.stockNow["18-pro"])}** — sur **${plural(lg, i.stores.length, { one: "# Apple Store", other: "# Apple Store" })}**${cities}.`;
 }
 
-/** The two scarcest configurations of a model at a place, in French ("256GB Ciel nocturne"). */
+/** Les deux variantes les plus rares d’un modèle dans un lieu, libellées en français. */
 function scarcest(i: IntlPlaceInput, model: ModelKey, k = 2): { label: string; stores: number }[] {
   const items = catalogFor(model, i.cc);
   const counts = new Map<string, number>(items.map((c) => [c.partNumber, 0]));
@@ -248,10 +248,10 @@ function duoLead(i: IntlPlaceInput): string {
   const k = i.stores.length;
   const have = cc.duoStoresNow(i);
   const st = i.duo;
-  if (have.length > 0) return `**Oui, dans ${N(i.cc, have.length)} ${k === 1 ? "magasin sur 1" : `des ${N(i.cc, k)} magasins`}** : ${list(lg, have.map((s) => apple(s)), 4, (r) => `${N(i.cc, r)} autres`)} ${have.length === 1 ? "propose" : "proposent"} un iPhone Duo en retrait à cette minute.`;
-  const none = k === 1 ? "le magasin ne propose pas" : `aucun des ${N(i.cc, k)} magasins ne propose`;
-  if (st.month > 0) return `**Pas à cette minute** : ${none} d’iPhone Duo, même si ${k === 1 ? "il l’a reçu" : "ensemble, ils l’ont reçu"} **${plural(lg, st.month, { one: "# fois", other: "# fois" })}** ${sinceWhen()}.`;
-  return `**Pas à cette minute** : ${none} d’iPhone Duo, et aucun retour en stock du Duo n’a été confirmé ${sinceWhen()}.`;
+  if (have.length > 0) return `**${N(i.cc, have.length)}/${N(i.cc, k)} à l’instant.** Retrait de l’iPhone Duo ouvert : ${list(lg, have.map((s) => apple(s)), 4, (r) => `+ ${N(i.cc, r)}`)}.`;
+  const none = k === 1 ? "le seul magasin est à sec" : `les ${N(i.cc, k)} magasins sont à sec`;
+  if (st.month > 0) return `**0 à l’instant** : ${none} en iPhone Duo. Pourtant, **${plural(lg, st.month, { one: "# remise en stock", other: "# remises en stock" })}** ${sinceWhen()}.`;
+  return `**0 à l’instant** : ${none} en iPhone Duo, et le registre ne compte aucune remise en stock ${sinceWhen()}.`;
 }
 
 function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
@@ -261,14 +261,14 @@ function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
   const st = i.duo;
   const last = st.lastRestock ? i.stores.find((s) => s.storeNumber === st.lastRestock!.storeNumber) : undefined;
   const items: string[] = [];
-  if (st.lastRestock && last) items.push(`**Dernier retour en stock du Duo ici :** ${whenIn(i.cc, st.lastRestock.at)} chez ${apple(last)}`);
-  if (have.length > 0 && st.month > 0) items.push(`**Confirmés ${sinceWhen()} :** ${plural(lg, st.month, { one: "# retour en stock du Duo", other: "# retours en stock du Duo" })} dans les magasins ${dans(w)}`);
-  if (st.medianMs != null) items.push(`**Durée de mise en ligne :** environ ${fmtDuration(st.medianMs, lg)} en médiane avant que le Duo soit de nouveau épuisé`);
-  const targets = k === 1 ? "le magasin" : k <= 3 ? `les ${k === 2 ? "deux" : "trois"} magasins` : `les ${Math.min(k, 5)} magasins les plus proches`;
-  items.push(`**Le chemin le plus court :** [mettez l’iPhone Duo sur le fil ${dans(w)}](${alert}) pour ${targets} où vous pouvez vous rendre ; les magasins avec alertes sont vérifiés toutes les 5 secondes`);
-  items.push("**Une règle d’alerte** = un magasin × une configuration exacte ; la notification arrive environ 3 secondes après qu’une deuxième vérification a confirmé le retour en stock");
+  if (st.lastRestock && last) items.push(`**Dernière remise en stock du Duo :** ${apple(last)}, ${whenIn(i.cc, st.lastRestock.at)}`);
+  if (have.length > 0 && st.month > 0) items.push(`**Bilan ${sinceWhen()} :** ${plural(lg, st.month, { one: "# remise en stock confirmée", other: "# remises en stock confirmées" })} pour le Duo ${dans(w)}`);
+  if (st.medianMs != null) items.push(`**Tenue du stock :** ${fmtDuration(st.medianMs, lg)} en médiane, puis rupture`);
+  const targets = k === 1 ? "le magasin" : k <= 3 ? `les ${k === 2 ? "deux" : "trois"} magasins` : `vos ${Math.min(k, 5)} magasins de proximité`;
+  items.push(`**Pour être le premier :** [une alerte iPhone Duo ${dans(w)}](${alert}) sur ${targets} que vous pouvez rejoindre. Sous alerte, un magasin passe sur le fil des 5 secondes`);
+  items.push("**Mécanique :** 1 alerte = 1 magasin × 1 variante précise. Second contrôle concordant, puis notification environ 3 secondes plus tard");
   const blocks: Block[] = [];
-  if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**Cela change en une minute :** une alerte voit le prochain retour en stock bien avant qu’une actualisation d’apple.com ne le montre." });
+  if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**Tout peut basculer en une minute.** L’alerte capte la prochaine remise en stock avant que vous n’ayez rechargé apple.com." });
   blocks.push({ t: "ul", items });
   return blocks;
 }
@@ -280,26 +280,26 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
   const alert = alertHref({ model: "duo", state: i.regionSlug, city: i.kind === "city" ? i.citySlug : undefined, country: i.cc });
   const scarce = scarcest(i, "18-pro-max");
   const pm = catalogFor("18-pro-max", i.cc).length;
-  const of = (x: number) => `${N(i.cc, x)} ${k === 1 ? "magasin sur 1" : `des ${N(i.cc, k)} magasins`}`;
+  const of = (x: number) => `${N(i.cc, x)}/${N(i.cc, k)} magasin${k > 1 ? "s" : ""}`;
   const pmNow = i.stockNow["18-pro-max"];
   return [
     {
       id: "iphone-duo",
-      h2: `Quels Apple Store ${dans(w)} ont l’iPhone Duo en ce moment ?`,
+      h2: `${cap(dans(w))}, l’iPhone Duo est-il disponible en retrait ?`,
       lead: duoLead(i),
       blocks: duoPoints(i, w, alert),
     },
     {
       id: "iphone-18-pro-max",
-      h2: `L’iPhone 18 Pro Max est-il en stock ${dans(w)} ?`,
+      h2: `iPhone 18 Pro Max ${dans(w)} : quel stock à l’instant ?`,
       lead: pmNow > 0
-        ? `**Oui, dans ${of(pmNow)}**, avec **${cc.pairsPct(i, "18-pro-max")} %** des ${N(i.cc, k * pm)} couples magasin × configuration ${dans(w)} en ligne à cette minute.`
-        : `**Pas à cette minute** : ${k === 1 ? "le magasin ne propose pas" : `aucun des ${N(i.cc, k)} magasins ${dans(w)} ne propose`} d’iPhone 18 Pro Max en retrait.`,
+        ? `**${of(pmNow)} à l’instant.** Taux de présence ${dans(w)} : **${cc.pairsPct(i, "18-pro-max")} %** des ${N(i.cc, k * pm)} paires magasin × variante.`
+        : `**0 à l’instant.** ${k === 1 ? "Le magasin n’a" : `Les ${N(i.cc, k)} magasins ${dans(w)} n’ont`} aucun iPhone 18 Pro Max en retrait.`,
       blocks: [{ t: "ul", items: [
-        ...(scarce.length ? [`**Les plus difficiles à trouver en ce moment :** ${list(lg, scarce.map((x) => `${x.label} (${N(i.cc, x.stores)} magasin${x.stores > 1 ? "s" : ""} sur ${N(i.cc, k)})`))}`] : []),
-        `**iPhone 18 Pro :** ${N(i.cc, i.stockNow["18-pro"])} magasin${i.stockNow["18-pro"] > 1 ? "s" : ""} sur ${N(i.cc, k)}, ${cc.pairsPct(i, "18-pro")} % de ses couples en ligne`,
-        `**Confirmés ${sinceWhen()} :** ${i.max.month ? plural(lg, i.max.month, { one: "# retour en stock du 18 Pro Max", other: "# retours en stock du 18 Pro Max" }) : "aucun retour en stock du 18 Pro Max pour l’instant"}`,
-        ...(i.max.medianMs != null ? [`**Durée de mise en ligne :** environ ${fmtDuration(i.max.medianMs, lg)} en médiane avant qu’un Pro Max soit de nouveau épuisé`] : []),
+        ...(scarce.length ? [`**Les plus rares à l’instant :** ${list(lg, scarce.map((x) => `${x.label} (${N(i.cc, x.stores)}/${N(i.cc, k)})`))}`] : []),
+        `**iPhone 18 Pro, en comparaison :** ${N(i.cc, i.stockNow["18-pro"])}/${N(i.cc, k)} magasins, ${cc.pairsPct(i, "18-pro")} % des paires en ligne`,
+        `**Registre 18 Pro Max ${sinceWhen()} :** ${i.max.month ? plural(lg, i.max.month, { one: "# remise en stock", other: "# remises en stock" }) : "vide à ce jour"}`,
+        ...(i.max.medianMs != null ? [`**Tenue du stock :** ${fmtDuration(i.max.medianMs, lg)} en médiane pour un Pro Max, puis rupture`] : []),
       ] }],
     },
     priceSection(i.cc, w, i.cc === "ca" ? i.region : undefined),
@@ -311,9 +311,9 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
 function storesIndexTitle(code: CountryCode): string {
   const k = storesOf(code).length;
   return fitTitleW([
-    ...(k > 1 ? [`Apple Store ${NAME[code]} : retrait iPhone Duo dans ${k === 2 ? "les deux" : `les ${N(code, k)}`}, en direct`] : []),
-    `Apple Store ${NAME[code]} : retrait iPhone Duo en direct`,
-    `Apple Store ${NAME[code]} : stock iPhone en direct`,
+    ...(k > 1 ? [`${NAME[code]} : les ${N(code, k)} Apple Store, iPhone Duo à la minute`] : []),
+    `${NAME[code]} : l’Apple Store et l’iPhone Duo à la minute`,
+    `${NAME[code]} : Apple Store et stock iPhone`,
   ], 70);
 }
 
@@ -322,12 +322,12 @@ function homeTitle(code: CountryCode): string {
   const k = stores.length;
   if (k === 1) {
     const city = cityLabel(code, stores[0].city, L(code));
-    return fitTitleW([`Stock iPhone ${NAME[code]} : retrait en direct à l’Apple Store de ${city}`, `Stock iPhone ${NAME[code]} : retrait en direct à ${city}`, `Stock iPhone ${IN[code]} : ${apple(stores[0])}`]);
+    return fitTitleW([`${NAME[code]} : l’iPhone en retrait à ${city}, minute par minute`, `${NAME[code]} : l’iPhone en retrait à ${city}`, `iPhone ${IN[code]} : ${apple(stores[0])}`]);
   }
   return fitTitleW([
-    `Stock iPhone ${NAME[code]} : retrait en direct dans ${N(code, k)} Apple Store`,
-    `Stock iPhone ${NAME[code]} : retrait en direct`,
-    `Stock iPhone ${IN[code]} en direct`,
+    `${NAME[code]} : l’iPhone en retrait, ${N(code, k)} Apple Store au fil`,
+    `${NAME[code]} : l’iPhone en retrait, minute par minute`,
+    `iPhone en retrait ${IN[code]}`,
   ]);
 }
 
@@ -336,14 +336,14 @@ function homeH1(code: CountryCode): string {
   const k = stores.length;
   if (k === 1) {
     const city = cityLabel(code, stores[0].city, L(code));
-    return `Stock iPhone en retrait, en direct, à l’Apple Store ${/^[aeiouyhâéèêîôû]/i.test(city) ? `d’${city}` : `de ${city}`}`;
+    return `L’iPhone en retrait à l’Apple Store ${/^[aeiouyhâéèêîôû]/i.test(city) ? `d’${city}` : `de ${city}`}, minute par minute`;
   }
-  return `Stock iPhone en retrait, en direct, dans les ${N(code, k)} Apple Store ${IN[code]}`;
+  return `L’iPhone en retrait ${IN[code]} : ${N(code, k)} Apple Store, minute par minute`;
 }
 
 function allStoresPhrase(code: CountryCode): string {
   const k = storesOf(code).length;
-  return k === 1 ? `l’unique Apple Store ${IN[code]}` : `les ${N(code, k)} Apple Store ${IN[code]}`;
+  return k === 1 ? `le seul Apple Store ${IN[code]}` : `${N(code, k)} Apple Store ${IN[code]}`;
 }
 
 function spreadPhrase(code: CountryCode): string {
@@ -354,10 +354,10 @@ function spreadPhrase(code: CountryCode): string {
   const k = storesOf(code).length;
   const villes = plural(lg, cities.length, { one: "# ville", other: "# villes" });
   if (k === 1) return `à ${cityLabel(code, cities[0].name, lg)}`;
-  if (cities.length === 1) return `tous à ${cityLabel(code, cities[0].name, lg)}`;
+  if (cities.length === 1) return `concentrés à ${cityLabel(code, cities[0].name, lg)}`;
   if (!c.regionNoun || regions.length === 1) return `dans ${villes}`;
   const nn = noun(c);
-  return `dans ${villes} ${cities.length === 1 ? "répartie" : "réparties"} sur ${N(code, regions.length)} ${regions.length === 1 ? nn.one : nn.other}`;
+  return `sur ${N(code, regions.length)} ${regions.length === 1 ? nn.one : nn.other} et ${villes}`;
 }
 
 function modelPageTitles(code: CountryCode, model: ModelKey): { title: string; h2: string[] } {
@@ -365,8 +365,8 @@ function modelPageTitles(code: CountryCode, model: ModelKey): { title: string; h
   const k = storesOf(code).length;
   const all = k === 1 ? "l’Apple Store" : k === 2 ? "les deux Apple Store" : `les ${N(code, k)} Apple Store`;
   return {
-    title: fitTitleW([`L’${m.name} est-il en stock ${IN[code]} ? ${cap(all)}, en direct`, `L’${m.name} est-il en stock ${IN[code]} ? En direct`, `Stock ${m.name} ${IN[code]}`], 70),
-    h2: [`Quels Apple Store ${IN[code]} ont l’${m.name} en ce moment ?`, priceSection(code, NAME[code], undefined, model).h2],
+    title: fitTitleW([`${m.name} ${IN[code]} : où le retirer ? ${cap(all)}, à la minute`, `${m.name} ${IN[code]} : où le retirer à l’instant ?`, `${m.name} en retrait ${IN[code]}`], 70),
+    h2: [`${cap(IN[code])}, quel Apple Store a l’${m.name} à l’instant ?`, priceSection(code, NAME[code], undefined, model).h2],
   };
 }
 
@@ -374,22 +374,21 @@ function modelIntro(code: CountryCode, model: ModelKey, inStock: number): string
   const m = modelByKey(model)!;
   const k = storesOf(code).length;
   const r = cc.priceRange(code, model);
-  const p = code === "ca" ? `**${money(code, r.low)}** avant taxes` : `**${money(code, r.low)}**, ${taxNote(code)}`;
+  const p = code === "ca" ? `**${money(code, r.low)}** hors taxes` : `**${money(code, r.low)}**, ${taxNote(code)}`;
   const now = inStock === 0
-    ? (k === 1 ? `À cette minute, l’Apple Store ${IN[code]} ne propose **pas** l’${m.name} en retrait` : `À cette minute, **aucun** des ${N(code, k)} Apple Store ${IN[code]} ne propose l’${m.name} en retrait`)
-    : `À cette minute, **${N(code, inStock)} ${k === 1 ? "sur 1" : `des ${N(code, k)}`}** Apple Store ${IN[code]} ${inStock === 1 ? "propose" : "proposent"} l’${m.name} en retrait`;
-  return `${now} (chaque magasin est vérifié **toutes les 15 secondes**) ; les prix commencent à ${p}.`;
+    ? `${m.name} ${IN[code]} : retrait fermé partout à l’instant (**0/${N(code, k)}** Apple Store)`
+    : `${m.name} ${IN[code]} : retrait ouvert dans **${N(code, inStock)}/${N(code, k)}** Apple Store à l’instant`;
+  return `${now}. Prix d’entrée : ${p}. Chaque magasin repasse sur le fil **toutes les 15 secondes**.`;
 }
 
 function modelDescription(code: CountryCode, model: ModelKey, inStock: number): string {
   const m = modelByKey(model)!;
   const k = storesOf(code).length;
   const r = cc.priceRange(code, model);
-  const of = k === 1 ? `${N(code, inStock)} sur 1` : `${N(code, inStock)} des ${N(code, k)}`;
-  const verb = inStock > 1 ? "proposent" : "propose";
+  const of = `${N(code, inStock)}/${N(code, k)}`;
   return fitTitleW([
-    `${of} Apple Store ${IN[code]} ${verb} l’${m.name} en retrait à cette minute. Magasin par magasin et configuration par configuration, dès ${money(code, r.low)}${code === "ca" ? " avant taxes" : ""}, avec les heures de retour en stock.`,
-    `${of} Apple Store ${IN[code]} ${verb} l’${m.name} maintenant. Stock de retrait en direct par magasin et configuration, heures de retour en stock et alertes.`,
+    `${m.name} ${IN[code]}, à la minute : retrait ouvert dans ${of} Apple Store. Détail par magasin et par variante, prix dès ${money(code, r.low)}${code === "ca" ? " hors taxes" : ""}, créneaux du stock.`,
+    `${m.name} ${IN[code]} : retrait ouvert dans ${of} Apple Store à l’instant. Détail par magasin et par variante, créneaux de remise en stock, alertes.`,
   ], 155);
 }
 
@@ -400,13 +399,12 @@ function modelRows(code: CountryCode, storesNow: Record<ModelKey, number>, resto
 
 function homeDescription(code: CountryCode): string {
   const k = storesOf(code).length;
-  return `Le stock en retrait des iPhone Duo, 18 Pro et 18 Pro Max en direct dans ${allStoresPhrase(code)}, vérifié toutes les 15 secondes. ${k === 1 ? "Prix" : "Heures de retour en stock et prix"} en ${COUNTRIES[code].currency}, et une notification à la seconde où votre magasin est réapprovisionné.`;
+  return `${cap(allStoresPhrase(code))} sur le fil des 15 secondes : retrait des iPhone Duo, 18 Pro et 18 Pro Max. ${k === 1 ? "Prix" : "Créneaux du stock et prix"} en ${COUNTRIES[code].currency}. Alerte dès le retour du stock dans votre magasin.`;
 }
 
 function homeIntro(code: CountryCode): string {
   const k = storesOf(code).length;
-  const of = k === 1 ? "sur 1" : `des ${N(code, k)}`;
-  return `Dernier retour en stock confirmé d’iPhone Duo ${IN[code]} : **{{duo.lastRestock}}**. À cette minute, **{{duo.storesNow}} ${of}** Apple Store proposent un Duo en retrait, **{{pm.storesNow}}** un iPhone 18 Pro Max et **{{pro.storesNow}}** un iPhone 18 Pro.`;
+  return `Retrait ouvert à l’instant ${IN[code]}, sur ${N(code, k)} Apple Store : iPhone Duo **{{duo.storesNow}}**, iPhone 18 Pro Max **{{pm.storesNow}}**, iPhone 18 Pro **{{pro.storesNow}}**. Dernière remise en stock confirmée du Duo : **{{duo.lastRestock}}**.`;
 }
 
 function homeSections(i: HomeCopyInput): KeywordSection[] {
@@ -418,15 +416,15 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
   return [
     {
       id: "iphone-stock",
-      h2: `Quels iPhone sont en stock ${IN[code]} en ce moment ?`,
-      lead: `Le tableau y répond en direct : la disponibilité en retrait en magasin publiée par apple.com pour chaque configuration dans ${allStoresPhrase(code)}, vérifiée toutes les 15 secondes${k > 1 ? ` et détaillée par magasin, par ${c.regionNoun ? noun(c).one : "ville"} et par configuration` : ""}.`,
+      h2: `${cap(IN[code])}, quels iPhone peut-on retirer à l’instant ?`,
+      lead: `Réponse dans le tableau, mis à jour toutes les 15 secondes : ce qu’apple.com déclare disponible en retrait, variante par variante, pour ${allStoresPhrase(code)}${k > 1 ? `. Le détail suit par magasin, par ${c.regionNoun ? noun(c).one : "ville"} et par variante` : ""}.`,
       blocks: [
-        { t: "table", head: ["Modèle", "Configurations", "Magasins qui le proposent", "Retours en stock confirmés"], rows: modelRows(code, i.storesNow, i.restocks), caption: `Le fil ${IN[code]} au {{asOf}}` },
+        { t: "table", head: ["Modèle", "Variantes", "Magasins avec stock", "Remises en stock confirmées"], rows: modelRows(code, i.storesNow, i.restocks), caption: `${cap(IN[code])}, arrêté au {{asOf}}` },
         { t: "ul", items: [
-          "**Confirmé veut dire deux fois :** un changement n’est publié que lorsqu’une deuxième vérification concorde ; une réponse erronée d’apple.com ne devient jamais un retour en stock ni une rupture",
-          "**Une première observation n’est pas un retour en stock :** une configuration vue pour la première fois sert seulement de point de départ",
-          `**Le journal fait foi :** chaque changement confirmé entre dans le [journal des retours en stock](${i.restocksPath}), qui dessine les graphiques de ${i.index?.indexable ? `[chaque page magasin](${i.index.path})` : "la page du magasin"}`,
-          `**Couverture :** ${spreadPhrase(code)}, avec les prix et références d’Apple ${IN[code]} ; les magasins avec alertes sont vérifiés toutes les 5 secondes`,
+          `**Couverture :** ${spreadPhrase(code)}. Prix et références d’Apple ${IN[code]}. Magasins sous alerte : fil des 5 secondes`,
+          "**Double contrôle :** rien n’est publié sans un second relevé concordant. Une réponse aberrante d’apple.com ne produit ni remise en stock ni rupture",
+          "**Premier relevé ≠ remise en stock :** une variante vue pour la première fois sert seulement de point zéro",
+          `**Registre :** tout changement confirmé rejoint le [fil des remises en stock](${i.restocksPath}), source des graphiques de ${i.index?.indexable ? `[chaque fiche magasin](${i.index.path})` : "la fiche du magasin"}`,
         ] },
         { t: "img", id: "phone-notification" },
       ],
@@ -434,16 +432,16 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
     priceSection(code, NAME[code]),
     {
       id: "alerts",
-      h2: `Comment fonctionnent les alertes de retour en stock ${IN[code]} ?`,
-      lead: `Vous choisissez ${k === 1 ? "le magasin" : "les magasins"} et le téléphone exact ; quand ${k === 1 ? "le magasin" : "l’un d’eux"} le propose en retrait en magasin, une notification arrive sur votre téléphone environ 3 secondes après la confirmation du retour en stock.`,
+      h2: `Alertes ${IN[code]} : du stock à votre écran, comment ?`,
+      lead: `Environ 3 secondes entre la confirmation du stock et la notification sur votre téléphone. Vous fixez le téléphone exact et ${k === 1 ? "le magasin" : "les magasins"} ; le reste est automatique.`,
       blocks: [
         { t: "ol", items: [
-          k === 1 ? `Choisissez l’iPhone, la capacité et la couleur sous **M’alerter** ; le magasin est ${apple(stores[0])} à ${cityLabel(code, stores[0].city, lg)}.` : "Choisissez l’iPhone, la capacité et la couleur sous **M’alerter**, puis cochez les magasins où vous pouvez vous rendre ; les plus proches viennent en premier, avec la distance par la route en kilomètres et le temps de trajet.",
-          "Sur iPhone, ajoutez RestockWire à l’écran d’accueil et autorisez les notifications ; iOS ne délivre les notifications web qu’à une app installée ([comment l’installer](/phone-alerts)).",
-          "Quand la notification arrive, ouvrez apple.com depuis celle-ci et payez avec le retrait en magasin dans ce magasin.",
+          k === 1 ? `**M’alerter** : modèle, capacité, couleur. Magasin d’office : ${apple(stores[0])}, ${cityLabel(code, stores[0].city, lg)}.` : "**M’alerter** : modèle, capacité, couleur. Ensuite, cochez les magasins que vous pouvez rejoindre ; tri par distance routière en kilomètres, temps de trajet affiché.",
+          "iPhone : RestockWire sur l’écran d’accueil, notifications autorisées. Sans app installée, iOS bloque les notifications web ([pas-à-pas](/phone-alerts)).",
+          "Notification reçue : touchez-la, apple.com s’ouvre, payez en choisissant le retrait dans ce magasin.",
         ] },
-        { t: "table", head: ["Formule", "Par mois (USD)", "Règles d’alerte"], rows: [["Plus", "$5", "10"], ["Pro", "$10", "20"], ["Max", "$20", "50"]], caption: "Une règle = un magasin × une configuration exacte ; consulter reste gratuit, et la vitesse est la même dans toutes les formules ([tarifs](/pricing))" },
-        { t: "note", text: "**Notre lecture :** le Duo mérite une alerte dans chaque magasin accessible ; pour les 18 Pro et Pro Max, regardez d’abord les chiffres en direct." },
+        { t: "table", head: ["Formule", "USD / mois", "Alertes"], rows: [["Plus", "$5", "10"], ["Pro", "$10", "20"], ["Max", "$20", "50"]], caption: "1 alerte = 1 magasin × 1 variante précise. Consultation gratuite ; même vitesse pour toutes les formules ([tarifs](/pricing))" },
+        { t: "note", text: "**Notre conseil :** pour le Duo, une alerte sur chaque magasin à portée. Pour les 18 Pro et Pro Max, vérifiez d’abord le stock à l’instant : il suffit parfois." },
         { t: "img", id: "apple-store-pickup-counter" },
       ],
     },
@@ -453,54 +451,54 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
 function homeFaq(code: CountryCode, rt: RestockTimesBrief): Faq[] {
   const k = storesOf(code).length;
   const p = code === "us" ? "" : `/${code}`;
-  const count = plural(L(code), rt.n, { one: "# retour en stock confirmé", other: "# retours en stock confirmés" });
-  const where = rt.storesTotal === 1 ? "" : ` dans ${N(code, rt.stores)} des ${N(code, rt.storesTotal)} magasins`;
+  const count = plural(L(code), rt.n, { one: "# remise en stock confirmée", other: "# remises en stock confirmées" });
+  const where = rt.storesTotal === 1 ? "" : ` (${N(code, rt.stores)}/${N(code, rt.storesTotal)} magasins)`;
   const when = rt.n === 0
-    ? `Aucun confirmé depuis le début du suivi, le 2 novembre. [Quand Apple remet-il l’iPhone Duo en stock ${IN[code]} ?](${rt.path}) les compte par heure locale et par jour, au fur et à mesure.`
+    ? `Registre vide depuis l’ouverture du fil, le 2 novembre. La page [heures de remise en stock de l’iPhone Duo ${IN[code]}](${rt.path}) se remplira heure par heure.`
     : rt.peakHour != null
-      ? `La plupart tombent vers **${hour(L(code), rt.peakHour, true)}, heure locale** : ${count}${where} depuis le 2 novembre. [Heure par heure et jour par jour](${rt.path}).`
-      : `${cap(count)}${where} depuis le 2 novembre, sur trop peu de jours pour désigner une heure habituelle. [Heure par heure et jour par jour](${rt.path}).`;
+      ? `${cap(count)}${where} depuis le 2 novembre, avec un créneau dominant : **${hour(L(code), rt.peakHour, true)} (heure du magasin)**. [Ventilation complète](${rt.path}).`
+      : `Pas encore de créneau fiable : ${count}${where} depuis le 2 novembre, sur trop peu de jours. [Ventilation complète](${rt.path}).`;
   return [
-    { q: `Quels Apple Store ${IN[code]} proposent l’iPhone Duo à cette minute ?`, a: `{{duo.storesNow}} sur ${N(code, k)} à la dernière vérification ({{asOf}}). [Stock iPhone Duo ${IN[code]}](${p}/in-stock/iphone-duo) nomme chaque magasin et chaque configuration, actualisé toutes les 15 secondes.` },
-    { q: `Quand Apple remet-il l’iPhone Duo en stock ${IN[code]} ?`, a: when },
-    { q: `À quelle vitesse RestockWire voit-il un retour en stock ${IN[code]} ?`, a: `Les magasins avec alertes sont vérifiés toutes les 5 secondes, et ${k === 1 ? `l’Apple Store ${IN[code]}` : `chaque Apple Store ${IN[code]}`} toutes les 15 secondes ; un premier « disponible » est revérifié dans la seconde. Le retour en stock confirmé arrive sur votre téléphone environ 3 secondes plus tard.` },
-    { q: "Faut-il une formule pour consulter le stock ?", a: "Non : le stock en direct, la carte et le journal des retours en stock sont gratuits. Une formule ajoute des règles d’alerte, facturées en dollars américains : Plus à $5 par mois pour 10, Pro à $10 pour 20, Max à $20 pour 50, résiliable quand vous voulez ([tarifs](/pricing))." },
+    { q: `${cap(IN[code])}, combien d’Apple Store ont l’iPhone Duo à l’instant ?`, a: `{{duo.storesNow}}/${N(code, k)} au dernier contrôle ({{asOf}}). Noms des magasins et variantes : [iPhone Duo ${IN[code]}](${p}/in-stock/iphone-duo), relu toutes les 15 secondes.` },
+    { q: `${cap(IN[code])}, à quelle heure l’iPhone Duo revient-il en stock ?`, a: when },
+    { q: `RestockWire repère un retour en stock ${IN[code]} en combien de temps ?`, a: `Fil des 5 secondes pour les magasins sous alerte, des 15 secondes pour ${k === 1 ? `l’Apple Store ${IN[code]}` : `l’ensemble des Apple Store ${IN[code]}`}. Tout « disponible » est recontrôlé dans la seconde, puis la notification part : environ 3 secondes jusqu’à votre téléphone.` },
+    { q: "Consulter le stock, c’est payant ?", a: "Non. Stock à la minute, carte et fil des remises en stock sont libres d’accès. Seules les alertes sont payantes, en dollars américains : Plus $5/mois (10), Pro $10 (20), Max $20 (50), sans engagement ([tarifs](/pricing))." },
     taxFaq(code, NAME[code]),
-    { q: "Une alerte me réserve-t-elle le téléphone ?", a: `Non ; seule une commande avec retrait sur apple.com le fait. L’alerte vous amène au paiement le premier, et Apple met l’appareil de côté une fois que vous avez payé ([aide d’Apple sur le retrait](${pickupHelpFr(code).url})).` },
+    { q: "L’alerte bloque-t-elle un téléphone à mon nom ?", a: `Non. Seul l’achat avec retrait sur apple.com bloque l’appareil. L’alerte sert à arriver au paiement avant les autres ([conditions de retrait Apple](${pickupHelpFr(code).url})).` },
   ];
 }
 
 const homeLabels: Dict["place"]["home"] = {
-  appName: (code) => `RestockWire : vérificateur de stock iPhone ${NAME[code]}`,
-  offer: "Stock en direct, carte et journal des retours en stock gratuits ; formules d’alerte dès $5 par mois",
+  appName: (code) => `RestockWire — iPhone en retrait, ${NAME[code]}`,
+  offer: "Consultation libre (stock, carte, fil des remises en stock) ; alertes à partir de $5 par mois",
   itemList: (code) => `Apple Store ${IN[code]}`,
-  restockTimesChip: "Heures de retour en stock",
-  storesByRegion: (code) => `Magasins par ${noun(COUNTRIES[code]).one}`,
-  browse: (code) => `Stock par lieu ${IN[code]}`,
-  selloutH2: (code) => `Combien de temps dure un retour en stock d’iPhone ${IN[code]} ?`,
-  selloutLabel: (code) => `dans les Apple Store ${IN[code]}`,
+  restockTimesChip: "Créneaux du stock",
+  storesByRegion: (code) => `Les magasins, ${noun(COUNTRIES[code]).one} par ${noun(COUNTRIES[code]).one}`,
+  browse: (code) => `${cap(IN[code])}, lieu par lieu`,
+  selloutH2: (code) => `${cap(IN[code])}, le stock d’iPhone tient combien de temps ?`,
+  selloutLabel: (code) => `dans tout le réseau Apple ${IN[code]}`,
   last24Label: (code) => IN[code],
-  newsroom: "Apple Newsroom : l’iPhone Duo arrive dans les Apple Store du monde entier (23 octobre 2026, en anglais)",
+  newsroom: "Apple Newsroom, 23 octobre 2026 (en anglais) — arrivée de l’iPhone Duo dans les Apple Store",
 };
 
-/** Store <title> and H1: the store as people search it ("Apple Champs-Élysées", "Apple Store Lille"), then the promise. */
+/** <title> et H1 d’un magasin : son nom tel qu’on le cherche, puis ce que la page apporte. */
 export function storeTitleVariants(lead: string, region: string | null): string[] {
   const r = region ? ` (${region})` : "";
   return [
-    `${lead}${r} : stock iPhone du jour, retrait et horaires`,
-    `${lead}${r} : stock iPhone, retrait et horaires`,
-    `${lead}${r} : stock iPhone et horaires`,
-    `${lead} : stock iPhone du jour, retrait et horaires`,
-    `${lead} : stock iPhone, retrait et horaires`,
-    `${lead} : stock iPhone et horaires`,
-    `${lead} : stock iPhone`,
-    `${lead} – stock`,
+    `${lead}${r} : iPhone en retrait à la minute, horaires`,
+    `${lead}${r} : iPhone en retrait, horaires`,
+    `${lead}${r} : iPhone en retrait`,
+    `${lead} : iPhone en retrait à la minute, horaires`,
+    `${lead} : iPhone en retrait, horaires`,
+    `${lead} : iPhone en retrait`,
+    `${lead} : iPhone`,
+    `${lead}`,
   ];
 }
 
 function storeTitle(s: Store, region?: string): string {
   const lg = L(s.country);
-  // A store named after its city ("Lille", "Brussels") reads as people search it: "Apple Store Lille", "Apple Store Bruxelles".
+  // Magasin baptisé du nom de sa ville ("Lille", "Brussels") : on écrit "Apple Store Lille", comme on le cherche.
   const lead = s.name === s.city ? `Apple Store ${cityLabel(s.country, s.city, lg)}` : appleStoreLabel(s, lg);
   const shown = region && !lead.toLowerCase().includes(region.toLowerCase()) && !s.name.toLowerCase().includes(region.toLowerCase()) ? region : null;
   return fitTitleW(storeTitleVariants(lead, shown));

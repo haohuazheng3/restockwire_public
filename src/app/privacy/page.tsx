@@ -27,13 +27,13 @@ export default function Privacy() {
         <li><b>Apple, Google and Mozilla push services</b>: carrying notifications to your device.</li>
       </ul>
       <p>Each acts on our instructions and under its own privacy terms.</p>
-      <h2 id="analytics">Analytics and your choice</h2>
+      <h2 id="analytics">Analytics: what runs, and how to switch it off</h2>
       <p>FlowGlance is our only analytics tool. Its deep capture records the pages you open, your clicks and other page interactions, the text you type into and submit through forms, images you upload, your device and browser type, and a rough location from your network address. When you are signed in, the record carries your account id and e-mail, so a support question can be matched to what you saw.</p>
       <ul>
-        <li><b>EU, EEA, UK and Switzerland</b>, and anywhere we cannot place you: a consent banner asks first. FlowGlance loads only after <b>Accept</b>; after <b>Decline</b> it never loads.</li>
+        <li><b>Visitors in the EU, the EEA, the UK or Switzerland</b>, or anywhere we cannot locate: a consent banner asks first. FlowGlance loads only after <b>Accept</b>; after <b>Decline</b> it never loads.</li>
         <li><b>Everywhere else</b>, the US included: FlowGlance runs by default. Choose <b>Do not track me</b> at the foot of any page to stop it; if it was running, the page reloads once without it. A <a href="https://globalprivacycontrol.org" rel="noopener">Global Privacy Control</a> signal counts as the same opt-out.</li>
       </ul>
-      <p>The <code>rw_consent</code> cookie keeps your choice for 180 days; change it any time from the foot of the page (<b>Analytics off · Turn on</b>). To pick the right rule, your browser asks our host (Vercel) once for the country of your network address; the answer sits in the <code>rw_region</code> cookie for 180 days and is not stored on our servers.</p>
+      <p>The <code>rw_consent</code> cookie keeps your choice for 180 days; switch it back any time with the analytics link in the page footer. To pick the right rule, your browser asks our host (Vercel) once for the country of your network address; the answer sits in the <code>rw_region</code> cookie for 180 days and is not stored on our servers.</p>
       <h2>Cookies</h2>
       <p>Clerk&apos;s session cookies keep you signed in. Ours are <code>rw_consent</code> (your analytics choice) and <code>rw_region</code> (whether the consent banner applies). FlowGlance sets a first-party cookie only while it runs. No third-party advertising cookies.</p>
       <h2>How long we keep it</h2>

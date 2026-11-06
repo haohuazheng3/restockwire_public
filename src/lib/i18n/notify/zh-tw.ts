@@ -38,7 +38,7 @@ export const notifyZhTW: NotifyText = {
     nudge: (url: string) => `Email 只是備援：你帳號裡沒有任何手機開啟通知。推播在確認補貨後約 3 秒送達。要改用推播，請從主畫面打開 RestockWire，點「開啟通知」：${url}`,
     htmlNudge: (url: string) => `Email 只是備援：你帳號裡沒有任何手機開啟通知。<b>推播在確認補貨後約 3 秒</b>送達。請從主畫面打開 RestockWire，點 <b>開啟通知</b>。<a href="${url}" style="color:#0a7f3f">設定步驟 →</a>`,
   },
-  checkoutSubmit: (plan: string, limit: number, fastSec: number, checkSec: number, alertSec: number) => `${plan}：${limit} 則通知。你的門市每 ${fastSec} 秒讀取一次，其他門市每 ${checkSec} 秒一次；確認補貨後約 ${alertSec} 秒送到你的手機。按月計費，隨時可取消。`,
+  checkoutSubmit: (plan: string, limit: number, fastSec: number, checkSec: number, alertSec: number) => `${plan}：可設 ${limit} 則通知。你選的門市 ${fastSec} 秒讀一次、其他門市 ${checkSec} 秒一次；補貨一經確認，約 ${alertSec} 秒就推到手機。按月付費，想停隨時停。`,
   stopped: {
     deviceWord: { ios: "iPhone", android: "Android 手機", desktop: "電腦", other: "裝置" },
     subject: (device: string) => `你的${w(device)}已不再接收 RestockWire 通知`,

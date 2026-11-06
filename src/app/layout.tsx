@@ -56,11 +56,11 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { themeColor: THEME_COLORS.dark, width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // The page's language (proxy: native tree, or the person's for app pages); crossing languages is a full load, so this holds for the whole visit.
+  // Language of this page, set by the proxy (native tree, or the visitor's own on app pages); switching language reloads fully, so it holds per visit.
   const loc = await requestLocale();
   const app = nativeLocale((await headers()).get(APP_LOCALE_HEADER)) ?? null;
   return (
-    <html lang={loc.native ? loc.tag : "en"} dir={loc.native && loc.lang === "ar" ? "rtl" : undefined} className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang={loc.native ? loc.tag : "en"} dir={loc.lang === "ar" && loc.native ? "rtl" : undefined} className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         {/* Runs as the parser reaches it — before any paint — so a dark reader never sees a light flash. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
@@ -78,7 +78,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <div className="void-bg" aria-hidden="true" />
           <Header loc={loc} />
           <Suspense fallback={null}><LangSuggest /></Suspense>
-          <main className="flex-1 pb-24 sm:pb-28"><NavSkeleton>{children}</NavSkeleton></main>
+          <main className="pb-24 sm:pb-28 flex-1"><NavSkeleton>{children}</NavSkeleton></main>
           <Footer loc={loc} />
           <AlertBar />
           <AlertLinkHost />

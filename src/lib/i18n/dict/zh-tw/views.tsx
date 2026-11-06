@@ -239,7 +239,7 @@ export const views: Dict["views"] = {
 
   /* ---------------------------------------------------------------- /restock-log */
   restocks: {
-    metaTitle: (c: Country, k: number) => zs(`${C(c)} iPhone 即時補貨紀錄：${k === 1 ? "Apple 直營店" : `${k} 家 Apple 直營店`}`),
+    metaTitle: (c: Country, k: number) => zs(`${C(c)} iPhone 補貨快訊（即時）：${k === 1 ? "Apple 直營店" : `${k} 家 Apple 直營店`}`),
     metaDescription: (c: Country, k: number) => zs(`${C(c)}${k === 1 ? "這家" : "各家"} Apple 直營店每一次經確認的 iPhone Duo、18 Pro 與 Pro Max 門市取貨補貨：時間、確切規格、地圖。`),
     h1: (c: Country) => `${C(c)} iPhone 補貨，即時記錄`,
     summary: (day: number, week: number, model?: string, region?: string) => <>過去 24 小時補貨 {num(L, day)} 次 · 7 天 {num(L, week)} 次{model ? ` · ${model}` : ""}{region ? ` · ${region}` : ""}。時間以你自己的時區顯示。</>,
@@ -277,7 +277,7 @@ export const views: Dict["views"] = {
       return zs(`此刻 ${duo} 家上架 iPhone Duo、${max} 家上架 Pro Max：${C(c)}全部 ${k} 家 Apple 直營店的門市取貨即時現貨${by}，18 Pro 也在內。`);
     },
     countAnswer: (k: number, spread: string, top: { name: string; count: number }[]) => zs(`${k} 家，${spread}${top.length ? `；${top[0].name}以 ${top[0].count} 家居首${top[1] ? `，領先${top[1].name}（${top[1].count} 家）` : ""}` : ""}。`),
-    howMany: (c: Country) => <>{C(c)}有幾家 Apple 直營店？</>,
+    howMany: (c: Country) => <>{C(c)}一共有多少家 Apple 直營店？</>,
     duoNow: (c: Country, k: number, have: Store[]): FaqItem => ({
       q: zs(`${C(c)}現在哪些 Apple 直營店上架 iPhone Duo？`),
       a: zs(have.length === 0 ? `最新一次檢查，${k} 家都沒有；只要有一家上架，本頁與地圖馬上更新，而通知會比兩者更早到你手上。` : `最新一次檢查，${k} 家中有 ${have.length} 家：${have.slice(0, 6).map(apple).join("、")}${have.length > 6 ? "等" : ""}。`),
@@ -351,11 +351,11 @@ export const views: Dict["views"] = {
         <>{zs(`補貨紀錄暫時讀不到。${C(x.c)}的門市仍維持每 15 秒讀取一次，下次載入本頁時數字就會回來。`)}</>
       ) : t.n > 0 && pattern ? (
         <>
-          {zs(`自 ${longYmdZh(t.since)}起，RestockWire 在${who}確認的`)}<b className="text-ink">{zs(`${n(t.n)} 次 iPhone Duo 補貨中，有 ${pc(w.share)}`)}</b>落在<b className="text-ink">{zs(`門市當地時間${hrange(w.from, w.to)}`)}</b>{x.sell ? <>{zs(`；一次典型的補貨大約 ${Math.round(x.sell.medianSec / 5) * 5} 秒就沒了`)}</> : null}。<b className="text-ink">補貨還在持續</b>{tracked > 1 ? <>{zs(`：追蹤的 ${tracked} 天中有 ${t.days} 天有補貨`)}</> : <>（目前只追蹤了一天）</>}。
+          {zs(`自 ${longYmdZh(t.since)}起，RestockWire 在${who}確認的`)}<b className="text-ink">{zs(`${n(t.n)} 次 iPhone Duo 補貨中，有 ${pc(w.share)}`)}</b>落在<b className="text-ink">{zs(`門市當地時間${hrange(w.from, w.to)}`)}</b>{x.sell ? <>{zs(`；一次典型的補貨大約 ${Math.round(x.sell.medianSec / 5) * 5} 秒就沒了`)}</> : null}。<b className="text-ink">補貨還在持續</b>{tracked > 1 ? <>{zs(`：追蹤的 ${tracked} 天中有 ${t.days} 天有補貨`)}</> : <>（記錄才滿一天）</>}。
         </>
       ) : t.n > 0 ? (
         <>
-          <b className="text-ink">有。</b><b className="text-ink">{zs(`自 ${longYmdZh(t.since)}起補貨 iPhone Duo ${n(t.n)} 次`)}</b>{zs(`，地點是${who}`)}{tracked > 1 ? zs(`，${tracked} 天中有 ${t.days} 天`) : "（目前只追蹤了一天）"}{zs(`；累積到 ${PATTERN_MIN} 次補貨、分布在 ${PATTERN_MIN_DAYS} 個不同的日子，我們才會寫出通常幾點。`)}
+          <b className="text-ink">有。</b><b className="text-ink">{zs(`自 ${longYmdZh(t.since)}起補貨 iPhone Duo ${n(t.n)} 次`)}</b>{zs(`，地點是${who}`)}{tracked > 1 ? zs(`，${tracked} 天中有 ${t.days} 天`) : "（記錄才滿一天）"}{zs(`；累積到 ${PATTERN_MIN} 次補貨、分布在 ${PATTERN_MIN_DAYS} 個不同的日子，我們才會寫出通常幾點。`)}
         </>
       ) : (
         <>
@@ -369,7 +369,7 @@ export const views: Dict["views"] = {
       days: "有補貨的天數",
       now: ((one: boolean): string => (one ? "家門市此刻上架門市取貨" : "家門市此刻上架門市取貨")) as Dict["views"]["restockTimes"]["hero"]["now"],
       today: (x: RTView, today: DayRow) => `今天到目前（${ymdZh(today.date)}）${x.one ? "" : `，分布在 ${today.stores} 家門市`}`,
-      weekday: "目前最忙的星期",
+      weekday: "至今補貨最多的星期",
     },
     heroPoints: (x: RTView, latest: { config: string; store: Store; at: string } | null): Point[] => [
       ...(latest ? [{ text: <>最新：<b className="text-ink">{latest.config}</b>{x.one ? null : <>，在 <Link href={storePath(latest.store)} className="underline underline-offset-2">{apple(latest.store)}</Link></>}，當地時間 {local(latest.at, latest.store)}</> }] : []),
@@ -382,7 +382,7 @@ export const views: Dict["views"] = {
       { text: <>想看樣本最大的小時與星期規律，請看<Link href="/when-does-iphone-duo-restock" className="underline underline-offset-2">美國頁面</Link></>, step: true },
     ],
     setUpAlert: "取得 iPhone Duo 通知",
-    logLive: "即時補貨紀錄",
+    logLive: "補貨快訊（即時）",
     onThisPage: "段落",
     nav: (x: RTView): Record<string, string> => ({
       "time-of-day": "小時",
@@ -413,7 +413,7 @@ export const views: Dict["views"] = {
           ? `自 ${longYmdZh(t.since)}起確認的 ${n(t.n)} 次補貨中，門市當地時間${window}占了 ${pc(w.share)}，上午 8 點到中午 12 點占了 ${pc(hourShare(t.byHour, 8, 12))}。Apple 沒有官方時間表；這是 RestockWire 觀察到的規律，大約每五分鐘更新。`
           : `自 ${longYmdZh(t.since)}起，RestockWire 在${where}有 ${n(t.n)} 次確認補貨的紀錄${t.days ? `，分布在 ${t.days} 天` : ""}，Apple 不公布任何時間表。累積到 ${PATTERN_MIN} 次補貨、分布在 ${PATTERN_MIN_DAYS} 個不同的日子，本頁會自己寫出通常幾點。`) },
         { q: zs(`${us ? "" : `${where}的 `}iPhone Duo 週末也會補貨嗎？`), a: zs(t.n > 0
-          ? `${weekend > 0 ? "會" : "目前還沒有"}：${n(t.n)} 次補貨中有 ${n(weekend)} 次（${pc(weekend / t.n)}）落在週六或週日。${t.peakWeekday != null ? `目前最忙的是${weekdayZh(t.peakWeekday)}。` : `資料涵蓋滿 ${WEEKDAY_MIN_SPAN} 天，我們才會說哪一天最忙；目前涵蓋 ${tracked} 天。`}`
+          ? `${weekend > 0 ? "會" : "目前還沒有"}：${n(t.n)} 次補貨中有 ${n(weekend)} 次（${pc(weekend / t.n)}）落在週六或週日。${t.peakWeekday != null ? `至今最多的是${weekdayZh(t.peakWeekday)}。` : `資料涵蓋滿 ${WEEKDAY_MIN_SPAN} 天，我們才會說哪一天最忙；目前涵蓋 ${tracked} 天。`}`
           : `${where}目前還沒有週末資料；本頁的每日表格會隨每次確認的補貨增加。`) },
         { q: "應該幾點開始盯 apple.com？", a: zs(t.n > 0 && pattern
           ? `手動的話，從當地時間${hh(w.from)}起就開著 apple.com、選好門市取貨；這兩個小時占了 ${pc(w.share)} 的補貨。一次典型的補貨${sell ? `中位數 ${sell.medianSec} 秒內就沒了` : "大約撐一分鐘"}，所以每 5 秒檢查一次的通知（[通知怎麼運作](/iphone-duo-restock-alerts)）勝過再多次重新整理。`
@@ -426,7 +426,7 @@ export const views: Dict["views"] = {
     },
     sources: {
       applePickup: "Apple：送貨與取貨說明（門市取貨供應狀況如何運作）",
-      newsroom: "Apple Newsroom：iPhone Duo 抵達全球 Apple 直營店（2026 年 10 月 23 日）",
+      newsroom: "iPhone Duo 於全球 Apple 直營店開賣（Apple Newsroom，2026 年 10 月 23 日）",
       macRumors: "MacRumors：iPhone Duo 的 Apple Store 取貨系統在美國與加拿大重新上線（2026 年 10 月 24 日）",
       reports: (tracker: string) => zs(`${tracker}：上市週的 iPhone Duo 補貨回報（對方自己的觀察，分開列出，從不計入）`),
     },
@@ -434,7 +434,7 @@ export const views: Dict["views"] = {
       datasetName: zs(`${C(x.c)} Apple 直營店 iPhone Duo 門市取貨補貨時段`),
       description: zs(`自 ${x.t.since} 起${C(x.c)} Apple 直營店經確認的 iPhone Duo 門市取貨補貨（門市、規格、時間），來自 RestockWire 每 15 秒讀取每家門市一次；依當地小時、日期、${rtRegion(x)}、門市與規格分組。`),
       spatial: zs(`${C(x.c)}的 Apple 直營店`),
-      measured: ["補貨時間（門市當地時間）", "Apple 直營店", "iPhone Duo 容量與顏色", "賣完前經過的秒數"],
+      measured: ["補貨時刻（以門市當地時間計）", "Apple 直營店", "iPhone Duo 容量與顏色", "從上架到賣光的秒數"],
       size: `${x.t.stores} 家門市，${x.t.n} 次補貨`,
     }),
     crumb: "iPhone Duo 補貨時段",
@@ -446,7 +446,7 @@ export const views: Dict["views"] = {
     night: "午夜到清晨 6 點",
     tooFew: (x: RTView) => <b>{zs(`天數還不夠，${x.t.n > 0 ? "" : "目前"}說不出通常幾點：自 ${longYmdZh(x.t.since)}起，${x.t.days} 天內確認補貨 ${n(x.t.n)} 次。`)}</b>,
     tooFewKeys: (): Point[] => [
-      { text: <>要說出通常幾點，需要 <b className="text-ink">{PATTERN_MIN} 次補貨、分布在 {PATTERN_MIN_DAYS} 個不同的日子</b></> },
+      { text: <>寫出「通常幾點」的門檻：<b className="text-ink">{PATTERN_MIN} 次補貨、分布在 {PATTERN_MIN_DAYS} 個不同的日子</b></> },
       { text: <>一波連補十次是一次事件，不是習慣</>, no: true },
       { text: <>每多一天資料，本頁就自動更新</>, step: true },
     ],
@@ -465,7 +465,7 @@ export const views: Dict["views"] = {
       return t.n > 0 && tracked === 1 ? (
         <b>{zs(`目前唯一追蹤的一天（${ymdZh(t.daily[t.daily.length - 1]?.date ?? t.since)}），確認補貨 ${n(t.n)} 次${one ? "" : `，分布在 ${t.stores} 家門市`}。`)}</b>
       ) : t.n > 0 ? (
-        <b>{zs(`${t.days === tracked ? `追蹤的 ${t.days} 天全部` : `自 ${longYmdZh(t.since)}起的 ${tracked} 天中有 ${t.days} 天`}至少有一次確認補貨${t.peakWeekday != null ? `；星期之中以${weekdayZh(t.peakWeekday)}最多` : ""}。`)}</b>
+        <b>{zs(`${t.days === tracked ? `追蹤的 ${t.days} 天全部` : `自 ${longYmdZh(t.since)}起的 ${tracked} 天中有 ${t.days} 天`}都有確認過的補貨${t.peakWeekday != null ? `；星期之中以${weekdayZh(t.peakWeekday)}最多` : ""}。`)}</b>
       ) : (
         <b>{zs(`自 ${longYmdZh(t.since)}起，${C(x.c)}確認的補貨是零。`)}</b>
       );
@@ -484,7 +484,7 @@ export const views: Dict["views"] = {
       { text: <><b className="text-ink">{ymdZh(resumed)}</b>：門市取貨恢復{x.us ? "（MacRumors）" : ""}</> },
       x.t.reports.length
         ? { text: <><b className="text-ink">回報</b>列是 {x.reportNames.join(" 和 ")} 的上市週觀察，所有計數都不含它們</> }
-        : { text: <>RestockWire 對{C(x.c)}每家門市的紀錄從 <b className="text-ink">{longYmdZh(x.t.since)}</b> 開始</> },
+        : { text: <>RestockWire 記錄{C(x.c)}各門市的起點：<b className="text-ink">{longYmdZh(x.t.since)}</b></> },
       ...(x.t.n > 0 && x.t.peakWeekday == null ? [{ text: <>要說哪個星期最忙，需要 <b className="text-ink">{WEEKDAY_MIN_SPAN} 天</b>資料（目前 {x.tracked} 天）</>, no: true }] : []),
       { text: <>留意<b className="text-ink">門市</b>那一欄：補貨分散到越多門市，你的機會越好</>, step: true },
     ],
@@ -500,7 +500,7 @@ export const views: Dict["views"] = {
     storesHead: ["門市", "補貨", "天數", "通常時段", "最新（當地時間）"],
     swaps: (x: RTView) => [
       { no: "追著榜首的門市跑，不管多遠", yes: `${x.pattern ? hh(x.w.from) : "上午"}前後一小時內到得了的兩三家門市`, why: "到不了的補貨對你沒用；再忙的門市，一天裡也只有幾分鐘不是「無法取貨」。" },
-      { no: "把注押在一家門市", yes: "每家都設通知，哪家先響就去哪家", why: "次數表只用來決定先往你的哪家門市跑。" },
+      { no: "把注押在一家門市", yes: "幾家都設通知，誰先響就往誰跑", why: "次數表只用來決定先往你的哪家門市跑。" },
     ],
     nearMe: "我附近的 Duo 現貨，即時",
 
@@ -526,7 +526,7 @@ export const views: Dict["views"] = {
 
     howLongLead: (x: RTView, sell: SelloutFacts) => <b>{zs(`${sell.medianSec} 秒：${C(x.c)} ${n(sell.n)} 次售完補貨的中位壽命；${pc(sell.within2min)} 在 2 分鐘內沒了，${pc(sell.within20min)} 在 20 分鐘內。`)}</b>,
     secUnit: "秒",
-    medianListing: "上架時間中位數，從上架到消失",
+    medianListing: "在架時間中位數：從上架到消失",
     within2: "2 分鐘內沒了",
     within20: "20 分鐘內沒了",
     fastest: "紀錄中最快的賣完",
@@ -534,15 +534,15 @@ export const views: Dict["views"] = {
     howLongKeys: (x: RTView): Point[] => [
       { text: <>兩分鐘是留給<b className="text-ink">通知</b>的時間，不是留給你在 apple.com 按重新整理的</> },
       { text: <>本頁其他每個數字，都是從這個數字推出來的</> },
-      { text: <>每次補貨與它撐了幾秒，依規格與{rtRegion(x)}：<Link href="/how-fast-does-iphone-duo-sell-out">iPhone Duo 補貨多快賣完？</Link></>, step: true },
+      { text: <>每次補貨與它撐了幾秒，依規格與{rtRegion(x)}：<Link href="/how-fast-does-iphone-duo-sell-out">iPhone Duo 一補貨多久被搶光？</Link></>, step: true },
     ],
     measured: "每個數字都從「第一次看到該規格上架」的檢查，算到「看到它消失」的檢查，所以是上限：實際壽命更短。",
 
     unavailableLead: (x: RTView) => <b>{zs(`補貨是一閃而過，不是一種狀態：${x.one ? "一家門市" : `${n(x.stores)} 家門市`} × ${x.configs} 種規格，${C(x.c)}共有 ${n(x.pairs)} 個可能的上架組合，而此刻只有 ${x.duoNow} 家門市上架任何一款 iPhone Duo。`)}</b>,
     pairs: "可能的「門市 × 規格」上架組合",
-    listingNow: "此刻上架 iPhone Duo 門市取貨",
+    listingNow: "現在開放 iPhone Duo 門市取貨",
     goneIn2: "的補貨在兩分鐘內結束",
-    last24: "過去 24 小時確認的補貨",
+    last24: "近 24 小時已確認補貨",
     unavailableKeys: (x: RTView, today: number): Point[] => [
       x.recent.restocks > 0
         ? { text: <>過去 24 小時：{zs(`${C(x.c)} ${x.recent.stores} 家門市`)}<b className="text-ink">確認補貨 {n(x.recent.restocks)} 次</b></> }
@@ -560,26 +560,26 @@ export const views: Dict["views"] = {
     claims: (x: RTView): { claim: string; answer: ReactNode }[] => {
       const { t, w, tracked, recent } = x;
       return [
-        { claim: "「門市半夜補貨，凌晨 3 點去看。」", answer: t.n > 0 ? <>{pc(hourShare(t.byHour, 0, 6))} 的補貨落在當地時間午夜到清晨 6 點，相較之下 {pc(w.share)} 落在{hrange(w.from, w.to)}。</> : "目前還沒有紀錄可以驗證。" },
+        { claim: "「門市都在半夜補，凌晨 3 點上去看就對了。」", answer: t.n > 0 ? <>{pc(hourShare(t.byHour, 0, 6))} 的補貨落在當地時間午夜到清晨 6 點，相較之下 {pc(w.share)} 落在{hrange(w.from, w.to)}。</> : "目前還沒有紀錄可以驗證。" },
         { claim: "「Apple 只在某一個星期幾補貨。」", answer: t.n > 0 ? (t.peakWeekday != null ? <>目前{weekdayZh(t.peakWeekday)}居首（{n(t.n)} 次中的 {n(t.byWeekday[t.peakWeekday])} 次），但 {tracked} 天中有 {t.days} 天都有補貨。</> : <>追蹤的 {tracked} 天中有 {t.days} 天有補貨{t.days === tracked ? "，沒有一天空白" : ""}；資料滿 {WEEKDAY_MIN_SPAN} 天我們才說哪一天最忙。</>) : "目前還沒有紀錄可以驗證。" },
         { claim: "「打電話問門市貨車什麼時候到。」", answer: "Apple 沒有公布的補貨時間表；門市取貨庫存是線上釋出的，門市和所有人同一刻才看到。" },
-        { claim: "「顯示無法取貨，就是永遠賣完了。」", answer: recent.restocks > 0 ? <>過去 24 小時 {recent.stores} 家門市確認補貨 {n(recent.restocks)} 次，證明並非如此，而且每一次都在幾分鐘內變回「無法取貨」。</> : t.n > 0 ? <>{zs(`${ymdZh(t.since, false)}起確認的 ${n(t.n)} 次補貨證明並非如此，而且每一次都在幾分鐘內變回「無法取貨」。`)}</> : "目前還沒有紀錄可以驗證。" },
+        { claim: "「寫著無法取貨，代表再也不會有貨。」", answer: recent.restocks > 0 ? <>過去 24 小時 {recent.stores} 家門市確認補貨 {n(recent.restocks)} 次，證明並非如此，而且每一次都在幾分鐘內變回「無法取貨」。</> : t.n > 0 ? <>{zs(`${ymdZh(t.since, false)}起確認的 ${n(t.n)} 次補貨證明並非如此，而且每一次都在幾分鐘內變回「無法取貨」。`)}</> : "目前還沒有紀錄可以驗證。" },
       ];
     },
     redditKeys: (): Point[] => [
       { text: <>沒有<b className="text-ink">數據</b>時，傳言就會補上空缺；這頁就是數據，看了不用錢</> },
-      { text: <>Reddit 說對了一件事：<b className="text-ink">結帳準備</b>，先登入、設好 Apple Pay（<Link href="/iphone-duo-restock-checkout-guide">我們的 20 秒版本</Link>）</> },
+      { text: <>Reddit 說對了一件事：<b className="text-ink">結帳準備</b>，先登入、設好 Apple Pay（<Link href="/iphone-duo-restock-checkout-guide">20 秒結帳流程</Link>）</> },
     ],
 
     methodLead: <b>一次補貨 = 某個規格出現在 apple.com 某家原本沒有上架的門市，可供門市取貨，並經兩次相符的檢查確認。</b>,
     methodKeys: (x: RTView): Point[] => [
       { text: <>有通知的門市：每 <b className="text-ink">5 秒</b>；{zs(x.one ? `${C(x.c)}唯一的 Apple 直營店` : `${C(x.c)}每家 Apple 直營店`)}：每 <b className="text-ink">15 秒</b></> },
-      { text: <>其他追蹤網站公布的間隔：<b className="text-ink">8 秒到 15 分鐘</b>；我們只比較對方公布的數字</> },
+      { text: <>其他追蹤網站公布的間隔：<b className="text-ink">8 秒到 15 分鐘</b>；比較時只用對方自己公布的數字</> },
       { text: <>第一次出現的「有貨」會在<b className="text-ink">大約一秒後</b>再查一次，才算數</> },
       { text: <>上架消失，會在<b className="text-ink">下一輪</b>確認</> },
-      { text: <>某家門市第一次被看到、請求失敗、逾時：<b className="text-ink">絕不</b>算補貨，也絕不算「沒貨」</>, no: true },
-      { text: <>所有時間與日期都用各門市的<b className="text-ink">當地時間</b>；「一波」= 跨時區的同一個半小時</> },
-      { text: <>其他追蹤網站的回報{x.t.reports.length ? `（${x.reportNames.join("、")}）` : ""}有自己標示的列，<b className="text-ink">不計入任何總數</b></> },
+      { text: <>某家門市第一次被看到、請求失敗、逾時：<b className="text-ink">一律不</b>當成補貨，也不當成「沒貨」</>, no: true },
+      { text: <>所有時間與日期都用各門市的<b className="text-ink">當地時間</b>；「一波」指不同時區落在同一個半小時的補貨</> },
+      { text: <>第三方追蹤站的通報{x.t.reports.length ? `（${x.reportNames.join("、")}）` : ""}有自己標示的列，<b className="text-ink">不計入任何總數</b></> },
       { text: <>這些表格大約每五分鐘更新；<Link href={x.logHref}>補貨紀錄</Link>是即時的</>, step: true },
     ],
     quote: "引用本頁：這裡的任何數字都歡迎引用，請附上連結。RestockWire 獨立於 Apple，讀取的是任何人在 apple.com 都看得到的門市取貨供應狀況，只是讀得勤得多。",

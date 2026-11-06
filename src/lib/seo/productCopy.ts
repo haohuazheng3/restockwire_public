@@ -21,7 +21,7 @@ export function productTitle(product: Product, place: Place, inStock: number): s
   if (place.level === "country") return fitTitle([...(inStock > 0 ? [`${product.name}: ${plural(inStock, "Apple Store")} list it for pickup now`] : []), `${product.name} pickup stock at every US Apple Store`, `${product.name}: live pickup stock`, `${product.short} pickup stock`]);
   if (place.level === "store") {
     const s = place.store!;
-    return fitTitle([`${product.name} at ${appleName(s)}: ${inStock > 0 ? "listed for pickup now" : "pickup stock and restocks"}`, `${product.short} at ${appleName(s)}: ${inStock > 0 ? "in stock now" : "stock"}`, `${product.short} at ${appleName(s)}`, `${product.short} at ${s.name}`, `${product.short} · ${s.name.replace(/^The /, "")}`]);
+    return fitTitle([`${product.name} at ${appleName(s)}: ${inStock > 0 ? "listed for pickup now" : "pickup stock and restocks"}`, `${product.short} at ${appleName(s)}: ${inStock > 0 ? "listed now" : "pickup stock"}`, `${product.short} at ${appleName(s)}`, `${product.short} at ${s.name}`, `${product.short} · ${s.name.replace(/^The /, "")}`]);
   }
   return fitTitle([`${product.name} in ${place.name}: ${inStock} of ${n} stores list it now`, `${product.name} in ${place.name}: pickup stock, live`, `${product.short} in ${place.name}: in stock now?`, `${product.short} in ${place.name}`]);
 }
@@ -32,13 +32,13 @@ export function productDescription(product: Product, place: Place, inStock: numb
     const s = place.store!;
     return fitTitle([
       `${product.name} at ${appleName(s)}, ${ccOf(place) === "us" ? `${s.city} ${stateCodeOf(s)}` : storeLocality(s)}: ${inStock > 0 ? "listed for pickup at the last read" : "not listed for pickup right now"}, ${week}. When this store restocks, how long it lasts, and an alert for the next one.`,
-      `${product.name} at ${appleName(s)}: ${inStock > 0 ? "in stock now" : "not in stock now"}, ${week}. Restock hours and alerts.`,
+      `${product.name} at ${appleName(s)}: ${inStock > 0 ? "listed at the last read" : "off the pickup list at the last read"}, ${week}. Usual restock hour, plus an alert.`,
     ], 155);
   }
   const where = place.level === "country" ? (ccOf(place) === "us" ? "US Apple Stores" : `Apple Stores ${COUNTRIES[ccOf(place)].inName}`) : `Apple Stores in ${place.name}`;
   return fitTitle([
     `${inStock} of ${place.stores.length} ${where} list the ${product.name} for pickup at this minute, ${week}. Store by store, with restock hours and a phone alert for the next one.`,
-    `${product.name}: ${inStock} of ${place.stores.length} ${where} have it now, ${week}. Live by store, restock hours, alerts.`,
+    `${product.name}, ${week}: listed at ${inStock} of ${place.stores.length} ${where} right now. Per-store stock, restock hours, alerts.`,
   ], 155);
 }
 

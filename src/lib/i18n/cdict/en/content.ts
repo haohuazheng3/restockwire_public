@@ -11,7 +11,7 @@ export const content = {
     useLocation: "Locate me",
     nearMe: "📍 Near me",
     locationOff: "This site has no location access. Enter a ZIP code instead.",
-    /** {n} of {total}: stores with it now; {what}: the model or configuration ("iPhone 18 Pro Max Burgundy"). */
+    /** {n} of {total}: stores with it now; {what}: the model or configuration ("iPhone 18 Pro Glacier"). */
     storesNow: "The {what} is listed for pickup at **{n} of {total}** US Apple Stores right now",
     /** {place}: the typed ZIP / city / store, or "you". */
     nearestTo: " · closest to {place}",

@@ -126,12 +126,12 @@ export default async function HowToGetDuo() {
 
   const waysTable: Block = { t: "table", head: ["Route", "What you end up with", "Time to a phone", "RestockWire's read"], rows: [
     ["Pickup reservation the moment a store restocks", "A phone held in your name at a store you choose, at list price", "Days, with the right stores watched at the right hour", "The one route measured in days"],
-    ["Delivery order on apple.com", "A ship date that slides as Apple catches up", `A day after launch, MacRumors saw estimates [pushing into late January](${MACRUMORS}), into 2027`, "Fine if you can wait"],
-    ["A carrier store or Best Buy", "Their own allocation, often tied to a plan", "Unknown: we do not track them", "Ask them; we have no odds to give"],
+    ["Delivery order on apple.com", "A ship date that slides as Apple catches up", `A day after launch, MacRumors saw estimates [pushing into late January](${MACRUMORS}), into 2027`, "Works if months are acceptable"],
+    ["Best Buy or a carrier's shop", "A separate supply, usually bundled with a plan", "Not measured: RestockWire does not watch them", "Ask them; we have no odds to give"],
   ], caption: "Three routes to an iPhone Duo today", source: `[MacRumors, ${longDate(DUO_PICKUP_RESUMED)}](${MACRUMORS}); RestockWire restock log` };
 
   const whenLead = have
-    ? `Between **${window}** local time, mostly: that window holds **${pct(win.share)}** of the ${n(t.n)} confirmed US restocks since ${since}${t.peakWeekday != null ? `, and **${WEEKDAYS[t.peakWeekday]}** leads the week` : ""}.`
+    ? `Between **${window}** local time, mostly: that window holds **${pct(win.share)}** of the ${n(t.n)} US restocks confirmed from ${since} on${t.peakWeekday != null ? `, and **${WEEKDAYS[t.peakWeekday]}** leads the week` : ""}.`
     : "Daily, clustered in the morning. Apple publishes no schedule; the hours RestockWire observes below are the nearest thing to one.";
 
   const storesTable: Block | null = topStores.length ? { t: "table", head: ["Store", `Restocks since ${since}`, "Restock days", "Usual hour", "Most recent"], rows: topStores.map((s) => {
@@ -159,7 +159,7 @@ export default async function HowToGetDuo() {
   ];
 
   const storageAnswer = storageRows.length >= 2 && t.n > 0
-    ? `${bestStorage.storage} returns most, ${pct(bestStorage.share)} of confirmed US restocks since ${since} (${storageRows.map((r) => `${r.storage} ${pct(r.share)}`).join(", ")}), at ${storages[0]} ${fmtPrice(storageRows[0].price)} and ${storages[1]} ${fmtPrice(storageRows[1].price)}. Put alerts on both, lead with ${bestStorage.storage}, and take the first push.`
+    ? `${bestStorage.storage} returns most, ${pct(bestStorage.share)} of every US restock confirmed from ${since} on (${storageRows.map((r) => `${r.storage} ${pct(r.share)}`).join(", ")}), at ${storages[0]} ${fmtPrice(storageRows[0].price)} and ${storages[1]} ${fmtPrice(storageRows[1].price)}. Put alerts on both, lead with ${bestStorage.storage}, and take the first push.`
     : "Put alerts on both; the storage split builds as restocks are confirmed, and [the configuration ranking](/iphone-duo-most-restocked-stores) covers all eight.";
   const faq: Faq[] = [
     { q: "Can I still find an iPhone Duo in an Apple Store this week?", a: `Yes, through pickup restocks: ${n(recent.restocks)} were confirmed in the last 24 hours at ${plural(recent.stores, "store")}, and right now {{duo.storesNow}} of {{duo.storesTotal}} US Apple Stores list at least one configuration${typical ? `. Each listing lasts ${typical}` : ""}.` },
@@ -172,7 +172,7 @@ export default async function HowToGetDuo() {
     { label: `Apple Newsroom: iPhone Duo arrives at Apple Store locations worldwide, ${longDate(DUO_LAUNCH_DAY)}`, url: NEWSROOM },
     { label: `MacRumors: iPhone Duo Apple Store pickup resumes in the US and Canada, ${longDate(DUO_PICKUP_RESUMED)}`, url: MACRUMORS },
     { label: "Apple: Delivery and Pickup, how in-store pickup works", url: PICKUP },
-    { label: "Apple: Shipping & Pickup help", url: PICKUP_HELP },
+    { label: "Apple pickup help: what to bring", url: PICKUP_HELP },
     { label: "Wikipedia: iPhone", url: "https://en.wikipedia.org/wiki/IPhone" },
   ];
 
@@ -325,7 +325,7 @@ export default async function HowToGetDuo() {
         <Section id="what-fails" h2="Which tactics waste your time?" facts={facts}
           lead="Hand-refreshing apple.com, phoning the store, paying a reseller and staying up for a night restock. The numbers show why.">
           <ol className="mt-5 grid gap-3 sm:grid-cols-2">
-            <Swap no="Staying up for a night restock" yes={<>Sleep, and be ready by {hourLabel(win.from)}</>} why={<>{have ? pct(night) : "A tiny share"} of confirmed US restocks since {since} landed between midnight and 6 AM local time.</>} />
+            <Swap no="Staying up for a night restock" yes={<>Sleep, and be ready by {hourLabel(win.from)}</>} why={<>{have ? pct(night) : "A tiny share"} of the US restocks confirmed from {since} on landed between midnight and 6 AM local time.</>} />
             <Swap no="Hand-refreshing apple.com" yes={<>A push ~{SPEED.alertSec} s after confirmation</>} why={ds ? <>Of {n(ds.n)} Duo restocks that sold out in the last 7 days, <b>{pct(ds.within30)}</b> lasted 30 seconds or less; a reload each minute catches about {pct(ds.caught.m1)}, each 5 minutes {pct(ds.caught.m5)}, each 15 minutes {pct(ds.caught.m15)}.</> : "Listings last minutes and mostly come and go between two reloads. The exact catch rate shows here once enough of last week's restocks have sold out."} />
             <Swap no="Paying a reseller" yes={<>List price, from {fmtPrice(low)}, when you reserve</>} why="A resale premium on a sold-out phone buys only time." />
             <Swap no="Phoning the store" yes="Checking the store page's usual hour" why="Apple publishes no restock schedule; staff see the same pickup availability as you." />

@@ -206,7 +206,7 @@ export function andList(xs: string[]): string {
   return xs.length <= 1 ? (xs[0] ?? "") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
 }
 
-/** The legend line of the reports series: "Reported by other trackers (Apple Pickup Live, DuoReady), Oct 26 – Nov 1". */
+/** The legend line of the reports series: the outside trackers by name, then the date range. */
 export function reportLegend(s: Pick<ReportSeries, "sources" | "from" | "to">): string {
-  return `Reported by other trackers (${s.sources.map((x) => x.name).join(", ")}), ${reportRange(s)}`;
+  return `Reports from other trackers (${s.sources.map((x) => x.name).join(", ")}), ${reportRange(s)}`;
 }

@@ -1,8 +1,8 @@
 /**
- * Swedish strings: place — the copy builders of a country's page tree (English: lib/seo/countryCopy.ts), written
- * for /sv-se/…: titles that lead with what Swedes type ("apple store sverige", "apple mall of scandinavia",
- * "iphone duo pris"), Answer-First intros, keyword sections, the price/tax section (moms ingår) and FAQs.
- * Built for Sweden; the other countries' branches are kept so the functions stay complete.
+ * Swedish copy builders for a country's page tree (the English twin is lib/seo/countryCopy.ts), aimed at /sv-se/.
+ * Titles open with the Swedish search phrasing (apple store sverige, apple mall of scandinavia, iphone duo pris);
+ * intros answer first; then keyword sections, the price block (moms included) and FAQs. Sweden is the target, but
+ * every country branch stays so each function covers all inputs.
  */
 import { MODELS, catalogFor, citiesWithStores, statesWithStores, storesOf, modelByKey, type ModelKey, type Store } from "@/lib/apple/catalog";
 import { COUNTRIES, type CountryCode } from "@/lib/apple/countries";
@@ -17,31 +17,31 @@ import { SV, apple, cap, color, dur, fit, klock, kr, land, n, noun, pc, pl, taxN
 
 const TRACKING_START = Date.parse("2026-11-02T00:00:00Z");
 
-/** "sedan bevakningen startade den 2 november" while the 30-day window reaches back to the start, else "de senaste 30 dagarna". */
+/** Window wording: counted from the 2 November start while the 30-day window still reaches it, else 30 days back. */
 function sinceWhen(now = Date.now()): string {
-  return now - TRACKING_START < 30 * 86400_000 ? "sedan bevakningen startade den 2 november" : "de senaste 30 dagarna";
+  return now - TRACKING_START < 30 * 86400_000 ? "sedan starten 2 november" : "på 30 dagar";
 }
 
-/** "2 nov. 15:04 CET" in the country's zone. */
+/** Date and time in the country's own zone. */
 function whenIn(cc: CountryCode, iso: string | Date): string {
   return stamp(SV, iso, COUNTRIES[cc].timeZone, true);
 }
 
-/** The Stockholm stores: there is no Apple Store inside Stockholm city, Solna and Täby are where Stockholm shops. */
+/** Stockholm's two stores sit in Solna and Täby; the city itself has none. */
 const STOCKHOLM = new Set(["R626", "R505"]);
 
 /* ------------------------------------------------------------------ sources */
 
-/** Apple's Swedish pages, and Your Europe's VAT page in Swedish. */
+/** Source links: Apple's pages for the country and the EU's own VAT table in Swedish. */
 function sources(code: Exclude<CountryCode, "us">): { pickupHelp: Source; storeList: Source; tax: Source } {
   const help = pickupHelp(code);
   const list = storeListSource(code);
   const tax: Source = code === "se"
-    ? { label: "Your Europe (EU): momssatser i EU-länderna", url: "https://europa.eu/youreurope/business/taxation/vat/vat-rules-rates/index_sv.htm" }
+    ? { label: "EU:s portal Your Europe – momssatser land för land", url: "https://europa.eu/youreurope/business/taxation/vat/vat-rules-rates/index_sv.htm" }
     : TAX_SOURCES[code];
   return {
-    pickupHelp: { label: `Apple: hjälp om leverans och hämtning (${land(code)}) – vad du ska ta med när du hämtar`, url: help.url },
-    storeList: { label: `Apple: butikslista (${land(code)})`, url: list.url },
+    pickupHelp: { label: `Apple-support, ${land(code)}: leverans, hämtning och vad som krävs vid disken`, url: help.url },
+    storeList: { label: `Apples butiksförteckning, ${land(code)}`, url: list.url },
     tax,
   };
 }
@@ -54,12 +54,12 @@ function taxSentence(cc: CountryCode, region?: string): string {
   if (duo == null) return "";
   if (cc === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
-    if (t) return `En iPhone Duo med 256GB landar på ungefär ${kr(cc, t.total)} i ${region}: Apples ${kr(cc, duo)} plus ${pc(t.rate)} ${CA_PROVINCE_TAX[region!].label}.`;
-    return `En iPhone Duo med 256GB kostar ${kr(cc, duo)} utan skatt; hämtbutikens provins lägger på 5–15 % i kassan.`;
+    if (t) return `I ${region} hamnar iPhone Duo 256GB runt ${kr(cc, t.total)}: ${kr(cc, duo)} från Apple plus ${pc(t.rate)} ${CA_PROVINCE_TAX[region!].label}.`;
+    return `iPhone Duo 256GB: ${kr(cc, duo)} före skatt. Provinsen där du hämtar lägger till 5–15 % i kassan.`;
   }
   const r = includedRate(c);
-  if (r == null) return `${kr(cc, duo)} är hela priset för en iPhone Duo med 256GB vid hämtning: Hongkong tar inte ut någon moms.`;
-  return `${kr(cc, duo)} är hela priset för en iPhone Duo med 256GB vid hämtning i ${land(cc)}, ${pc(r)} ${taxWord(c)} inräknad.`;
+  if (r == null) return `iPhone Duo 256GB vid hämtning: ${kr(cc, duo)}, slutpris. Ingen moms i Hongkong.`;
+  return `iPhone Duo 256GB vid hämtning i ${land(cc)}: ${kr(cc, duo)}, slutpris med ${pc(r)} ${taxWord(c)}.`;
 }
 
 const PRICE_ROWS: [ModelKey, string][] = [["duo", "256GB"], ["duo", "1TB"], ["18-pro-max", "256GB"], ["18-pro-max", "1TB"], ["18-pro", "256GB"]];
@@ -77,11 +77,11 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
       const parts = t.hst ? `${pc(t.hst)} HST` : t.pst ? `${pc(t.gst)} GST och ${pc(t.pst)} ${t.label.split(" + ")[1]}` : `${pc(t.gst)} GST (ingen provinsskatt)`;
       return {
         id: "price-with-tax",
-        h2: `Vad kostar ${m.name} i ${placeName} med skatt?`,
-        lead: `**Ungefär ${kr(cc, withProvinceTax(base, region!)!.total)}** för ${m.name} med 256GB i en butik i ${placeName}: Apples **${kr(cc, base)} utan skatt** plus ${region}s ${parts}.`,
+        h2: `${m.name} i ${placeName}: vad blir priset med skatt?`,
+        lead: `**Runt ${kr(cc, withProvinceTax(base, region!)!.total)}** för ${m.name} 256GB vid hämtning i ${placeName}. Grunden är Apples **${kr(cc, base)} före skatt**; ovanpå kommer ${parts} (${region}).`,
         blocks: [
-          { t: "table", head: ["iPhone", "Pris på apple.com", `Med ${pc(t.total)} ${t.label}`], rows: rows.map(([label, p]) => [label, kr(cc, p), kr(cc, withProvinceTax(p, region!)!.total)]), caption: `Vad varje iPhone kostar i ${region} med ${t.label} (${pc(t.total)})`, source: `[${src.label}](${src.url}); priser från apple.com/ca` },
-          { t: "note", text: "**Hämtbutiken avgör skatten:** det är butikens provins som bestämmer satsen, inte din hemadress." },
+          { t: "table", head: ["iPhone", "Pris på apple.com", `Med ${pc(t.total)} ${t.label}`], rows: rows.map(([label, p]) => [label, kr(cc, p), kr(cc, withProvinceTax(p, region!)!.total)]), caption: `${region}: iPhone-priser med ${t.label} (${pc(t.total)})`, source: `[${src.label}](${src.url}) · prisuppgifter: apple.com/ca` },
+          { t: "note", text: "**Skattesatsen följer butiken:** provinsen där du hämtar gäller – inte provinsen du bor i." },
         ],
       };
     }
@@ -90,14 +90,14 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
     const dearest = provinces.reduce((a, b) => (CA_PROVINCE_TAX[b].total > CA_PROVINCE_TAX[a].total ? b : a));
     return {
       id: "price-with-tax",
-      h2: `Vad kostar ${m.name} i Kanada med skatt, provins för provins?`,
-      lead: `**Från ${kr(cc, withProvinceTax(base, cheapest)!.total)} i ${cheapest} till ${kr(cc, withProvinceTax(base, dearest)!.total)} i ${dearest}** för en ${m.name} med 256GB: Apples ${kr(cc, base)} är utan skatt, och hämtbutikens provins lägger på ${pc(CA_PROVINCE_TAX[cheapest].total)} till ${pc(CA_PROVINCE_TAX[dearest].total)}.`,
+      h2: `${m.name} i Kanada: pris med skatt i varje provins`,
+      lead: `**${kr(cc, withProvinceTax(base, cheapest)!.total)} (${cheapest}) upp till ${kr(cc, withProvinceTax(base, dearest)!.total)} (${dearest})** för ${m.name} 256GB. Apple anger ${kr(cc, base)} före skatt; hämtprovinsen lägger till mellan ${pc(CA_PROVINCE_TAX[cheapest].total)} och ${pc(CA_PROVINCE_TAX[dearest].total)}.`,
       blocks: [{
         t: "table",
-        head: ["Provins", "Skatt", "Sats", `${m.short} 256GB med skatt`],
+        head: ["Provins", "Skatteslag", "Total sats", `${m.short} 256GB inkl. skatt`],
         rows: provinces.map((p) => [p, CA_PROVINCE_TAX[p].label, pc(CA_PROVINCE_TAX[p].total), kr(cc, withProvinceTax(base, p)!.total)]),
-        caption: "Skatt vid hämtning i butik, i varje provins med en Apple Store",
-        source: `[${CA_TAX_SOURCE.label}](${CA_TAX_SOURCE.url}); priser från apple.com/ca`,
+        caption: "Provinser med Apple Store: skatten som läggs på vid hämtning",
+        source: `[${CA_TAX_SOURCE.label}](${CA_TAX_SOURCE.url}) · prisuppgifter: apple.com/ca`,
       }],
     };
   }
@@ -105,16 +105,16 @@ function priceSection(cc: CountryCode, placeName: string, region?: string, model
   const tw = taxWord(c);
   return {
     id: "price",
-    h2: `Vad kostar ${m.name} i ${land(cc)}? ${kr(cc, base)}, ${taxNote(c)}`,
+    h2: `${m.name}-pris i ${land(cc)}: ${kr(cc, base)}, ${taxNote(c)}`,
     lead: r == null
-      ? `**${kr(cc, base)}, exakt priset på apple.com**, för ${m.name} med 256GB vid hämtning i ${placeName}: Hongkong tar ut **ingen moms** eller försäljningsskatt.`
-      : `**${kr(cc, base)}** för ${m.name} med 256GB vid hämtning i ${placeName}, med **${pc(r)} ${tw} redan inräknad** (${kr(cc, beforeTax(c, base))} utan ${tw}); inget läggs till i kassan.`,
+      ? `**${kr(cc, base)} – samma som på apple.com** – för ${m.name} 256GB vid hämtning i ${placeName}. Hongkong har **varken moms eller försäljningsskatt**.`
+      : `**${kr(cc, base)}** för ${m.name} 256GB vid hämtning i ${placeName}. **${pc(r)} ${tw} ingår** (${kr(cc, beforeTax(c, base))} exkl. ${tw}), och kassan lägger inte till något.`,
     blocks: [{
       t: "table",
-      head: r == null ? ["iPhone", "Pris på apple.com"] : ["iPhone", "Pris på apple.com", `Utan ${pc(r)} ${tw}`],
+      head: r == null ? ["iPhone", "apple.com-pris"] : ["iPhone", "apple.com-pris", `Exkl. ${pc(r)} ${tw}`],
       rows: rows.map(([label, p]) => (r == null ? [label, kr(cc, p)] : [label, kr(cc, p), kr(cc, beforeTax(c, p))])),
-      caption: `Apples priser i ${land(cc)}, så som du betalar dem vid hämtning${r == null ? "" : ` (${tw} inräknad)`}`,
-      source: `[${src.label}](${src.url}); priser från apple.com/${shop}`,
+      caption: `${land(cc)}: slutpris vid hämtning, enligt Apple${r == null ? "" : ` (inkl. ${tw})`}`,
+      source: `[${src.label}](${src.url}) · prisuppgifter: apple.com/${shop}`,
     }],
   };
 }
@@ -125,13 +125,13 @@ function taxFaq(cc: CountryCode, placeName: string, region?: string): FaqItem {
   if (cc === "ca") {
     const t = region ? withProvinceTax(duo, region) : null;
     return t
-      ? { q: `Vad kostar iPhone Duo i ${placeName} med skatt?`, a: `Ungefär ${kr(cc, t.total)} för 256GB: ${region}s ${pc(t.rate)} ${CA_PROVINCE_TAX[region!].label} ovanpå Apples ${kr(cc, duo)}, som hämtbutiken tar ut.` }
-      : { q: "Ingår skatten i Apples kanadensiska priser?", a: `Nej: iPhone Duo med 256GB kostar ${kr(cc, duo)} utan skatt. Hämtbutikens provins lägger på GST, HST eller provinsskatt, från ${pc(5)} i Alberta till ${pc(14.975)} i Québec.` };
+      ? { q: `iPhone Duo i ${placeName}: vad blir det med skatt?`, a: `Runt ${kr(cc, t.total)} för 256GB. Hämtbutiken lägger ${pc(t.rate)} ${CA_PROVINCE_TAX[region!].label} på Apples ${kr(cc, duo)}.` }
+      : { q: "Visar Apple Kanada priser med skatt?", a: `Nej. iPhone Duo 256GB står som ${kr(cc, duo)} före skatt; provinsen där du hämtar lägger till GST, HST eller provinsskatt – ${pc(5)} i Alberta, upp till ${pc(14.975)} i Québec.` };
   }
   const r = includedRate(c);
   return r == null
-    ? { q: "Betalar man moms på en iPhone i Hongkong?", a: `Nej: Hongkong har ingen moms eller försäljningsskatt. iPhone Duo med 256GB kostar ${kr(cc, duo)} vid hämtning, exakt som på apple.com.` }
-    : { q: `Ingår ${taxWord(c)} redan i Apples priser i ${land(cc)}?`, a: `Ja: ${kr(cc, duo)} för en iPhone Duo med 256GB inkluderar ${pc(r)} ${taxWord(c)}. Inget mer läggs till när du hämtar i butiken.` };
+    ? { q: "Tillkommer moms på iPhone i Hongkong?", a: `Nej, Hongkong har varken moms eller försäljningsskatt. iPhone Duo 256GB kostar ${kr(cc, duo)} vid hämtning, samma som på apple.com.` }
+    : { q: `Är ${taxWord(c)} med i Apples priser i ${land(cc)}?`, a: `Ja. ${kr(cc, duo)} för iPhone Duo 256GB innehåller ${pc(r)} ${taxWord(c)}, och hämtningen kostar inget extra.` };
 }
 
 /* ------------------------------------------------------------------ region / city pages */
@@ -140,10 +140,10 @@ function placeTitle(i: IntlPlaceInput): string {
   const k = i.stores.length;
   const w = i.name;
   return fit([
-    `Apple Store ${w}: hämta iPhone Duo i ${k === 2 ? "båda butikerna" : `alla ${k} butiker`}, live`,
-    `Apple Store ${w}: hämta iPhone Duo, live`,
-    `Apple Store ${w}: iPhone i lager nu`,
-    `Apple Store ${w}: iPhone i lager`,
+    `Apple Store ${w}: iPhone Duo live i ${k === 2 ? "två av två butiker" : `${k} butiker`}`,
+    `Apple Store ${w}: iPhone Duo-lager live`,
+    `Apple Store ${w}: iPhone-lager just nu`,
+    `Apple Store ${w}: iPhone-lager`,
   ]);
 }
 
@@ -151,33 +151,33 @@ function priceBit(cc: CountryCode, region?: string): string {
   const c = COUNTRIES[cc];
   const duo = priceOf(cc, "duo");
   if (duo == null) return "";
-  if (cc === "ca") { const t = region ? withProvinceTax(duo, region) : null; return t ? ` och Duo för ca ${kr(cc, t.total)} med skatt i ${region}` : ` och Duo för ${kr(cc, duo)} utan skatt`; }
-  return ` och Duo för ${kr(cc, duo)} ${taxNote(c)}`;
+  if (cc === "ca") { const t = region ? withProvinceTax(duo, region) : null; return t ? `. Duo-pris: ca ${kr(cc, t.total)} inkl. skatt (${region})` : `. Duo-pris: ${kr(cc, duo)} före skatt`; }
+  return `. Duo-pris: ${kr(cc, duo)} ${taxNote(c)}`;
 }
 
 function placeDescription(i: IntlPlaceInput): string {
   const k = i.stores.length;
   const w = i.name;
   return fit([
-    `${i.stockNow.duo} av ${k} Apple Store-butiker i ${w} listar iPhone Duo för hämtning nu, ${i.stockNow["18-pro-max"]} 18 Pro Max. Butik för butik, med påfyllningstider${priceBit(i.cc, i.region)}.`,
-    `${i.stockNow.duo} av ${k} Apple Store-butiker i ${w} listar iPhone Duo nu, ${i.stockNow["18-pro-max"]} 18 Pro Max. Live per butik, med påfyllningstider.`,
+    `Just nu i ${w}: iPhone Duo att hämta i ${i.stockNow.duo} av ${k} Apple Store-butiker, 18 Pro Max i ${i.stockNow["18-pro-max"]}. Varje butik, påfyllningstider${priceBit(i.cc, i.region)}.`,
+    `Just nu i ${w}: iPhone Duo att hämta i ${i.stockNow.duo} av ${k} Apple Store-butiker, 18 Pro Max i ${i.stockNow["18-pro-max"]}. Varje butik live, plus påfyllningstider.`,
   ], 155);
 }
 
 function placeIntro(i: IntlPlaceInput): string {
   const k = i.stores.length;
   const duo = i.stockNow.duo;
-  const cities = i.kind === "state" && i.cities && i.cities > 1 ? ` (fördelade på ${pl(i.cities, "stad", "städer")})` : "";
-  return `**${duo}** av **${pl(k, "Apple Store", "Apple Store-butiker")}** i ${i.name}${cities} listar en iPhone Duo för hämtning just nu; iPhone 18 Pro Max finns i **${i.stockNow["18-pro-max"]}**, iPhone 18 Pro i **${i.stockNow["18-pro"]}**.`;
+  const cities = i.kind === "state" && i.cities && i.cities > 1 ? `, ${pl(i.cities, "ort", "orter")}` : "";
+  return `Att hämta i ${i.name} nu: iPhone Duo i **${duo}** av **${pl(k, "Apple Store", "Apple Store-butiker")}**${cities}. iPhone 18 Pro Max: **${i.stockNow["18-pro-max"]}**. iPhone 18 Pro: **${i.stockNow["18-pro"]}**.`;
 }
 
 function duoLead(i: IntlPlaceInput): string {
   const k = i.stores.length;
   const have = duoStoresNow(i);
   const st = i.duo;
-  if (have.length > 0) return `**Ja, i ${have.length} av ${k} butiker**: ${words(have.map((s) => apple(s)), 4)} listar en iPhone Duo för hämtning just nu.`;
-  if (st.month > 0) return `**Inte just nu**: ingen av de ${k} butikerna listar en iPhone Duo, men tillsammans har de fyllt på den **${pl(st.month, "gång", "gånger")}** ${sinceWhen()}.`;
-  return `**Inte just nu**: ingen av de ${k} butikerna listar en iPhone Duo, och ingen har en bekräftad påfyllning av Duo ${sinceWhen()}.`;
+  if (have.length > 0) return `**${have.length} av ${k} butiker har den**: iPhone Duo går att hämta på ${words(have.map((s) => apple(s)), 4)}.`;
+  if (st.month > 0) return `**Ingen just nu.** Alla ${k} butiker saknar iPhone Duo för stunden – men de har fått in den **${pl(st.month, "gång", "gånger")}** ${sinceWhen()}.`;
+  return `**Ingen just nu.** Alla ${k} butiker saknar iPhone Duo, och ingen bekräftad Duo-påfyllning finns ${sinceWhen()}.`;
 }
 
 function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
@@ -186,18 +186,18 @@ function duoPoints(i: IntlPlaceInput, w: string, alert: string): Block[] {
   const st = i.duo;
   const last = st.lastRestock ? i.stores.find((s) => s.storeNumber === st.lastRestock!.storeNumber) : undefined;
   const items: string[] = [];
-  if (st.lastRestock && last) items.push(`**Senaste påfyllning av Duo här:** ${whenIn(i.cc, st.lastRestock.at)} på ${apple(last)}`);
-  if (have.length > 0 && st.month > 0) items.push(`**Bekräftat ${sinceWhen()}:** ${pl(st.month, "påfyllning av Duo", "påfyllningar av Duo")} i butikerna i ${w}`);
-  if (st.medianMs != null) items.push(`**Så länge en listning räcker:** ungefär ${dur(st.medianMs)} i median innan Duo är slutsåld igen`);
-  items.push(`**Snabbaste vägen till en:** [bevaka iPhone Duo i ${w}](${alert}) i ${k <= 3 ? (k === 2 ? "de två butikerna" : "de tre butikerna") : `de ${Math.min(k, 5)} närmaste butikerna`} du kan ta dig till; butiker med bevakning läses av var 5:e sekund`);
-  items.push("**En bevakning** är en butik × en exakt konfiguration, och notisen kommer ungefär 3 sekunder efter att en andra avläsning bekräftat påfyllningen");
+  if (st.lastRestock && last) items.push(`**Senast in:** ${apple(last)}, ${whenIn(i.cc, st.lastRestock.at)}`);
+  if (have.length > 0 && st.month > 0) items.push(`**Duo-påfyllningar ${sinceWhen()}:** ${n(st.month)} bekräftade i ${w}`);
+  if (st.medianMs != null) items.push(`**Tid innan slut:** median ${dur(st.medianMs)} per Duo-påfyllning`);
+  items.push(`**Bevakning:** [iPhone Duo i ${w}](${alert}) – välj ${k <= 3 ? (k === 2 ? "båda butikerna" : "alla tre butikerna") : `upp till ${Math.min(k, 5)} butiker nära dig`}. Bevakade butiker läses var 5:e sekund`);
+  items.push("**Regel:** en bevakning = en butik × en exakt konfiguration. Notisen går ut cirka 3 sekunder efter att andra avläsningen bekräftat påfyllningen");
   const blocks: Block[] = [];
-  if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**Det kan ändras på en minut:** en bevakning ser nästa påfyllning långt innan en omladdning av apple.com skulle göra det." });
+  if (have.length === 0 && st.month === 0) blocks.push({ t: "note", text: "**Läget vänder snabbt.** Med en bevakning ser du nästa påfyllning långt innan en manuell omladdning av apple.com hinner visa den." });
   blocks.push({ t: "ul", items });
   return blocks;
 }
 
-/** "256GB Night Sky" (scarcest's English label) → "256GB natthimmel". */
+/** Storage + colour label from scarcest(), with the colour in Swedish. */
 const cfg = (label: string) => { const [st, ...rest] = label.split(" "); return `${st} ${color(rest.join(" "))}`; };
 
 function placeSections(i: IntlPlaceInput): KeywordSection[] {
@@ -206,19 +206,20 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
   const alert = alertHref({ model: "duo", state: i.regionSlug, city: i.kind === "city" ? i.citySlug : undefined, country: i.cc });
   const scarce = scarcest(i, "18-pro-max");
   const pm = catalogFor("18-pro-max", i.cc).length;
+  const duoH2 = `iPhone Duo i ${w}: vilka butiker har den nu?`;
   return [
-    { id: "iphone-duo", h2: `Vilka Apple Store-butiker i ${w} har iPhone Duo just nu?`, lead: duoLead(i), blocks: duoPoints(i, w, alert) },
+    { id: "iphone-duo", h2: duoH2, lead: duoLead(i), blocks: duoPoints(i, w, alert) },
     {
       id: "iphone-18-pro-max",
-      h2: `Finns iPhone 18 Pro Max i lager i ${w}?`,
+      h2: `Går iPhone 18 Pro Max att hämta i ${w}?`,
       lead: i.stockNow["18-pro-max"] > 0
-        ? `**Ja, i ${i.stockNow["18-pro-max"]} av ${k} butiker**, med **${pc(pairsPct(i, "18-pro-max"))}** av de ${n(k * pm)} kombinationerna av butik × konfiguration i ${w} listade just nu.`
-        : `**Inte just nu**: ingen av de ${k} butikerna i ${w} listar en iPhone 18 Pro Max för hämtning.`,
+        ? `**${i.stockNow["18-pro-max"]} av ${k} butiker har den.** Av ${n(k * pm)} möjliga par butik × konfiguration i ${w} är **${pc(pairsPct(i, "18-pro-max"))}** att hämta just nu.`
+        : `**Ingen just nu.** iPhone 18 Pro Max saknas för hämtning i samtliga ${k} butiker i ${w}.`,
       blocks: [{ t: "ul", items: [
-        ...(scarce.length ? [`**Svårast att hitta just nu:** ${words(scarce.map((x) => `${cfg(x.label)} (${x.stores} av ${k} butiker)`))}`] : []),
-        `**iPhone 18 Pro:** ${i.stockNow["18-pro"]} av ${k} butiker, ${pc(pairsPct(i, "18-pro"))} av kombinationerna listade`,
-        `**Bekräftat ${sinceWhen()}:** ${i.max.month ? pl(i.max.month, "påfyllning av 18 Pro Max", "påfyllningar av 18 Pro Max") : "ingen påfyllning av 18 Pro Max än"}`,
-        ...(i.max.medianMs != null ? [`**Så länge en listning räcker:** ungefär ${dur(i.max.medianMs)} i median innan en Pro Max är slutsåld igen`] : []),
+        ...(scarce.length ? [`**Knappast tillgång nu:** ${words(scarce.map((x) => `${cfg(x.label)} – ${x.stores}/${k} butiker`))}`] : []),
+        `**iPhone 18 Pro:** att hämta i ${i.stockNow["18-pro"]}/${k} butiker · ${pc(pairsPct(i, "18-pro"))} av paren`,
+        `**18 Pro Max-påfyllningar ${sinceWhen()}:** ${i.max.month ? `${n(i.max.month)} bekräftade` : "ännu ingen"}`,
+        ...(i.max.medianMs != null ? [`**Tid innan slut:** median ${dur(i.max.medianMs)} per Pro Max-påfyllning`] : []),
       ] }],
     },
     priceSection(i.cc, w, i.cc === "ca" ? i.region : undefined),
@@ -230,12 +231,14 @@ function placeSections(i: IntlPlaceInput): KeywordSection[] {
 function storesIndexTitle(cc: CountryCode): string {
   const k = storesOf(cc).length;
   const w = land(cc);
-  const towns = [...new Set(storesOf(cc).map((s) => (STOCKHOLM.has(s.storeNumber) ? "Stockholm" : s.city)))].sort((a, b) => (a === "Stockholm" ? -1 : b === "Stockholm" ? 1 : a.localeCompare(b, "sv")));
+  const hub = "Stockholm";
+  const towns = [...new Set(storesOf(cc).map((s) => (STOCKHOLM.has(s.storeNumber) ? hub : s.city)))];
+  towns.sort((x, y) => (x === hub ? -1 : y === hub ? 1 : x.localeCompare(y, "sv")));
   return fit([
-    ...(cc === "se" ? [`Apple Store Sverige: ${towns.join(" & ")} – hämta iPhone Duo, live`] : []),
-    `Apple Store ${w}: hämta iPhone Duo i ${k === 2 ? "båda butikerna" : `alla ${k} butiker`}, live`,
-    `Apple Store ${w}: hämta iPhone Duo, live`,
-    `Apple Store ${w}: iPhone i lager, live`,
+    ...(cc === "se" ? [`Apple Store i Sverige – ${towns.join(" & ")}: iPhone Duo live`] : []),
+    `Apple Store ${w}: iPhone Duo live i ${k === 2 ? "två av två butiker" : `${k} butiker`}`,
+    `Apple Store ${w}: iPhone Duo-lager live`,
+    `Apple Store ${w}: iPhone-lager, live`,
   ], 70);
 }
 
@@ -243,41 +246,44 @@ function homeTitle(cc: CountryCode): string {
   const k = storesOf(cc).length;
   const w = land(cc);
   return fit([
-    `iPhone-lagerkoll ${w}: hämtning live i ${k === 1 ? "Apple Store" : `${k} Apple Store-butiker`}`,
-    `iPhone-lagerkoll ${w}: lager för hämtning live`,
+    `iPhone-lager ${w}: hämtning live i ${k === 1 ? "Apple Store" : `${k} Apple Store-butiker`}`,
+    `iPhone-lager ${w}: hämtning i butik, live`,
   ], 70);
 }
 
 function homeH1(cc: CountryCode): string {
   const k = storesOf(cc).length;
-  return k === 1 ? `iPhone-lager för hämtning live i Apple Store i ${land(cc)}` : `iPhone-lager för hämtning live i alla ${k} Apple Store-butiker i ${land(cc)}`;
+  return k === 1 ? `iPhone-lager i ${land(cc)}: live i landets Apple Store` : `iPhone-lager i ${land(cc)}: live från ${k} Apple Store-butiker`;
 }
 
 function allStoresPhrase(cc: CountryCode): string {
   const k = storesOf(cc).length;
-  return k === 1 ? `den enda Apple Store-butiken i ${land(cc)}` : `alla ${k} Apple Store-butiker i ${land(cc)}`;
+  return k === 1 ? `landets enda Apple Store (${land(cc)})` : `varenda Apple Store i ${land(cc)} (${k} st.)`;
 }
 
 function spreadPhrase(cc: CountryCode): string {
   const c = COUNTRIES[cc];
   const regions = statesWithStores(cc);
   const cities = citiesWithStores(cc);
-  const k = storesOf(cc).length;
-  if (k === 1) return `i ${cities[0].name}`;
-  if (cities.length === 1) return `alla i ${cities[0].name}`;
-  if (cities.length <= 4) return `i ${words(cities.map((x) => x.name).sort((a, b) => a.localeCompare(b, "sv")))}`;
-  if (!c.regionNoun || regions.length === 1) return `i ${pl(cities.length, "stad", "städer")}`;
-  return `i ${pl(cities.length, "stad", "städer")} i ${regions.length} ${noun(c, regions.length !== 1)}`;
+  const names = cities.map((x) => x.name);
+  const towns = pl(cities.length, "ort", "orter");
+  switch (true) {
+    case storesOf(cc).length === 1: return `i ${names[0]}`;
+    case names.length === 1: return `samtliga i ${names[0]}`;
+    case names.length <= 4: return `i ${words([...names].sort((x, y) => x.localeCompare(y, "sv")))}`;
+    case !c.regionNoun || regions.length === 1: return `på ${towns}`;
+    default: return `på ${towns} fördelade över ${regions.length} ${noun(c, regions.length !== 1)}`;
+  }
 }
 
 function modelPageTitles(cc: CountryCode, model: ModelKey): { title: string; h2: string[] } {
   const m = modelByKey(model)!;
   const k = storesOf(cc).length;
   const w = land(cc);
-  const all = k === 1 ? "Apple Store" : k === 2 ? "båda Apple Store-butikerna" : `alla ${k} Apple Store-butiker`;
+  const all = k === 1 ? "Apple Store" : k === 2 ? "två Apple Store" : `${k} Apple Store-butiker`;
   return {
-    title: fit([`Finns ${m.name} i lager i ${w}? ${cap(all)}, live`, `Finns ${m.name} i lager i ${w}? Live`, `${m.name} i lager i ${w}`], 70),
-    h2: [`Vilka Apple Store-butiker i ${w} har ${m.name} just nu?`, priceSection(cc, w, undefined, model).h2],
+    title: fit([`${m.name} i ${w}: lager live i ${all}`, `${m.name} i lager i ${w}? Live`, `${m.name}: lager i ${w}`], 70),
+    h2: [`${m.name} i ${w}: vilka butiker har den nu?`, priceSection(cc, w, undefined, model).h2],
   };
 }
 
@@ -286,11 +292,11 @@ function modelIntro(cc: CountryCode, model: ModelKey, inStock: number): string {
   const m = modelByKey(model)!;
   const k = storesOf(cc).length;
   const r = priceRange(cc, model);
-  const priceText = cc === "ca" ? `**${kr(cc, r.low)}** utan skatt` : `**${kr(cc, r.low)}**, ${taxNote(c)}`;
+  const priceText = cc === "ca" ? `**${kr(cc, r.low)}** före skatt` : `**${kr(cc, r.low)}**, ${taxNote(c)}`;
   const now = inStock === 0
-    ? (k === 1 ? `Just nu listar Apple Store-butiken i ${land(cc)} **inte** ${m.name} för hämtning` : `Just nu listar **ingen** av de ${k} Apple Store-butikerna i ${land(cc)} ${m.name} för hämtning`)
-    : `Just nu listar **${inStock} av ${k}** Apple Store-butiker i ${land(cc)} ${m.name} för hämtning`;
-  return `${now} (varje butik läses av **var 15:e sekund**); priserna börjar på ${priceText}.`;
+    ? (k === 1 ? `${land(cc)}: ${m.name} går **inte** att hämta i landets enda Apple Store just nu` : `${land(cc)}: ${m.name} går **inte** att hämta i någon av ${k} Apple Store-butiker just nu`)
+    : `${land(cc)}: ${m.name} går att hämta i **${inStock} av ${k}** Apple Store-butiker just nu`;
+  return `${now}. Pris från ${priceText}. Kontroll av varje butik: **var 15:e sekund**.`;
 }
 
 function modelDescription(cc: CountryCode, model: ModelKey, inStock: number): string {
@@ -298,14 +304,17 @@ function modelDescription(cc: CountryCode, model: ModelKey, inStock: number): st
   const k = storesOf(cc).length;
   const r = priceRange(cc, model);
   return fit([
-    `${inStock} av ${k} Apple Store-butiker i ${land(cc)} listar ${m.name} för hämtning just nu. Butik för butik och konfiguration för konfiguration, från ${kr(cc, r.low)}${cc === "ca" ? " utan skatt" : ""}, med påfyllningstider.`,
-    `${inStock} av ${k} Apple Store-butiker i ${land(cc)} listar ${m.name} nu. Lager för hämtning live per butik och konfiguration, påfyllningstider och bevakningar.`,
+    `${land(cc)} just nu: ${m.name} finns att hämta hos ${inStock} av ${k} Apple Store-butiker. Per butik och konfiguration, med påfyllningstider och pris från ${kr(cc, r.low)}${cc === "ca" ? " före skatt" : ""}.`,
+    `${land(cc)} just nu: ${m.name} i ${inStock} av ${k} Apple Store-butiker. Hämtlager live per butik och konfiguration, påfyllningstider, bevakningar.`,
   ], 155);
 }
 
 function modelRows(cc: CountryCode, storesNow: Record<ModelKey, number>, restocks: Record<ModelKey, number>): string[][] {
   const prefix = cc === "us" ? "" : `/${cc}`;
-  return MODELS.map((m) => [`[${m.name}](${prefix}/in-stock/${m.slug})`, n(catalogFor(m.key, cc).length), n(storesNow[m.key] ?? 0), n(restocks[m.key] ?? 0)]);
+  return MODELS.map((m) => {
+    const link = `[${m.name}](${prefix}/in-stock/${m.slug})`;
+    return [link, n(catalogFor(m.key, cc).length), n(storesNow[m.key] ?? 0), n(restocks[m.key] ?? 0)];
+  });
 }
 
 /* ------------------------------------------------------------------ country home */
@@ -314,14 +323,14 @@ function homeDescription(cc: CountryCode): string {
   const k = storesOf(cc).length;
   const cur = COUNTRIES[cc].currency === "SEK" ? "kronor" : COUNTRIES[cc].currency;
   return fit([
-    `iPhone Duo, 18 Pro och 18 Pro Max att hämta i ${allStoresPhrase(cc)}, avläst var 15:e sekund. ${k === 1 ? "Priser" : "Påfyllningstider och priser"} i ${cur}, och en notis i samma sekund som din butik fyller på.`,
-    `iPhone Duo, 18 Pro och 18 Pro Max att hämta i ${allStoresPhrase(cc)}, avläst var 15:e sekund. En notis när din butik fyller på.`,
+    `Live från ${allStoresPhrase(cc)}: iPhone Duo, 18 Pro och 18 Pro Max för hämtning, kontrollerat var 15:e sekund. ${k === 1 ? "Priser" : "Påfyllningstider och priser"} i ${cur}; notis när din butik fyller på.`,
+    `Live från ${allStoresPhrase(cc)}: iPhone Duo, 18 Pro och 18 Pro Max för hämtning, var 15:e sekund. Notis när din butik fyller på.`,
   ], 155);
 }
 
 function homeIntro(cc: CountryCode): string {
   const k = storesOf(cc).length;
-  return `Senaste bekräftade påfyllning av iPhone Duo i ${land(cc)}: **{{duo.lastRestock}}**. Just nu listar **{{duo.storesNow}} av ${k}** ${k === 1 ? "Apple Store-butik" : "Apple Store-butiker"} en Duo för hämtning, **{{pm.storesNow}}** en iPhone 18 Pro Max och **{{pro.storesNow}}** en iPhone 18 Pro.`;
+  return `Läget i ${land(cc)} nu: **{{duo.storesNow}} av ${k}** ${k === 1 ? "Apple Store-butik" : "Apple Store-butiker"} har iPhone Duo att hämta. iPhone 18 Pro Max: **{{pm.storesNow}}**. iPhone 18 Pro: **{{pro.storesNow}}**. Senast bekräftade Duo-påfyllning: **{{duo.lastRestock}}**.`;
 }
 
 function homeSections(i: HomeCopyInput): KeywordSection[] {
@@ -330,20 +339,20 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
   const k = storesOf(cc).length;
   const stores = storesOf(cc);
   const w = land(cc);
-  const by = cc === "se" ? "stad" : c.regionNoun ? noun(c) : "stad";
+  const by = cc !== "se" && c.regionNoun ? noun(c) : "ort";
   const unit = c.unit === "mi" ? "miles" : "kilometer";
   return [
     {
       id: "iphone-stock",
-      h2: `Vilka iPhone finns i lager i ${w} just nu?`,
-      lead: `Tabellen svarar live: apple.com:s egen tillgänglighet för hämtning i butik för varje konfiguration i ${allStoresPhrase(cc)}, avläst var 15:e sekund${k > 1 ? ` och uppdelad per butik, per ${by} och per konfiguration` : ""}.`,
+      h2: `iPhone-lager i ${w}: vad finns att hämta nu?`,
+      lead: `Tabellen är live. Den bygger på apple.com:s egna besked om hämtning i butik för varje konfiguration i ${allStoresPhrase(cc)}, kontrollerat var 15:e sekund${k > 1 ? ` och uppdelat på butik, ${by} och konfiguration` : ""}.`,
       blocks: [
-        { t: "table", head: ["Modell", "Konfigurationer", "Butiker som listar den nu", "Bekräftade påfyllningar"], rows: modelRows(cc, i.storesNow, i.restocks), caption: `Läget i ${w} per {{asOf}}` },
+        { t: "table", head: ["Modell", "Konfigurationer", "Butiker med den nu", "Påfyllningar (bekräftade)"], rows: modelRows(cc, i.storesNow, i.restocks), caption: `${w}, läge {{asOf}}` },
         { t: "ul", items: [
-          "**Bekräftat betyder två gånger:** en ändring publiceras först när en andra avläsning håller med, så ett felaktigt svar från apple.com syns aldrig som påfyllning eller slutsålt",
-          "**Första observationer är inga påfyllningar:** en konfiguration som syns för första gången sätter bara utgångsläget",
-          `**Loggen är källan:** varje bekräftad ändring hamnar i [påfyllningsloggen](${i.restocksPath}), som ritar påfyllningsdiagrammen på ${i.index?.indexable ? `[butikssidorna](${i.index.path})` : "butikssidan"}`,
-          `**Täckning:** ${spreadPhrase(cc)}, med Apples egna priser och artikelnummer för ${w}; butiker med bevakning läses av var 5:e sekund`,
+          "**Två avläsningar krävs:** en ändring publiceras först när nästa kontroll säger samma sak – ett felaktigt svar från apple.com blir aldrig påfyllning eller slutsålt",
+          "**Första observationen räknas inte:** en konfiguration som dyker upp för första gången blir bara startläget",
+          `**Allt utgår från loggen:** varje bekräftad ändring sparas i [påfyllningsloggen](${i.restocksPath}), och diagrammen på ${i.index?.indexable ? `[butikssidorna](${i.index.path})` : "butikssidan"} ritas därifrån`,
+          `**Omfattning:** ${spreadPhrase(cc)}, med Apples priser och artikelnummer för ${w}. Bevakade butiker läses var 5:e sekund`,
         ] },
         { t: "img", id: "phone-notification" },
       ],
@@ -351,16 +360,16 @@ function homeSections(i: HomeCopyInput): KeywordSection[] {
     priceSection(cc, w),
     {
       id: "alerts",
-      h2: `Hur fungerar lagerbevakning i ${w}?`,
-      lead: `Du väljer ${k === 1 ? "butiken" : "butikerna"} och exakt vilken telefon; när ${k === 1 ? "butiken" : "någon av dem"} listar den för hämtning i butik får du en notis ungefär 3 sekunder efter att påfyllningen bekräftats.`,
+      h2: `Hur får jag en notis när en butik i ${w} fyller på?`,
+      lead: `Välj ${k === 1 ? "butiken" : "butiker"} och exakt telefon. Listar ${k === 1 ? "butiken" : "någon av dem"} den för hämtning når notisen dig cirka 3 sekunder efter bekräftelsen.`,
       blocks: [
         { t: "ol", items: [
-          k === 1 ? `Välj iPhone, lagring och färg under **Bevaka**; butiken är ${apple(stores[0])} i ${stores[0].city}.` : `Välj iPhone, lagring och färg under **Bevaka** och bocka sedan i butikerna du når; de närmaste visas först, med ${unit} längs vägen och körtid.`,
-          "På iPhone: lägg till RestockWire på hemskärmen och tillåt notiser; iOS levererar webbnotiser bara till en installerad app ([så installerar du](/phone-alerts)).",
-          "När notisen kommer: öppna apple.com från den och välj Hämta i butik i just den butiken i kassan.",
+          k === 1 ? `Under **Bevaka**: välj iPhone, lagring och färg. Butiken är given: ${apple(stores[0])}, ${stores[0].city}.` : `Under **Bevaka**: välj iPhone, lagring och färg och bocka sedan i butikerna inom räckhåll – närmast först, med ${unit} längs vägen och restid.`,
+          "iPhone: lägg RestockWire på hemskärmen och tillåt notiser – iOS skickar webbnotiser bara till installerade appar ([guiden](/phone-alerts)).",
+          "Notisen kommer: öppna apple.com via den, välj Hämta i butik och samma butik i kassan.",
         ] },
-        { t: "table", head: ["Plan", "Per månad (USD)", "Bevakningar"], rows: [["Plus", "$5", "10"], ["Pro", "$10", "20"], ["Max", "$20", "50"]], caption: "En bevakning = en butik × en exakt konfiguration; att titta är gratis, och hastigheten är densamma i alla planer ([priser](/pricing))" },
-        { t: "note", text: "**Vår bedömning:** Duo är värd en bevakning i varje butik du når; för 18 Pro och Pro Max, kolla siffrorna live först." },
+        { t: "table", head: ["Plan", "USD/månad", "Antal bevakningar"], rows: [["Plus", "$5", "10"], ["Pro", "$10", "20"], ["Max", "$20", "50"]], caption: "Bevakning = butik × exakt konfiguration. Att titta kostar inget, och alla planer har samma hastighet ([planer](/pricing))" },
+        { t: "note", text: "**Vår linje:** bevaka Duo i varje butik du når. För 18 Pro och Pro Max – titta på livesiffrorna först." },
         { t: "img", id: "apple-store-pickup-counter" },
       ],
     },
@@ -371,51 +380,51 @@ function homeFaq(cc: CountryCode, rt: RestockTimesBrief): Faq[] {
   const k = storesOf(cc).length;
   const p = cc === "us" ? "" : `/${cc}`;
   const w = land(cc);
-  const count = pl(rt.n, "bekräftad påfyllning", "bekräftade påfyllningar");
+  const count = pl(rt.n, "påfyllning", "påfyllningar");
   const when = rt.n === 0
-    ? `Ingen bekräftad än sedan bevakningen startade den 2 november. [När fyller Apple på iPhone Duo i ${w}?](${rt.path}) räknar varje påfyllning per lokal timme och dag allteftersom de kommer.`
+    ? `Ännu ingen bekräftad sedan starten 2 november. [Påfyllningstider för iPhone Duo i ${w}](${rt.path}) fylls på timme för timme och dag för dag när de kommer.`
     : rt.peakHour != null
-      ? `De flesta kommer runt **${klock(rt.peakHour)} lokal tid**: ${count} i ${rt.stores} av ${rt.storesTotal} butiker sedan 2 november. [Timme för timme och dag för dag](${rt.path}).`
-      : `${cap(count)} i ${rt.stores} av ${rt.storesTotal} butiker sedan 2 november, på för få dagar för att peka ut en vanlig tid än. [Timme för timme och dag för dag](${rt.path}).`;
+      ? `Oftast kring **${klock(rt.peakHour)} lokal tid**. Underlag: ${count} (alla bekräftade) i ${rt.stores} av ${rt.storesTotal} butiker sedan 2 november. [Per timme och per dag](${rt.path}).`
+      : `${cap(count)} (alla bekräftade) i ${rt.stores} av ${rt.storesTotal} butiker sedan 2 november – utspritt på för få dagar för en vanlig tid ännu. [Per timme och per dag](${rt.path}).`;
   return [
-    { q: `Vilka Apple Store-butiker i ${w} listar iPhone Duo just nu?`, a: `{{duo.storesNow}} av ${k} vid senaste avläsningen ({{asOf}}). [iPhone Duo i lager i ${w}](${p}/in-stock/iphone-duo) visar varje butik och konfiguration och uppdateras var 15:e sekund.` },
-    { q: `När fyller Apple på iPhone Duo i ${w}?`, a: when },
-    { q: `Hur snabbt ser RestockWire en påfyllning i ${w}?`, a: `Butiker med bevakning läses av var 5:e sekund och ${k === 1 ? `Apple Store-butiken i ${w}` : `varje Apple Store i ${w}`} var 15:e sekund; ett första ”tillgänglig” läses av igen inom en sekund. Den bekräftade påfyllningen når din telefon ungefär 3 sekunder senare.` },
-    { q: "Behöver jag en plan för att se lagret?", a: "Nej: lagret live, kartan och påfyllningsloggen är gratis. En plan lägger till bevakningar, debiterade i amerikanska dollar: Plus $5 i månaden för 10, Pro $10 för 20, Max $20 för 50, och du avslutar när du vill ([priser](/pricing))." },
+    { q: `iPhone Duo i ${w}: vilka Apple Store-butiker har den nu?`, a: `Vid senaste avläsningen ({{asOf}}): {{duo.storesNow}} av ${k}. [iPhone Duo-lager i ${w}](${p}/in-stock/iphone-duo) visar butik och konfiguration, uppdaterat var 15:e sekund.` },
+    { q: `Vilken tid kommer iPhone Duo-påfyllningarna i ${w}?`, a: when },
+    { q: `Hur fort upptäcker RestockWire en påfyllning i ${w}?`, a: `Bevakade butiker läses var 5:e sekund, ${k === 1 ? "butiken" : "alla butiker"} i ${w} minst var 15:e. Ett första ”tillgänglig” kontrolleras om inom en sekund, och den bekräftade påfyllningen når telefonen cirka 3 sekunder senare.` },
+    { q: "Kostar det något att se lagret?", a: "Nej. Livelagret, kartan och påfyllningsloggen är fria. En plan ger bevakningar, i US-dollar: Plus $5/mån för 10, Pro $10 för 20, Max $20 för 50 – uppsägning när som helst ([priser](/pricing))." },
     taxFaq(cc, w),
-    { q: "Reserverar en bevakning telefonen åt mig?", a: `Nej, det gör bara en beställning med Hämta i butik på apple.com. Bevakningen tar dig först till kassan, och Apple håller enheten åt dig när du har betalat ([Apples hjälp om hämtning](${pickupHelp(cc).url})).` },
+    { q: "Håller en bevakning telefonen åt mig?", a: `Nej. Bara en apple.com-order med Hämta i butik reserverar. Bevakningen ger dig försprånget till kassan; när du betalat håller Apple telefonen ([Apple om hämtning](${pickupHelp(cc).url})).` },
   ];
 }
 
 const home: Dict["place"]["home"] = {
-  appName: (cc: CountryCode) => `RestockWire iPhone-lagerkoll ${land(cc)}`,
-  offer: "Lagret live, kartan och påfyllningsloggen är gratis; bevakningar från $5 i månaden",
-  itemList: (cc: CountryCode) => `Apple Store-butiker i ${land(cc)}`,
-  restockTimesChip: "Påfyllningstider",
-  storesByRegion: (cc: CountryCode) => `Butiker per ${noun(COUNTRIES[cc])}`,
-  browse: (cc: CountryCode) => `Lager per plats i ${land(cc)}`,
-  selloutH2: (cc: CountryCode) => `Hur länge räcker en iPhone-påfyllning i ${land(cc)}?`,
-  selloutLabel: (cc: CountryCode) => `i Apple Store-butikerna i ${land(cc)}`,
+  appName: (cc: CountryCode) => `RestockWire iPhone-lager ${land(cc)}`,
+  offer: "Gratis: livelager, karta och påfyllningslogg. Bevakningar från $5/mån",
+  itemList: (cc: CountryCode) => `${land(cc)}: Apple Store-butiker`,
+  restockTimesChip: "Klockslag för påfyllning",
+  storesByRegion: (cc: CountryCode) => `Butiker, ${noun(COUNTRIES[cc])} för ${noun(COUNTRIES[cc])}`,
+  browse: (cc: CountryCode) => `${land(cc)}: lager plats för plats`,
+  selloutH2: (cc: CountryCode) => `Hur snabbt tar en iPhone-påfyllning slut i ${land(cc)}?`,
+  selloutLabel: (cc: CountryCode) => `bland Apple Store-butikerna i ${land(cc)}`,
   last24Label: (cc: CountryCode) => `i ${land(cc)}`,
-  newsroom: "Apple Newsroom: iPhone Duo kommer till Apple Store-butiker världen över (23 okt. 2026, på engelska)",
+  newsroom: "Apple Newsroom (engelska, 23 okt. 2026): iPhone Duo lanseras i Apple Store världen över",
 };
 
 /**
- * Store page <title> and H1: the store first (what Swedes type: "apple mall of scandinavia", "apple täby centrum",
- * "apple emporia"), then the promise. The two Stockholm stores carry "Stockholm" ("apple store stockholm"), Täby leads
- * with "Apple Store Täby" ("apple store täby"); elsewhere the town follows in parentheses when it is the only store there.
+ * Store <title> and H1 open with the store name, the way Swedish searches are phrased (apple mall of scandinavia,
+ * apple täby centrum, apple emporia), then the stock promise. Both Stockholm-area stores get ", Stockholm"; Täby is
+ * written Apple Store Täby Centrum; other towns are appended in parentheses when the name lacks them.
  */
 function storeTitle(s: Store, region?: string): string {
   const stockholm = STOCKHOLM.has(s.storeNumber);
   const name = s.storeNumber === "R505" ? "Apple Store Täby Centrum" : apple(s);
   const shown = stockholm ? ", Stockholm" : region && !name.toLowerCase().includes(region.toLowerCase()) ? ` (${region})` : "";
   return fit([
-    `${name}${shown}: iPhone i lager idag, hämtning & öppettider`,
-    `${name}${shown}: iPhone i lager idag & öppettider`,
-    `${name}${shown}: iPhone i lager idag`,
-    `${name}: iPhone i lager idag & öppettider`,
-    `${name}: iPhone i lager idag`,
-    `${name}: iPhone i lager`,
+    `${name}${shown}: iPhone-lager i dag, hämtning, öppettider`,
+    `${name}${shown}: iPhone-lager i dag & öppettider`,
+    `${name}${shown}: iPhone-lager i dag`,
+    `${name}: iPhone-lager i dag & öppettider`,
+    `${name}: iPhone-lager i dag`,
+    `${name}: iPhone-lager`,
   ]);
 }
 

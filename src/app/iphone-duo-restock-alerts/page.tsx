@@ -93,7 +93,7 @@ export default async function DuoStockAlerts() {
     ? `**${ds.medianSec} seconds** is the median over the last 7 days: half of the ${n(ds.n)} sold-out Duo restocks were gone by then, **${pct(ds.within30)}** inside 30 s${so ? `; since ${since}, **${pct(so.within2min)}** of ${n(so.n)} US Duo restocks were over within 2 minutes` : ""}.`
     : so ? `Minutes at most: since ${since}, **${pct(so.within2min)}** of ${n(so.n)} confirmed US iPhone Duo restocks were over within 2 minutes and ${pct(so.within20min)} within 20, around a median listing of ${so.medianSec} seconds.`
     : "Unmeasured for now: RestockWire states a sell-out time only once 20 or more confirmed restocks have sold out, and the current window holds fewer.";
-  const howLead = `Three steps, none of them yours: your stores are read every **${SPEED.fastSec} seconds** (every other US Apple Store every ${SPEED.checkSec}), a first "available" is asked again about a second later, and once both answers agree the push leaves, landing about **${SPEED.alertSec} seconds** after the restock.`;
+  const howLead = `Three steps, none of them yours: your stores are read every **${SPEED.fastSec} seconds** (every other US Apple Store every ${SPEED.checkSec}), a first "available" is asked again about a second later, and once both answers agree the push goes out: on your phone **~${SPEED.alertSec} seconds** after Apple lists it.`;
   const compareLead = `Yes, as far as published numbers go: RestockWire's **${SPEED.fastSec} seconds** is the shortest interval any iPhone stock tracker we know of states on its own site; the others publish ${OTHER_TRACKERS}, and published figures are the only ones we compare.`;
   const setupLead = "Four steps and about two minutes: choose the iPhone, storage and color; tick the stores within your reach; on iPhone, put RestockWire on your Home Screen; then **reserve on apple.com straight from the push**.";
   const costLead = `**$${PLANS.plus.priceUsd} a month** buys ${PLANS.plus.limit} alerts (${PLANS.plus.name}); ${PLANS.pro.name} is $${PLANS.pro.priceUsd} for ${PLANS.pro.limit} and ${PLANS.max.name} $${PLANS.max.priceUsd} for ${PLANS.max.limit}; one alert is one store × one exact configuration, and browsing stock costs nothing.`;
@@ -127,7 +127,7 @@ export default async function DuoStockAlerts() {
   const ld = {
     "@context": "https://schema.org",
     "@graph": [
-      { "@type": "WebPage", "@id": `${site}${PATH}`, url: `${site}${PATH}`, name: TITLE, description: DESCRIPTION, isPartOf: { "@id": `${site}/#website` }, about: { "@id": `${site}/#organization` }, dateModified: f.at },
+      { "@type": "WebPage", "@id": `${site}${PATH}`, url: `${site}${PATH}`, description: DESCRIPTION, name: TITLE, isPartOf: { "@id": `${site}/#website` }, about: { "@id": `${site}/#organization` }, dateModified: f.at },
       {
         "@type": "HowTo", name: "How to set up an iPhone Duo restock alert",
         totalTime: "PT2M",
@@ -275,9 +275,9 @@ export default async function DuoStockAlerts() {
         {/* cost */}
         <Section id="cost" h2="How much do iPhone Duo alerts cost?" lead={costLead} facts={facts}>
           <StatGrid cols={3} className="mt-5">
-            <Stat value={`$${PLANS.plus.priceUsd}`} unit="/ month" label={<>{PLANS.plus.name} · {PLANS.plus.limit} alerts</>} tone="accent" />
-            <Stat value={`$${PLANS.pro.priceUsd}`} unit="/ month" label={<>{PLANS.pro.name} · {PLANS.pro.limit} alerts</>} />
-            <Stat value={`$${PLANS.max.priceUsd}`} unit="/ month" label={<>{PLANS.max.name} · {PLANS.max.limit} alerts</>} />
+            <Stat value={`$${PLANS.plus.priceUsd}`} unit="/ month" label={<>{PLANS.plus.limit} alert rules · {PLANS.plus.name}</>} tone="accent" />
+            <Stat value={`$${PLANS.pro.priceUsd}`} unit="/ month" label={<>{PLANS.pro.limit} alert rules · {PLANS.pro.name}</>} />
+            <Stat value={`$${PLANS.max.priceUsd}`} unit="/ month" label={<>{PLANS.max.limit} alert rules · {PLANS.max.name}</>} />
           </StatGrid>
           <Points className="mt-5" items={[
             { text: <>Same {SPEED.fastSec}-second reads and ~{SPEED.alertSec}-second push on every plan · live stock and the restock log cost nothing to browse</> },

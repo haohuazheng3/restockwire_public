@@ -61,32 +61,37 @@ export const account = {
     /** Every model: "iPhone"; otherwise the models' names joined. */
     anyIphone: "iPhone",
     and: " and ",
-    yours: (n: number) => (n === 1 ? "your store" : `your ${n} stores`),
-    Yours: (n: number) => (n === 1 ? "Your store" : `Your ${n} stores`),
-    otherStores: (n: number) => s(n, "other store"),
-    meta: (what: string, stores: number, days: number, zone: string) => `${what} · ${s(stores, "store")} · past ${days} days · ${zone} time`,
-    busiest: (yours: string, then: string | null) => (then ? `peak hour at ${yours} · ${then} next` : `peak hour at ${yours}`),
-    busiestArea: (stores: number, zone: string) => `peak across all ${stores} stores on ${zone} time`,
-    next: (inHours: number) => `next window · ${inHours === 0 ? "this hour" : `${inHours} h from now`}`,
+    yours: (n: number) => (n === 1 ? "the store you watch" : `the ${n} stores you watch`),
+    Yours: (n: number) => (n === 1 ? "The store you watch" : `The ${n} stores you watch`),
+    otherStores: (n: number) => s(n, "store in the same zone", "stores in the same zone"),
+    meta: (what: string, stores: number, days: number, zone: string) => `${what} at ${s(stores, "store")} · ${days}-day window · ${zone} time`,
+    /** Peak-hour tile labels. */
+    busiest: (yours: string, then: string | null) => `${yours}: peak hour${then ? ` (runner-up ${then})` : ""}`,
+    busiestArea: (stores: number, zone: string) => `${zone}-time peak, all ${stores} stores`,
+    next: (inHours: number) => (inHours === 0 ? "restock window: this hour" : `restock window in ${inHours} h`),
     typical: "how long a typical listing lasts",
     count: (yours: string, days: number, total: number, pattern: boolean) => (total === 0 ? `nothing restocked at ${yours} yet · past ${days} days` : `restocks at ${yours} · past ${days} days${pattern ? "" : " · not enough for a pattern"}`),
-    byHour: (busiestInGreen: boolean) => `Hour by hour${busiestInGreen ? " · peak in green" : ""}`,
-    byWeekday: (busiest: string | null) => `Day by day${busiest ? ` · peak ${busiest}` : ""}`,
-    /** Screen-reader summary of a chart; {items} are "9 AM 2" / "Monday 1" joined. */
-    hourChart: (yours: string, zone: string, items: string) => `Restocks at ${yours} by hour, ${zone} time: ${items}`,
-    weekdayChart: (yours: string, items: string) => `Restocks at ${yours} by weekday: ${items}`,
-    chartItem: (label: string, n: number, reported: number) => `${label} ${n}${reported ? ` (+${reported} reported by other trackers)` : ""}`,
-    /** Tooltip over one bar: "10–11 AM: 2 restocks at your store · 5 across Eastern time · 1 reported by other trackers". */
+    byHour: (busiestInGreen: boolean) => `Per hour${busiestInGreen ? " · green marks the peak" : ""}`,
+    byWeekday: (busiest: string | null) => `Per weekday${busiest ? ` · ${busiest} leads` : ""}`,
+    /** Chart summary for screen readers; {items} joins entries such as "9 AM 2" or "Monday 1". */
+    hourChart: (yours: string, zone: string, items: string) => `Hourly restock count for ${yours} (${zone} time): ${items}`,
+    /** Same summary, per weekday. */
+    weekdayChart: (yours: string, items: string) => `Restock count per weekday for ${yours}: ${items}`,
+    /** One entry of that summary. */
+    chartItem: (label: string, n: number, reported: number) => `${label} ${n}${reported ? ` (+${reported} from other trackers' logs)` : ""}`,
+    /** Bar tooltip, e.g. "10–11 AM: 2 restocks at the store you watch · 5 across Eastern time · 1 from other trackers' logs". */
     barTitle: (label: string, n: number, yours: string, area: { n: number; zone: string } | null, reported: number) =>
-      `${label}: ${s(n, "restock")} at ${yours}${area ? ` · ${area.n} across ${area.zone} time` : ""}${reported ? ` · ${reported} reported by other trackers` : ""}`,
+      `${label}: ${s(n, "restock")} at ${yours}${area ? ` · ${area.n} across ${area.zone} time` : ""}${reported ? ` · ${reported} in other trackers' logs` : ""}`,
+    /** Timeline marker for the current minute. */
     now: "now",
-    allZone: (stores: number, zone: string) => `Every one of the ${stores} stores on ${zone} time`,
+    /** Legend entry for the whole time zone. */
+    allZone: (stores: number, zone: string) => `All ${stores} stores that keep ${zone} time`,
     /** Starts the other trackers' footnote under the charts. */
     reportMarkBars: "Dashed",
     reportMarkDots: "Hollow dots",
     sellTitle: "How long your stores' restocks last",
-    sellMeta: (what: string, stores: number, days: number) => `${what} · ${s(stores, "store")} · past ${days} days`,
-    /** Completes "A typical iPhone Duo restock … sold out in about 60–80 seconds". */
+    sellMeta: (what: string, stores: number, days: number) => `${what} at ${s(stores, "store")} · ${days}-day window`,
+    /** Ends the sell-out sentence ("… gone in about 60–80 seconds at the store you watch"). */
     sellLabel: (yours: string) => `at ${yours}`,
   },
 
@@ -121,7 +126,7 @@ export const account = {
     chips: ["Every one of the 269 US Apple Stores", "Cancel anytime", "Card or Link"],
     fastest: "No iPhone stock tracker publishes a shorter check interval",
     everyFast: `**${SPEED.fastSec} seconds** between checks on your stores · the intervals other trackers publish: ${OTHER_TRACKERS}`,
-    /** {band} is "60–80 seconds" or "about a minute". */
+    /** {band}: a range such as "60–80 seconds", or the "about a minute" fallback. */
     sellsOut: (band: string) => `**${band}**: how long a typical iPhone Duo restock stays listed; some are gone in 20–30 seconds`,
     band: (range: string) => `${range} seconds`,
     aboutMinute: "about a minute",
@@ -133,7 +138,7 @@ export const account = {
     month: "/ month",
     alerts: (n: number) => `${n} alerts`,
     perks: [...SPEED_PERKS] as string[],
-    cancel: "Cancel anytime",
+    cancel: "No contract · cancel when you like",
     get: (plan: string) => `Choose ${plan}`,
     billing: "Billed through Stripe · card or Link · plan changes are prorated",
     /** The refund policy line, as published (no other refund wording anywhere). */

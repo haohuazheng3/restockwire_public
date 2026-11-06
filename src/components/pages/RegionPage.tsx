@@ -130,7 +130,7 @@ export async function RegionPage({ country: c, params: p }: { country: Country; 
     ? neighborStates(s.name)
     : regionRefs(cc).filter((r) => r.name !== s.name).map((r) => ({ ...r, d: distanceMiles(r.lat, r.lng, centroid(stores).lat, centroid(stores).lng) })).sort((a, b) => a.d - b.d).slice(0, 8);
   const alert = alertHref({ model: DEFAULT_MODEL, state: s.slug, country: cc });
-  // Five questions: the "how long does stock last" answer now lives in the iPhone Duo section, the tax question takes its place.
+  // Five questions: the sell-out answer sits in the iPhone Duo section now, so the tax question fills that slot.
   const tq = us ? taxFaq(d.copy) : P.taxFaq(cc, name, cc === "ca" ? s.name : undefined);
   const questions = faq({ kind: "state", place: name, stores, stockNow: d.stockNow, duoStores: d.duoStores, stats: d.pstats, peak: peakOf(d.stats, lang), nearest: d.outside, omit: ["lasts"] }, lang);
   if (tq) questions.splice(2, 0, tq);
@@ -161,7 +161,7 @@ export async function RegionPage({ country: c, params: p }: { country: Country; 
       </div>
       <AlertPanelFor href={alert} summary={G.panelPick(name)} country={cc} />
 
-      {/* The answer to "has the Duo restocked anywhere in {state} in the last 24 hours, and which configuration?" comes before the matrix. */}
+      {/* Past-day answer for the whole state (any Duo back? which configuration?) sits above the matrix. */}
       <div className="mt-6"><Last24Hours data={d.recent} label={G.inPlace(name)} stores={stores} country={cc} stock={d.stock} lastBefore={d.copy.duo.lastRestock} alert={alert} /></div>
 
       <div className="mt-6"><ModelPlaceCards place={us ? statePlace(s.name)! : treeOf(cc).regionPlace(s.name)!} stockNow={d.stockNow} of={stores.length} unit={G.storesWithIt} /></div>
@@ -194,7 +194,7 @@ export async function RegionPage({ country: c, params: p }: { country: Country; 
         <section className="pane p-5">
           <h2 className="text-xl font-semibold">{G.whenRestock(name)}</h2>
           <div className="mt-3"><RestockClock stats={d.stats} label={G.inPlace(name)} reports={d.reports} /></div>
-          {us && <p className="mt-3 text-sm"><Link href={restockTimesPath(s.name)} className="font-medium text-ink underline-offset-2 hover:underline">When does the iPhone Duo restock in {s.name}? Hour by hour, every store →</Link></p>}
+          {us && <p className="mt-3 text-sm"><Link href={restockTimesPath(s.name)} className="font-medium text-ink underline-offset-2 hover:underline">{s.name}: the hours the iPhone Duo comes back, store by store →</Link></p>}
         </section>
         <section className="pane p-5">
           <h2 className="text-xl font-semibold">{G.howFast(name)}</h2>

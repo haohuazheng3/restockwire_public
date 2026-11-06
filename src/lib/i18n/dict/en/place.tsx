@@ -12,7 +12,7 @@ import { TAX_SOURCES, pickupHelp, storeListSource } from "@/content/country-tax"
 import type { CountryCode } from "@/lib/apple/countries";
 
 export const place = {
-  /** "since tracking began on November 2" / "in the last 30 days". */
+  /** The window phrase: "since the tracker started on November 2", or "over the past 30 days". */
   sinceWhen: cc.sinceWhenIntl,
   /** A place name that is also a US Apple Store city/state gets the country: "Manchester, UK". */
   placeLabel: cc.placeLabel,
@@ -28,9 +28,9 @@ export const place = {
   storesIndexTitle: cc.storesIndexTitle,
   homeTitle: cc.homeTitle,
   homeH1: cc.homeH1,
-  /** "the 39 Apple Stores in the UK" / "the one Apple Store in Austria". */
+  /** The store-count phrase, e.g. "39 Apple Stores across the UK", or Austria's single store. */
   allStoresPhrase: cc.allStoresPhrase,
-  /** "in 22 cities across 6 provinces". */
+  /** How the stores spread out, e.g. "22 cities, 6 provinces". */
   spreadPhrase: cc.spreadPhrase,
   modelPageTitles: cc.modelPageTitles,
   modelIntro: cc.modelIntro,
@@ -42,8 +42,8 @@ export const place = {
   homeSections: cc.homeSections,
   homeFaq: cc.homeFaq,
   home: cc.homeLabels,
-  /** Store page title: "Apple Ginza: iPhone Stock Today, Pickup & Hours" (`region`, already in the page's language: the city/state when it is the store's only one). */
+  /** Store page <title>, built around the store name (e.g. "Apple Ginza: Live iPhone Stock & Hours"). `region` comes localised and is the city or state when that place has only this store. */
   storeTitle: cc.storeTitleIntl,
-  /** The sources lines of a country's pages: Apple's pickup help, Apple's store list, the tax authority. A language may point at the same page in its own language. */
+  /** Source lines for a country tree: Apple pickup help, Apple store list, tax authority. A translation may link the localised version of each page. */
   sources: (code: Exclude<CountryCode, "us">) => ({ pickupHelp: pickupHelp(code), storeList: storeListSource(code), tax: TAX_SOURCES[code] }),
 };

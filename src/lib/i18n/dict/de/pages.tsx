@@ -6,7 +6,7 @@ import type { Dict } from "../en";
 import { COUNTRIES, type CountryCode } from "@/lib/apple/countries";
 import { hy, inLand, inOrt, land, n, plural, regionWord } from "./util";
 
-const CHECK = "alle 15 Sek., 5 Sek. mit Alarm";
+const CHECK = "im 15-Sek.-Takt, mit Alarm im 5-Sek.-Takt";
 const stores = (k: number) => plural(k, "Store", "Stores");
 
 export const pages: Dict["pages"] = {
@@ -18,11 +18,11 @@ export const pages: Dict["pages"] = {
     fullLog: "Vollständiges Protokoll →",
     restocksBy: "Welche Konfigurationen wiederkommen",
     lastDays: (days: number) => `${days} Tage Restocks, ein Balken pro Tag`,
-    nearbyCities: "Städte mit Apple Store in der Nähe",
+    nearbyCities: "Nachbarstädte mit Apple Store",
     neighboringStates: "Angrenzende Bundesstaaten",
     acrossStateLine: "Gleich hinter der Grenze",
-    allUsRestocks: "Jeder Restock in den USA",
-    allRestocksIn: (cc: CountryCode) => `Jeder Restock ${inLand(cc)}`,
+    allUsRestocks: "USA: das komplette Restock-Protokoll",
+    allRestocksIn: (cc: CountryCode) => `${land(cc)}: das komplette Restock-Protokoll`,
     regionRestocks: (place: string) => `Restocks ${inOrt(place)}`,
     onTheMap: (place: string) => `${place} in der Kartenansicht`,
     allOf: (place: string) => `${place}: Übersicht`,
@@ -33,7 +33,7 @@ export const pages: Dict["pages"] = {
     inPlace: (place: string) => inOrt(place),
     atPlace: (place: string) => `bei ${place}`,
     here: "hier",
-    storesWithIt: "Stores mit Bestand",
+    storesWithIt: "Stores, die es listen",
     whenRestock: (place: string) => `Wann füllt Apple ${inOrt(place)} nach?`,
     howFast: (place: string) => `Wie lange hält ein Restock ${inOrt(place)}?`,
     latestIn: (place: string) => `Jüngste Restocks ${inOrt(place)}`,
@@ -53,7 +53,7 @@ export const pages: Dict["pages"] = {
     storesWith: (short: string) => `Stores mit ${short}`,
     restocks24: "Restocks, letzte 24 Std.",
     week: (k: number) => ` · ${n(k)} in 7 Tagen`,
-    lastCheck: "letzte Prüfung",
+    lastCheck: "zuletzt abgefragt",
     more: (k: number) => `und ${n(k)} weitere`,
     latest: (short: string) => `${short}: neueste Restocks`,
     none: (short: string) => `Für das ${short} gab es bisher keinen Restock.`,
@@ -62,10 +62,10 @@ export const pages: Dict["pages"] = {
     buy: "Auf apple.com bestellen",
     liveStock: (short: string) => `${short}: Bestand live`,
     live: "Live",
-    alsoTracking: "Ebenfalls erfasst:",
+    alsoTracking: "Außerdem im Blick:",
     liveMap: "Live-Karte",
     allStores: "Alle Stores",
-    questions: "Häufige Fragen",
+    questions: "Fragen & Antworten",
   },
   region: {
     counts: (k: number, cities: number) => `${stores(k)} in ${cities === 1 ? "einer Stadt" : `${n(cities)} Städten`} · geprüft ${CHECK}`,
@@ -86,27 +86,27 @@ export const pages: Dict["pages"] = {
   },
   store: {
     description: (a: { place: string; street: string; city: string; where: string; duo: number; pro: number; pm: number }) => [
-      `Live-Verfügbarkeit zur Abholung bei ${a.place} (${a.street}, ${a.city}): ${a.duo} iPhone-Duo-, ${a.pro} 18-Pro- und ${a.pm} Pro-Max-Konfigurationen erfasst, mit Öffnungszeiten, Restock-Zeiten und Stores in der Nähe.`,
-      `${a.place}, ${a.where}: Abholung für ${a.duo} Duo-, ${a.pro} 18-Pro- und ${a.pm} Pro-Max-Konfigurationen, live, mit Öffnungszeiten heute und üblichen Restock-Zeiten.`,
-      `${a.place}, ${a.city}: ${a.duo} Duo-, ${a.pro} 18-Pro-, ${a.pm} Pro-Max-Konfigurationen live, dazu Öffnungszeiten und Restocks.`,
+      `${a.place} (${a.street}, ${a.city}) im Abfrage-Takt: ${a.duo} Konfigurationen des iPhone Duo, ${a.pro} des 18 Pro, ${a.pm} des Pro Max. Plus Restock-Uhrzeiten, Öffnungszeiten, Nachbar-Stores.`,
+      `${a.place}, ${a.where}: Abholbestand für ${a.duo} Duo-, ${a.pro} 18-Pro- und ${a.pm} Pro-Max-Varianten. Dazu die übliche Restock-Uhrzeit und die heutigen Öffnungszeiten.`,
+      `${a.place}, ${a.city}: Bestand von ${a.duo} Duo-, ${a.pro} 18-Pro-, ${a.pm} Pro-Max-Varianten, Restock-Zeiten, Öffnungszeiten.`,
     ],
     where: (city: string, cc: CountryCode) => `${city}, ${land(cc)}`,
-    taxQ: (place: string) => `Was kostet das iPhone Duo bei ${place} inklusive Steuer?`,
-    pickupQ: (place: string) => `Kann man apple.com-Bestellungen bei ${place} abholen?`,
-    pickupA: (place: string) => `Ja: Wählen Sie im Checkout die Abholung und ${place}, warten Sie, bis Apple die Bestellung als abholbereit meldet, und bringen Sie dann Bestellnummer, einen amtlichen Lichtbildausweis und den QR-Code oder Wallet-Pass mit (ein Screenshot des Codes wird abgelehnt).`,
+    taxQ: (place: string) => `iPhone Duo bei ${place}: Wie hoch ist der Endpreis mit Steuer?`,
+    pickupQ: (place: string) => `Wie hole ich eine apple.com-Bestellung bei ${place} ab?`,
+    pickupA: (place: string) => `Im Checkout „Abholen“ und ${place} auswählen, dann Apples Nachricht „abholbereit“ abwarten. Zur Theke gehören Lichtbildausweis, Bestellnummer und QR-Code bzw. Wallet-Pass; ein Screenshot des Codes zählt nicht.`,
     storeWord: (name: string) => (/^apple\b/i.test(name) ? name.replace(/^apple\s*/i, "Apple Store ") : `Apple Store ${name}`),
     hoursH2: (storeWord: string) => `${storeWord}: Öffnungszeiten, Adresse und Abholregeln`,
     hoursLead: (place: string, address: string, phone: string | undefined, today: string, week: string) => `Die Adresse von ${place}: ${address}${phone ? `; Telefon ${phone}` : ""}. Heute geöffnet: ${today}. Die Woche über: ${week}.`,
     pickupRules: (helpUrl: string) => [
       `**Kommen Sie erst nach Apples Abholbenachrichtigung** ([Apples Abholregeln](${helpUrl}))`,
-      "**Mitbringen:** Bestellnummer · amtlicher Lichtbildausweis · QR-Code oder Wallet-Pass",
+      "**Dabeihaben:** Lichtbildausweis · Bestellnummer · QR-Code bzw. Wallet-Pass",
       "**Abgelehnt:** ein Screenshot des Codes",
       "**Schicken Sie jemand anderen?** Nur eine im Checkout angegebene Abholperson",
     ],
     directions: (place: string, dirUrl: string, appleUrl?: string) => `[Route zu ${place}](${dirUrl})${appleUrl ? ` · [Dieser Store auf apple.com](${appleUrl})` : ""}`,
     onlyH2: (where: string, place: string) => `${place}: der einzige Apple Store ${inOrt(where)}`,
     onlyInCountry: (place: string, cc: CountryCode) => `Jede Abholung im Store ${inLand(cc)} läuft über ${place}, den einzigen Apple Store des Landes. Taucht hier eine Konfiguration auf, gibt es keinen Ausweich-Store; ein Alarm für diesen Store ist der ganze Plan.`,
-    onlyInCity: (city: string, place: string, backups: string) => `${place} ist der einzige Apple Store ${inOrt(city)}.${backups ? ` Am nächsten liegen: ${backups}.` : ""}`,
+    onlyInCity: (city: string, place: string, backups: string) => `${place} ist der einzige Apple Store ${inOrt(city)}.${backups ? ` Ausweich-Stores in der Nähe: ${backups}.` : ""}`,
     backup: (apple: string, city: string, dist: string) => `${apple} in ${city} (${dist})`,
     onlyBlockCountry: (place: string) => `Ein Alarm ist ein Store plus eine exakte Konfiguration; bietet ${place} Ihre zur Abholung an, erfährt Ihr Handy es binnen Sekunden.`,
     onlyBlock: (place: string) => `Hat ${place} Ihre Konfiguration nicht, verdienen auch diese Ausweich-Stores einen Alarm: Jeder Alarm ist ein Store plus eine exakte Konfiguration, und der Push kommt Sekunden, nachdem der Store sie anbietet.`,

@@ -2,10 +2,10 @@
  * What tax an apple.com price carries outside the US, and where that is published.
  *
  * Canada is the one country besides the US whose Apple prices exclude tax: the buyer pays GST, HST or GST +
- * PST/QST on top, by province (Canada Revenue Agency, "GST/HST calculator (and rates)", page modified
- * 2025-04-01, Nova Scotia's HST 14% since April 1, 2025; checked 2026-11-02). Everywhere else Apple's price
+ * PST/QST on top, by province (Canada Revenue Agency GST/HST rate calculator, page dated 2025-04-01;
+ * Nova Scotia HST = 14% from 2025-04-01; checked 2026-11-02). Everywhere else Apple's price
  * already includes VAT/GST at the rate in countries.ts `taxNote` (EU rates checked against Your Europe,
- * Swiss rate against the ESTV, 2026-11-02); Hong Kong has no sales tax at all.
+ * Swiss rate against the ESTV, 2026-11-02); Hong Kong levies none.
  */
 import { COUNTRIES, type Country, type CountryCode } from "@/lib/apple/countries";
 import type { Source } from "@/lib/content/types";
@@ -79,11 +79,11 @@ export function withProvinceTax(price: number, province: string): { total: numbe
 export function pickupHelp(cc: CountryCode): Source {
   const c = COUNTRIES[cc];
   const p = c.buyPath ?? c.shopPath;
-  return { label: `Apple: Shipping & Pickup help${cc === "us" ? "" : ` (${c.short})`} (what to bring to a pickup)`, url: p ? `https://www.apple.com/${p}/shop/help/shipping_delivery` : "https://www.apple.com/shop/help/shipping_delivery" };
+  return { label: `Apple Shipping & Pickup help${cc === "us" ? "" : `, ${c.short}`} — what to have with you at pickup`, url: p ? `https://www.apple.com/${p}/shop/help/shipping_delivery` : "https://www.apple.com/shop/help/shipping_delivery" };
 }
 
 /** Apple's list of every store in a country. */
 export function storeListSource(cc: CountryCode): Source {
   const c = COUNTRIES[cc];
-  return { label: `Apple: Retail store list${cc === "us" ? "" : ` (${c.short})`}`, url: c.retailPath ? `https://www.apple.com/${c.retailPath}/retail/storelist/` : "https://www.apple.com/retail/storelist/" };
+  return { label: `Apple Store locations list${cc === "us" ? "" : `, ${c.short}`}`, url: c.retailPath ? `https://www.apple.com/${c.retailPath}/retail/storelist/` : "https://www.apple.com/retail/storelist/" };
 }

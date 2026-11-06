@@ -6,8 +6,8 @@ import { LANG_COOKIE, nativeLocale } from "@/lib/i18n/locales";
 export const dynamic = "force-dynamic";
 
 /**
- * Installable web app: Safari needs `display: standalone` here before it allows Web Push. The Home Screen app has
- * its own cookie jar (iOS), so the language the person was reading in when they installed it rides in start_url
+ * Installable web app: Web Push in Safari requires `display: standalone`. On iOS the Home Screen app keeps a
+ * separate cookie store, so the language the person was reading in when they installed it rides in start_url
  * (?lang=ja-jp); the proxy makes it their language on the app's first launch (docs/i18n.md §6).
  */
 export default async function manifest(): Promise<MetadataRoute.Manifest> {

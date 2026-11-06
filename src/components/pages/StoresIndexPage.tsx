@@ -35,12 +35,12 @@ import { dict } from "@/lib/i18n/dict";
 
 /**
  * Bound keywords (DataForSEO, the SEO plan §10): "list of apple stores" 210/mo, KD 0 (title and H1); "how many
- * apple stores in the us" 320, KD 30 (its own section); "apple store locations" 22,200, KD 100 (the
+ * apple stores in the us" gets its own section (320/mo at KD 30); "apple store locations" 22,200, KD 100 (the
  * heading of the state list). The page used to target "apple stores by state", which measures 10.
  */
 function hubTitle(c: Country): string {
   if (c.cc !== "us") return storesIndexTitle(c.cc);
-  return `List of Apple Stores in the US: All ${storesOf("us").length} by State, Live Stock`;
+  return `List of Apple Stores, US — ${storesOf("us").length} by State, Live iPhone Stock`;
 }
 
 /** Nationwide numbers, all cached (60 s): 1 + 3 + 1 queries; another country also reads its stores' stock (one query). */
@@ -67,7 +67,7 @@ export async function storesIndexMetadata(c: Country, loc: Locale = englishLocal
   const title = c.cc === "us" ? hubTitle(c) : D.place.storesIndexTitle(c.cc);
   const n = storesOf(c.cc).length;
   const description = c.cc === "us"
-    ? `The list of all ${n} Apple Stores in the US by state and city, with live iPhone Duo, 18 Pro and Pro Max pickup stock: ${d.stockNow.duo} have the Duo now.`.slice(0, 160)
+    ? `${d.stockNow.duo} US Apple Stores list the iPhone Duo for pickup right now. Here are all ${n}, by state and city, with live iPhone Duo, 18 Pro and Pro Max stock.`.slice(0, 160)
     : D.views.storesIndex.metaDescription(c, n, statesWithStores(c.cc).length, citiesWithStores(c.cc).length, d.stockNow.duo, d.stockNow["18-pro-max"]).slice(0, 160);
   const url = loc.native ? pathInLocale(`${prefixOf(c.cc)}/apple-stores`, loc) : `${prefixOf(c.cc)}/apple-stores`;
   return { title, description, alternates: { canonical: url, languages: hreflangFor("stores", loc) }, openGraph: { type: "website", siteName: "RestockWire", title, description, url } };
@@ -80,28 +80,28 @@ export async function StoresIndexPage({ country: c }: { country: Country }) {
   const states = statesWithStores();
   const cities = citiesWithStores();
   const alert = alertHref({ model: DEFAULT_MODEL });
-  // Four questions; "how many Apple Stores" has its own section above, so it is not repeated here.
+  // Four questions; the store count already has its own section above, so the FAQ skips it.
   const hub = hubFaq();
-  const duoNow = { q: "Which Apple Stores have the iPhone Duo right now?", a: d.stockNow.duo === 0 ? `None of the ${STORES.length} at the last check. The iPhone Duo stock page and the map update the moment one lists it, and an alert tells you first.` : `${d.stockNow.duo} of the ${STORES.length} at the last check. The iPhone Duo stock page names each store and configuration, updated every 15 seconds.` };
-  const questions = [duoNow, ...faq({ kind: "state", place: "the US", stores: STORES, stockNow: d.stockNow, stats: d.pstats, peak: peakOf(d.stats) }).filter((q) => !q.q.startsWith("How many Apple Stores are there") && !q.q.startsWith("Which Apple Stores in")), hub.taxFree];
+  const duoNow = { q: "Where can I pick up an iPhone Duo in the US today?", a: d.stockNow.duo === 0 ? `Nowhere right now: 0 of ${STORES.length} stores list it. The iPhone Duo stock page and the live map flip the moment one does, and alerts go out first.` : `At ${d.stockNow.duo} of ${STORES.length} stores, as of the last check. The iPhone Duo stock page lists each store and configuration and refreshes every 15 seconds.` };
+  const questions = [duoNow, ...faq({ kind: "state", place: "the US", stores: STORES, stockNow: d.stockNow, stats: d.pstats, peak: peakOf(d.stats), omit: ["count", "stock"] }), hub.taxFree];
   const top = [...states].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).slice(0, 10);
   const thin = states.filter((s) => s.count <= 2).map((s) => s.name);
   return (
     <div className="mx-auto max-w-6xl px-4 pt-8">
-      <JsonLd data={itemListJsonLd("Apple Stores in the US", STORES)} />
+      <JsonLd data={itemListJsonLd("US Apple Store list", STORES)} />
       <h1 className="display text-3xl sm:text-5xl">{hubTitle(c)}</h1>
-      <p className="mt-3 max-w-3xl text-lg leading-relaxed text-ink-2">There are <b className="text-ink">{STORES.length} Apple Stores</b> in the US, in {cities.length} cities across {states.length - 1} states and Washington, D.C. Right now <b className="text-ink">{d.stockNow.duo}</b> of them list an iPhone Duo for pickup, <b className="text-ink">{d.stockNow["18-pro-max"]}</b> the iPhone 18 Pro Max and <b className="text-ink">{d.stockNow["18-pro"]}</b> the 18 Pro. Pick your state; the three with no sales tax are marked.</p>
+      <p className="mt-3 max-w-3xl text-lg leading-relaxed text-ink-2">Live now: <b className="text-ink">{d.stockNow.duo}</b> US stores offer an iPhone Duo for pickup, <b className="text-ink">{d.stockNow["18-pro-max"]}</b> an iPhone 18 Pro Max, <b className="text-ink">{d.stockNow["18-pro"]}</b> an 18 Pro. The full count is <b className="text-ink">{STORES.length} Apple Stores</b> in {cities.length} cities, spread over {states.length - 1} states plus Washington, D.C. Open your state below; a tag flags the three without sales tax.</p>
       <div className="mt-6 flex flex-wrap gap-2"><Link href={`/live-map?model=${DEFAULT_MODEL}`} className="btn btn-ghost btn-sm">Live map</Link><Link href="/restock-log" className="btn btn-ghost btn-sm">Restock log</Link><Link href={alert} className="btn btn-primary btn-sm">Alert me</Link></div>
 
-      <div className="mt-6"><ModelPlaceCards place={US_PLACE} stockNow={d.stockNow} of={STORES.length} unit="stores with it" /></div>
+      <div className="mt-6"><ModelPlaceCards place={US_PLACE} stockNow={d.stockNow} of={STORES.length} unit="stores listing it" /></div>
       <div className="mt-3"><PlaceStatStrip stores={STORES.length} cities={cities.length} stockNow={d.stockNow} stats={d.pstats} /></div>
 
       <section className="mt-10 max-w-3xl" aria-labelledby="how-many">
-        <h2 id="how-many" className="text-2xl font-semibold">How many Apple Stores are there in the US?</h2>
+        <h2 id="how-many" className="text-2xl font-semibold">How many Apple Stores does the US have?</h2>
         <p className="mt-2 leading-relaxed text-ink-2">{hub.count.a}</p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-sm">
-            <caption className="mb-2 text-start text-xs text-ink-3">The ten states with the most Apple Stores (Apple retail store list, as tracked here)</caption>
+            <caption className="mb-2 text-start text-xs text-ink-3">Top ten states by Apple Store count, from Apple&apos;s retail store list</caption>
             <thead><tr className="text-start text-ink-3"><th className="py-1.5 pe-4 font-medium">State</th><th className="py-1.5 pe-4 font-medium">Apple Stores</th><th className="py-1.5 font-medium">Cities</th></tr></thead>
             <tbody className="divide-y divide-line">
               {top.map((s) => <tr key={s.slug}><td className="py-1.5 pe-4"><Link href={statePath(s.name)} className="hover:underline">{s.name}</Link></td><td className="py-1.5 pe-4 tabular-nums">{s.count}</td><td className="py-1.5 tabular-nums">{cities.filter((x) => x.state === s.name).length}</td></tr>)}
@@ -110,7 +110,7 @@ export async function StoresIndexPage({ country: c }: { country: Country }) {
         </div>
       </section>
 
-      <h2 className="mt-10 text-2xl font-semibold">Apple Store locations by state</h2>
+      <h2 className="mt-10 text-2xl font-semibold">US Apple Store locations, state by state</h2>
       <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {states.map((s) => {
           const mine = cities.filter((x) => x.state === s.name);
@@ -127,30 +127,30 @@ export async function StoresIndexPage({ country: c }: { country: Country }) {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <section className="pane p-5">
-          <h2 className="text-xl font-semibold">When do stores restock?</h2>
+          <h2 className="text-xl font-semibold">What hours do US stores restock?</h2>
           <div className="mt-3"><RestockClock stats={d.stats} label="across the US" reports={d.reports} /></div>
         </section>
         <section className="pane p-5">
-          <h2 className="text-xl font-semibold">How fast do restocks sell out across the US?</h2>
+          <h2 className="text-xl font-semibold">How many seconds does a US restock last?</h2>
           <div className="mt-3"><SellOutTimes data={d.sell} label="across the US" showStore /></div>
         </section>
         <section className="pane p-5">
-          <h2 className="text-xl font-semibold">Last {d.pstats.days} days</h2>
+          <h2 className="text-xl font-semibold">The past {d.pstats.days} days</h2>
           <div className="mt-3"><DailyBars stats={d.pstats} label="across the US" /></div>
         </section>
-        <Faq items={questions} title="FAQ" />
+        <Faq items={questions} title="Quick answers" />
         <div className="space-y-4">
           <Figure id="apple-store-glass-canopy" className="my-0" />
           <Figure id="phone-map" className="my-0" />
-          <div className="pane p-5"><SourceList sources={[{ label: "Apple: Retail store list", url: "https://www.apple.com/retail/storelist/" }, SALES_TAX_SOURCE]} facts={emptyFacts()} /></div>
+          <div className="pane p-5"><SourceList sources={[{ label: "Apple retail store list (official)", url: "https://www.apple.com/retail/storelist/" }, SALES_TAX_SOURCE]} facts={emptyFacts()} /></div>
         </div>
       </div>
 
       <RelatedBlock>
         <BrowsePopular />
-        <LinkRow title="States with 1–2 stores" links={thin.map((n) => ({ href: statePath(n), label: n }))} />
+        <LinkRow title="States with one or two stores" links={thin.map((n) => ({ href: statePath(n), label: n }))} />
         <BrowseModels />
-        <LinkRow title="More" links={[{ href: "/restock-log", label: "Restock log" }, { href: "/live-map", label: "Live map" }, { href: "/phone-alerts", label: "Get the app" }, { href: "/how-restock-alerts-work", label: "How it works" }, { href: "/pricing", label: "Pricing" }, ...MODELS.map((m) => ({ href: `/in-stock/${m.slug}`, label: `${m.name} stock` }))]} />
+        <LinkRow title="More" links={[{ href: "/restock-log", label: "Restock log" }, { href: "/live-map", label: "Live map" }, { href: "/phone-alerts", label: "Home Screen app" }, { href: "/how-restock-alerts-work", label: "How alerts work" }, { href: "/pricing", label: "Pricing" }, ...MODELS.map((m) => ({ href: `/in-stock/${m.slug}`, label: `${m.name}, live stock` }))]} />
       </RelatedBlock>
     </div>
   );
