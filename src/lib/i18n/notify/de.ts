@@ -1,0 +1,57 @@
+/**
+ * Notification texts in German (push, alert email, "notifications stopped" email, Stripe checkout line).
+ * Plain TS, no imports but types: the poller sends these too. Switzerland gets them with ß → ss.
+ */
+import type { NotifyText } from "./en";
+
+export const notifyDe: NotifyText = {
+  pushTitle: (cfg: string) => cfg,
+  pushBody: (where: string, quote: string | null) => `${where}${quote ? ` – ${quote}` : ""}. Tippen, um auf apple.com zu reservieren.`,
+  testTitle: "RestockWire-Mitteilungen sind an",
+  testBody: (time: string, device: string) => `Test um ${time} gesendet an: ${device}. Restock-Alarme kommen genauso, in Sekunden.`,
+  device: {
+    iphoneApp: "iPhone (Home-Bildschirm-App)",
+    iphoneSafari: "iPhone (Safari)",
+    androidApp: "Android (installierte App)",
+    android: (browser: string) => `Android${browser ? ` (${browser})` : ""}`,
+    computer: (browser: string) => `Computer${browser ? ` (${browser})` : ""}`,
+    other: "dieses Gerät",
+  },
+  email: {
+    subject: (cfg: string, store: string, more: number) => `Verfügbar: ${cfg} bei ${store}${more > 0 ? ` +${more} weitere` : ""}`,
+    intro: "Gute Nachricht – jetzt zur Abholung im Store verfügbar:",
+    reserve: "Reservieren",
+    store: "Store",
+    tip: "Abhol-Ware ist schnell weg: Öffnen Sie die Apple Store App oder apple.com, wählen Sie „Abholen“ und dann den Store.",
+    manage: (url: string) => `Diesen Alarm verwalten oder pausieren: ${url}`,
+    htmlTitle: "Jetzt zur Abholung verfügbar",
+    htmlReserve: "Auf apple.com reservieren",
+    htmlStorePage: "Store-Seite →",
+    htmlTip: "Abhol-Ware ist schnell weg – reservieren Sie in der Apple Store App oder auf apple.com, wählen Sie <b>Abholen</b> und dann den Store.",
+    htmlManage: "Diesen Alarm verwalten oder pausieren",
+    cancel: (url: string) => `Schon Ihr iPhone bekommen? Jederzeit kündbar: ${url}`,
+    htmlGotIt: "Schon Ihr iPhone bekommen?",
+    htmlCancel: "Jederzeit kündigen",
+    nudge: (url: string) => `Diese Mail kam, weil auf keinem Handy Mitteilungen für Ihr Konto eingeschaltet sind. Eine Handy-Mitteilung kommt etwa 3 Sekunden nach einem Restock an – öffnen Sie RestockWire vom Home-Bildschirm und tippen Sie auf „Mitteilungen einschalten“: ${url}`,
+    htmlNudge: (url: string) => `Diese Mail kam, weil auf keinem Handy Mitteilungen für Ihr Konto eingeschaltet sind. Eine <b>Handy-Mitteilung kommt etwa 3 Sekunden</b> nach einem Restock an – öffnen Sie RestockWire vom Home-Bildschirm und tippen Sie auf <b>Mitteilungen einschalten</b>. <a href="${url}" style="color:#0a7f3f">So geht’s →</a>`,
+  },
+  checkoutSubmit: (plan: string, limit: number, fastSec: number, checkSec: number, alertSec: number) => `${plan}: ${limit} Alarme. Ihre Stores werden alle ${fastSec} Sek. geprüft (jeder Store alle ${checkSec} Sek.), mit einem Push etwa ${alertSec} Sek. nach einem bestätigten Restock. Monatlich, jederzeit kündbar.`,
+  stopped: {
+    deviceWord: { ios: "iPhone", android: "Android-Handy", desktop: "Computer", other: "Gerät" },
+    subject: (device: string) => `Mitteilungen auf Ihrem ${device} gestoppt – RestockWire vom Home-Bildschirm öffnen`,
+    gone: (device: string) => `Ihr ${device} nimmt keine RestockWire-Mitteilungen mehr an (der Push-Dienst meldet, dass das Abo nicht mehr existiert).`,
+    byEmail: "Restock-Alarme für Ihre Regeln kommen jetzt per E-Mail, bis Sie Mitteilungen wieder einschalten.",
+    reopenIos: "Öffnen Sie RestockWire vom Home-Bildschirm (nicht in Safari) und tippen Sie auf der Kontoseite auf „Mitteilungen einschalten“.",
+    reopenOther: "Öffnen Sie RestockWire, gehen Sie zu „Konto“ und tippen Sie auf „Mitteilungen einschalten“.",
+    causes: "Häufige Ursachen: Die App wurde vom Home-Bildschirm entfernt, Mitteilungen wurden in den Einstellungen ausgeschaltet, oder das Handy wurde wiederhergestellt.",
+  },
+  nudge: {
+    subject: "iPhone-Duo-Restock-Alarme aufs Handy, etwa 3 Sekunden nach dem Restock",
+    intro: "Ihre RestockWire-Alarme kommen per E-Mail, weil auf keinem Handy Mitteilungen für Ihr Konto eingeschaltet sind. E-Mail ist der langsame Weg: Ein typischer iPhone-Duo-Restock ist nach etwa einer Minute ausverkauft, eine Handy-Mitteilung kommt etwa 3 Sekunden nach der Bestätigung an.",
+    howTitle: "In unter einer Minute einschalten:",
+    stepsIos: ["Öffnen Sie restockwire.com auf dem iPhone in Safari, tippen Sie auf Teilen und dann auf „Zum Home-Bildschirm“.", "Öffnen Sie RestockWire vom Home-Bildschirm (nicht in Safari) und melden Sie sich an.", "Tippen Sie auf der Kontoseite auf „Mitteilungen einschalten“ und dann auf „Erlauben“."],
+    stepsOther: "Auf Android oder am Computer: restockwire.com/account öffnen und auf „Mitteilungen einschalten“ tippen.",
+    after: "Bis ein Gerät eingeschaltet ist, kommen Ihre Alarme weiter per E-Mail; danach kommen sie als Mitteilung, und die E-Mail hört auf.",
+    cta: (url: string) => `Anleitung mit Bildern: ${url}`,
+  },
+};
