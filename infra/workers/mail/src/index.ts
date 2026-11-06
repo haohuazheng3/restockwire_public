@@ -112,7 +112,7 @@ async function probe(env: Env) {
   const prev = (await (await cache.match(STATE_URL))?.json().catch(() => null)) as { down: boolean; since?: string; lastMail?: string } | null ?? { down: false };
   let status = 0; let body = "";
   try {
-    const r = await fetch(`${env.APP_URL}/api/health?shallow=1&cf=1`, { signal: AbortSignal.timeout(25000) });
+    const r = await fetch(`${env.APP_URL}/api/health?cf=1`, { signal: AbortSignal.timeout(25000) });
     status = r.status; body = (await r.text()).slice(0, 4000);
   } catch (e) { body = String(e); }
   const ok = status === 200;
