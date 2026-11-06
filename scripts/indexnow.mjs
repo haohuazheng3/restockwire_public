@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
  * IndexNow (Bing, Yandex, Seznam, Naver...): push every sitemap URL, or the URLs given as arguments.
- * The key is public by design: it is served at https://restockwire.com/15c8b6ceb658e293c7d8f72f54d857ad.txt.
+ * The key is public by design: it is served at https://restockwire.com/4bd1955b2d5e299065d307a1a903f28b.txt.
  *   node scripts/indexnow.mjs                 # every URL in the live sitemap
  *   node scripts/indexnow.mjs /apple-stores/texas   # just these paths
  */
 const HOST = "restockwire.com";
-const KEY = "15c8b6ceb658e293c7d8f72f54d857ad";
+const KEY = "4bd1955b2d5e299065d307a1a903f28b";
 const base = `https://${HOST}`;
 let urls = process.argv.slice(2).map((p) => (p.startsWith("http") ? p : base + p));
 if (urls.length === 0) {
