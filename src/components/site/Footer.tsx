@@ -20,7 +20,7 @@ export function Footer({ loc }: { loc: Locale }) {
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-3">
               The wire service for iPhone restocks. All 269 US Apple Stores on the 15-second wire; the stores in your alerts on the 5-second one.
             </p>
-            <p className="mt-3 text-xs text-ink-3">RestockWire is independent: not affiliated with or endorsed by Apple Inc. Apple, iPhone and Apple Store are Apple Inc. trademarks.</p>
+            <p className="mt-3 text-xs text-ink-3">RestockWire runs on its own; Apple Inc. neither backs nor runs it. Apple, iPhone and Apple Store belong to Apple Inc. as trademarks.</p>
           </div>
           <div className="text-sm">
             <div className="eyebrow mb-3">Live data</div>

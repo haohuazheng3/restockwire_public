@@ -10,13 +10,13 @@ export const map = {
   leadTail: ", updated live. The larger the dot, the more {model} configurations are listed.",
   inCountry: "in {country}",
   /** "Updated 7s ago": {ago} is the live counter. */
-  updated: "Updated {ago}",
+  updated: "Read {ago}",
   waiting: "First sweep on its way",
-  allModels: "All models",
+  allModels: "Every model",
   storage: "Storage",
-  anyStorage: "Any storage",
+  anyStorage: "Every size",
   color: "Color",
-  anyColor: "Any color",
+  anyColor: "Every finish",
   mapLabelUs: "Map of US Apple Stores",
   mapLabel: "Map of Apple Stores {in}",
   loading: "Map loading…",
@@ -57,7 +57,7 @@ export const map = {
   usNoun: "state",
   usNouns: "states and territories",
   usHeader: "State",
-  table: { stores: "Stores", withStock: "Listing stock", configs: "Configurations", share: "Share", page: "page" },
+  table: { stores: "Stores", withStock: "In stock now", configs: "Configs live", share: "% live", page: "open" },
   /**
    * What each country's stores are grouped by (countries.ts regionNoun), singular and plural. English pages keep the
    * country data's own words; another language reads these. `area` also stands for a country without such a level.

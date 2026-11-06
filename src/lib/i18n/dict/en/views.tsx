@@ -225,7 +225,7 @@ export const views = {
     h1: (c: Country) => `iPhone restocks ${c.inName}, as they happen`,
     /** Counter line over the log; `model` and `region` are the filters in use, if any. */
     summary: (day: number, week: number, model?: string, region?: string) => <>{day} restock{day === 1 ? "" : "s"} in the last 24 hours · {week} in 7 days{model ? ` · ${model}` : ""}{region ? ` · ${region}` : ""}. Times are shown in your own time zone.</>,
-    allModels: "All models",
+    allModels: "Every model",
     restocks: "Restocks",
     withSoldOut: "Restocks and sell-outs",
     /** The region filter's label ("County") and first option ("All counties"). */
