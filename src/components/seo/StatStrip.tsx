@@ -15,9 +15,9 @@ export function StatStrip({ items, className = "", cols = 6 }: { items: Stat[]; 
   return (
     <dl className={`grid grid-cols-2 gap-2 ${cols === 4 ? "sm:grid-cols-4" : "sm:grid-cols-3 lg:grid-cols-6"} ${className}`}>
       {items.map((s, i) => (
-        <div key={i} className="pane-2 min-w-0 p-3">
+        <div key={i} className="fig min-w-0">
           <dt className="eyebrow truncate text-[0.65rem]">{s.label}</dt>
-          <dd className="mt-1 flex items-center gap-1.5 text-xl font-semibold tabular-nums text-ink">{s.live && <Dot state="ok" live />}<span className="truncate">{s.value}</span></dd>
+          <dd className="mt-1 flex items-center gap-1.5 font-mono text-xl font-semibold tabular-nums tracking-[-0.03em] text-ink">{s.live && <Dot state="ok" live />}<span className="truncate">{s.value}</span></dd>
           {s.hint && <dd className="mt-0.5 truncate text-xs text-ink-3">{s.hint}</dd>}
         </div>
       ))}

@@ -22,6 +22,7 @@ import { statePlace } from "@/lib/seo/products";
 import { treeOf } from "@/lib/seo/tree";
 import { Faq } from "@/components/seo/Faq";
 import { storesStock, storesStatusFull, restockFeed, restockStats, placeStats, restockReportStats } from "@/lib/stock/queries";
+import { STATS_DAYS } from "@/lib/stock/window";
 import { ModelStoreMatrix } from "@/components/stores/ModelStoreMatrix";
 import { StoreBlock } from "@/components/stores/StoreBlock";
 import { NearbyStores } from "@/components/stores/NearbyStores";
@@ -78,12 +79,12 @@ const load = cache(async (cc: Country["cc"], slug: string) => {
   const [stock, feed, stats, pstats, full, duoStats, maxStats, reports, sell, recent, heat, ranking, leaders] = await Promise.all([
     storesStock([...numbers, ...extra]),
     restockFeed({ state: s.name, limit: 12, country: cc }),
-    restockStats(numbers, tz, 30),
+    restockStats(numbers, tz, STATS_DAYS),
     placeStats({ storeNumbers: numbers, tz }),
     thin ? storesStatusFull(numbers) : Promise.resolve(new Map()),
     placeStats({ storeNumbers: numbers, model: "duo", tz }),
     placeStats({ storeNumbers: numbers, model: "18-pro-max", tz }),
-    restockReportStats(numbers, tz, 30),
+    restockReportStats(numbers, tz, STATS_DAYS),
     sellouts({ storeNumbers: numbers, country: cc }),
     recentByConfig({ storeNumbers: numbers, country: cc }),
     restockHeatmap(wireScope),

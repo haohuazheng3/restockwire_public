@@ -32,16 +32,17 @@ export type StatTone = "plain" | "accent" | "ok" | "warn" | "muted";
  * is the number the reader should act on, "ok" a count that is in stock right now, "warn" the one working against them, "muted" a comparison.
  */
 export function Stat({ value, unit, label, tone = "plain", live = false, size = "md", className = "" }: { value: ReactNode; unit?: string; label: ReactNode; tone?: StatTone; live?: boolean; /** "sm" for a clock time or a word, which would not fit a phone-width tile at the number size. */ size?: "md" | "sm"; className?: string }) {
-  const frame = tone === "accent" ? "border-accent/40 bg-accent/10" : tone === "ok" ? "border-ok/40 bg-ok/10" : tone === "warn" ? "border-warn/40 bg-warn/10" : "border-line bg-[var(--fill-1)]";
-  const ink = tone === "muted" ? "text-ink-3" : "text-ink";
-  const type = size === "sm" ? "text-2xl sm:text-3xl" : "text-3xl sm:text-4xl";
+  // A figure set like a newspaper's "by the numbers" box: a coloured rule on top, no fill, the reading in mono.
+  const frame = tone === "accent" ? "border-t-accent" : tone === "ok" ? "border-t-ok" : tone === "warn" ? "border-t-warn" : "border-t-rule";
+  const ink = tone === "muted" ? "text-ink-3" : tone === "accent" ? "text-accent" : "text-ink";
+  const type = size === "sm" ? "text-[1.45rem] sm:text-[1.6rem]" : "text-[1.75rem] sm:text-[1.9rem]";
   return (
-    <div className={`min-w-0 rounded-[var(--radius-2)] border p-4 ${frame} ${className}`}>
-      <div className={`display flex items-baseline gap-1.5 tabular-nums ${type} ${ink}`}>
+    <div className={`min-w-0 border-t-[3px] border-b border-b-line pb-3 pt-2.5 ${frame} ${className}`}>
+      <div className={`flex items-baseline gap-1.5 font-mono font-semibold leading-none tracking-[-0.04em] tabular-nums ${type} ${ink}`}>
         {live && <span className="dot dot-ok dot-live relative top-[-2px] me-1 shrink-0" aria-hidden />}
         <span className="min-w-0 break-words">{value}</span>{unit && <span className="shrink-0 text-base font-semibold text-ink-3">{unit}</span>}
       </div>
-      <div className="mt-1 text-xs leading-snug text-ink-3">{label}</div>
+      <div className="mt-2 text-xs leading-snug text-ink-3">{label}</div>
     </div>
   );
 }
@@ -49,7 +50,7 @@ export function Stat({ value, unit, label, tone = "plain", live = false, size = 
 /** Two tiles per row on a phone (an odd last tile spans the row), `cols` on a laptop. */
 export function StatGrid({ children, cols = 3, className = "" }: { children: ReactNode; cols?: 2 | 3 | 4; className?: string }) {
   const c = cols === 2 ? "sm:grid-cols-2" : cols === 4 ? "sm:grid-cols-4" : "sm:grid-cols-3";
-  return <div className={`grid grid-cols-2 gap-3 [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1 ${c} ${className}`}>{children}</div>;
+  return <div className={`grid grid-cols-2 gap-x-5 gap-y-3 [&>*:last-child:nth-child(odd)]:col-span-2 sm:[&>*:last-child:nth-child(odd)]:col-span-1 ${c} ${className}`}>{children}</div>;
 }
 
 /* ------------------------------------------------------------------------------------------- keywords */

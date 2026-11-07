@@ -15,9 +15,9 @@ export function ModelPlaceCards({ place, stockNow, of, unit }: { place: Place; s
         const n = stockNow[m.key] ?? 0;
         const total = typeof of === "number" ? of : of[m.key];
         return (
-          <Link key={m.key} href={productPath(productFor(m.key), place)} className={`pane-2 pane-hover min-w-0 p-3 ${n ? "border-ok/40" : ""}`}>
-            <div className="truncate text-sm font-semibold text-ink">{m.short === "Duo" ? "iPhone Duo" : bidi(m.short, lang)}</div>
-            <div className="mt-1 flex items-center gap-1.5 text-lg font-semibold tabular-nums"><Dot state={n ? "ok" : "idle"} live={n > 0} /><span className={n ? "text-ok" : "text-ink-3"}>{v(n)}</span><span className="text-sm font-normal text-ink-3">/{v(total)}</span></div>
+          <Link key={m.key} href={productPath(productFor(m.key), place)} className={`fig fig-hover min-w-0 ${n ? "fig-ok" : ""}`}>
+            <div className="truncate font-display text-base font-semibold text-ink">{m.short === "Duo" ? "iPhone Duo" : bidi(m.short, lang)}</div>
+            <div className="mt-1 flex items-center gap-1.5 font-mono text-lg font-semibold tabular-nums"><Dot state={n ? "ok" : "idle"} live={n > 0} /><span className={n ? "text-ok" : "text-ink-3"}>{v(n)}</span><span className="text-sm font-normal text-ink-3">/{v(total)}</span></div>
             <div className="truncate text-xs text-ink-3">{unit} ›</div>
           </Link>
         );

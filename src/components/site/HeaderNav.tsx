@@ -24,15 +24,15 @@ export function HeaderNav({ variant }: { variant: "main" | "sections" }) {
   const links: [string, string][] = [[`${p}/in-stock/iphone-duo`, d.duoStock], [`${p}/restock-log`, d.restocks], [`${p}/live-map`, d.map], [`${p}/apple-stores`, d.stores], ["/pricing", d.pricing]];
   if (variant === "main") {
     return (
-      <nav className="hidden items-center gap-1 text-sm text-ink-2 md:flex" aria-label={d.main}>
-        {links.map(([href, label]) => <Link key={href} className="rounded-full px-3 py-2 hover:bg-ink/5 hover:text-ink" href={href}>{label}</Link>)}
+      <nav className="hidden items-center md:flex" aria-label={d.main}>
+        {links.map(([href, label]) => <Link key={href} className="nav-link" href={href}>{label}</Link>)}
       </nav>
     );
   }
   return (
-    <nav className="-mx-1 mt-2 flex gap-1 overflow-x-auto pb-0.5 text-sm text-ink-2 md:hidden [scrollbar-width:none]" aria-label={d.sections}>
-      {links.map(([href, label]) => <Link key={href} className="shrink-0 rounded-full px-3 py-1.5 hover:bg-ink/5 hover:text-ink" href={href}>{label}</Link>)}
-      <Link className="not-in-app shrink-0 rounded-full px-3 py-1.5 hover:bg-ink/5 hover:text-ink" href="/phone-alerts">{d.getApp}</Link>
+    <nav className="-mx-1 flex overflow-x-auto border-t border-line md:hidden [scrollbar-width:none]" aria-label={d.sections}>
+      {links.map(([href, label]) => <Link key={href} className="nav-link shrink-0" href={href}>{label}</Link>)}
+      <Link className="nav-link not-in-app shrink-0" href="/phone-alerts">{d.getApp}</Link>
     </nav>
   );
 }

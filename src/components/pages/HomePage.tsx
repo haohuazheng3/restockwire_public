@@ -146,17 +146,17 @@ async function Board({ model, c }: { model: ModelKey; c: Country }) {
   const newest = rows.reduce<Date | null>((a, r) => (r.lastCheckedAt && (!a || r.lastCheckedAt > a) ? r.lastCheckedAt : a), null);
   return (
     <>
-      <div className="grid grid-cols-3 gap-2">
-        <Link href={`${p}/in-stock/${meta.slug}`} className={`min-w-0 rounded-2xl border p-3 ${inStock.length ? "border-ok/30 bg-ok/[0.06]" : "border-line bg-[var(--pane-solid)]"}`}>
-          <div className="flex items-center gap-1.5 text-2xl font-semibold tabular-nums"><Dot state={inStock.length ? "ok" : "idle"} live={inStock.length > 0} />{inStock.length}</div>
+      <div className="grid grid-cols-3 gap-4">
+        <Link href={`${p}/in-stock/${meta.slug}`} className={`fig fig-hover min-w-0 ${inStock.length ? "fig-ok" : ""}`}>
+          <div className="flex items-center gap-1.5 font-mono text-2xl font-semibold tabular-nums tracking-[-0.03em]"><Dot state={inStock.length ? "ok" : "idle"} live={inStock.length > 0} />{inStock.length}</div>
           <div className="truncate text-xs text-ink-3">{H.storesWith(bidi(meta.short, lang))}</div>
         </Link>
-        <Link href={`${restocksPath(cc)}?model=${model}`} className="min-w-0 rounded-2xl border border-line bg-[var(--pane-solid)] p-3">
-          <div className="text-2xl font-semibold tabular-nums">{counts.day}</div>
+        <Link href={`${restocksPath(cc)}?model=${model}`} className="fig fig-hover min-w-0">
+          <div className="font-mono text-2xl font-semibold tabular-nums tracking-[-0.03em]">{counts.day}</div>
           <div className="truncate text-xs text-ink-3">{H.restocks24}<span className="hidden sm:inline">{H.week(counts.week)}</span></div>
         </Link>
-        <div className="min-w-0 rounded-2xl border border-line bg-[var(--pane-solid)] p-3">
-          <div className="truncate text-2xl font-semibold tabular-nums"><LiveChecked iso={newest} model={model} country={cc === "us" ? undefined : cc} /></div>
+        <div className="fig min-w-0">
+          <div className="truncate font-mono text-2xl font-semibold tabular-nums tracking-[-0.03em]"><LiveChecked iso={newest} model={model} country={cc === "us" ? undefined : cc} /></div>
           <div className="truncate text-xs text-ink-3">{H.lastCheck}</div>
         </div>
       </div>
@@ -166,7 +166,7 @@ async function Board({ model, c }: { model: ModelKey; c: Country }) {
           {inStock.length > 6 && <Link href={`${p}/in-stock/${meta.slug}`} className="rounded-full bg-ink/6 px-2.5 py-1 text-xs text-ink-2">{H.more(inStock.length - 6)}</Link>}
         </div>
       )}
-      <div className="mt-5 mb-2 text-xs font-semibold uppercase tracking-wide text-ink-3">{H.latest(bidi(meta.short, lang))}</div>
+      <div className="eyebrow mt-6 mb-2">{H.latest(bidi(meta.short, lang))}</div>
       <RestockFeed rows={feed} model={model} showModel={false} emptyText={H.none(bidi(meta.short, lang))} />
       <div className="mt-3 flex flex-wrap gap-2">
         <Link href={`${restocksPath(cc)}?model=${model}`} className="btn btn-ghost btn-sm">{H.allRestocks}</Link>

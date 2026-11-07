@@ -13,12 +13,12 @@ export function Footer({ loc }: { loc: Locale }) {
   if (loc.native) return <NativeFooter loc={loc} />;
   return (
     <footer className="mx-auto mt-24 w-full max-w-6xl px-4 pb-10">
-      <div className="pane px-6 py-8 sm:px-8">
+      <div className="rule-double pt-8">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
           <div>
             <Logo />
             <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-3">
-              The wire service for iPhone restocks. All 269 US Apple Stores on the 15-second wire; the stores in your alerts on the 5-second one.
+              The wire service for iPhone restocks: every restock at all 269 US Apple Stores, logged by store, configuration and minute.
             </p>
             <p className="mt-3 text-xs text-ink-3">RestockWire runs on its own; Apple Inc. neither backs nor runs it. Apple, iPhone and Apple Store belong to Apple Inc. as trademarks.</p>
           </div>
@@ -105,7 +105,7 @@ function NativeFooter({ loc }: { loc: Locale }) {
   const names = switchCountries();
   return (
     <footer className="mx-auto mt-24 w-full max-w-6xl px-4 pb-10" lang={loc.tag}>
-      <div className="pane px-6 py-8 sm:px-8">
+      <div className="rule-double pt-8">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
           <div>
             <Logo />

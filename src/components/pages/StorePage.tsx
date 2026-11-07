@@ -21,6 +21,7 @@ import { ModelPlaceCards } from "@/components/seo/ModelPlaceCards";
 import { storePlace } from "@/lib/seo/products";
 import { Faq } from "@/components/seo/Faq";
 import { storesStock, storeStatus, restockFeed, restockStats, placeStats, restockReportStats, pickupLookupOff } from "@/lib/stock/queries";
+import { STATS_DAYS } from "@/lib/stock/window";
 import { StockByModel } from "@/components/stores/StockByModel";
 import { ConfigTable } from "@/components/stores/ConfigTable";
 import { StoreInfo, HoursTable } from "@/components/stores/StoreInfo";
@@ -77,9 +78,9 @@ const load = cache(async (s: Store) => {
     storeStatus(s.storeNumber),
     storesStock([s.storeNumber, ...others]),
     restockFeed({ storeNumber: s.storeNumber, kind: "all", limit: 30, country: s.country }),
-    restockStats([s.storeNumber], tz, 30),
+    restockStats([s.storeNumber], tz, STATS_DAYS),
     placeStats({ storeNumbers: [s.storeNumber], tz }),
-    restockReportStats([s.storeNumber], tz, 30),
+    restockReportStats([s.storeNumber], tz, STATS_DAYS),
     pickupLookupOff(s.storeNumber),
     sellouts({ storeNumbers: [s.storeNumber], country: s.country }),
     recentByConfig({ storeNumbers: [s.storeNumber], country: s.country }),

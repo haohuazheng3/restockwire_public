@@ -52,7 +52,7 @@ export const loadIndex = cache(async (cc: Country["cc"]) => {
   const [stockNow, pstats, stats, stock, duo, max, reports, sell] = await Promise.all([
     storesWithStockNow(undefined, cc),
     placeStats({ tz, country: cc }),
-    restockStats(numbers, tz, 30),
+    restockStats(numbers, tz, STATS_DAYS),
     cc === "us" ? Promise.resolve(new Map()) : storesStock(numbers),
     cc === "us" ? Promise.resolve(null) : placeStats({ model: "duo", tz, country: cc }),
     cc === "us" ? Promise.resolve(null) : placeStats({ model: "18-pro-max", tz, country: cc }),
