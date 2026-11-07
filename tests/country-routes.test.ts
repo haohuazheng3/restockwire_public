@@ -127,7 +127,7 @@ describe("sitemap: every indexable country page, once, and nothing else", () => 
     const prefixes = [...INTL_CODES, ...NATIVE_LOCALES.map((l) => l.id)];
     const us = all.filter((u) => !prefixes.some((p) => u === `${base}/${p}` || u.startsWith(`${base}/${p}/`)));
     // US: 12 static pages, 11 question pages, 3 model pages, 32 states, 26 cities, 269 stores.
-    expect(us).toHaveLength(358); // Includes five Stock Signal guides.
+    expect(us).toHaveLength(359); // Includes five Stock Signal guides.
     for (const p of ["/when-does-iphone-duo-restock", "/how-fast-does-iphone-duo-sell-out", "/iphone-duo-restock-alerts", "/iphone-duo-in-stock-near-me", "/how-to-buy-an-iphone-duo-in-store", "/iphone-duo-most-restocked-stores", "/apple-store-pickup-explained", "/iphone-duo-restock-checkout-guide", "/is-iphone-duo-back-in-stock", "/iphone-duo-availability-checker", "/where-to-buy-iphone-duo-today", "/in-stock/iphone-duo"]) expect(us).toContain(`${base}${p}`);
     expect(us).not.toContain(`${base}/when-does-iphone-duo-restock/california`);
     expect(us.filter((u) => u.includes("/in-stock/"))).toHaveLength(3);

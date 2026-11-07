@@ -10,6 +10,7 @@ import { blogRouteCheck } from "@/lib/blog/routes";
  * extension, and the public/ folders (a test keeps this in step with src/app and public/).
  */
 export const TOP_LEVEL: ReadonlySet<string> = new Set([
+  "stock-check-timing", "timing-evidence",
   "stock-signal-guides", "why-iphone-stock-disappears-at-checkout", "iphone-stock-alert-delay", "does-apple-restock-iphones-on-weekends", "how-accurate-are-iphone-stock-trackers",
   "about", "account", "admin", "api", "apple-stores", "checkout", "contact", "how-restock-alerts-work", "in-stock", "live-map", "phone-alerts", "pricing", "privacy", "refunds", "restock-log", "terms",
   // The iPhone Duo question pages (the SEO plan §13): one answer page per question people put to search and answer engines.

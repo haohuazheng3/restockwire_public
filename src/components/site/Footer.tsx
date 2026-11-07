@@ -42,6 +42,7 @@ export function Footer({ loc }: { loc: Locale }) {
             <ul className="space-y-2 text-ink-2">
               <li><Link href="/how-restock-alerts-work" className="hover:text-ink">How the alerts work</Link></li>
               <li className="not-in-app"><Link href="/phone-alerts" className="hover:text-ink">Alerts on your phone</Link></li>
+              <li><Link href="/stock-check-timing" className="hover:text-ink">Timing evidence ledger</Link></li>
               <li><Link href="/about" className="hover:text-ink">About</Link></li>
               <li><Link href="/blog" className="hover:text-ink">Blog</Link></li>
               <li><Link href="/stock-signal-guides" className="hover:text-ink">Stock signal guides</Link></li>

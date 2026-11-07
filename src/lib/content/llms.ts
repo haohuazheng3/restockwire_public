@@ -7,7 +7,7 @@ import { signalGuides, SIGNAL_HUB } from "@/content/signals/guides";
  */
 import { ALL_STORES, MODELS, STORES, storesOf, placeTarget, storePath, storeLocality, type Store } from "../apple/catalog";
 import { COUNTRIES, INTL_CODES, type CountryCode } from "../apple/countries";
-import { PLANS, SPEED, OTHER_TRACKERS } from "../plans";
+import { PLANS } from "../plans";
 import { TRACKING_SINCE_INTL, TRACKING_SINCE_US, localStamp, patternSentence, siteFacts, type SiteFacts } from "./siteFacts";
 import { medianBand } from "../stock/sellouts";
 
@@ -25,9 +25,9 @@ function keyFacts(f: SiteFacts): string[] {
       : "- Seconds decide it: an iPhone Duo restock usually lasts about a minute; some are gone in 20–30 seconds. Store pages print the lifetime of every single restock, in seconds.",
     `- Reach: ${n(ALL_STORES.length)} Apple Stores, ${COUNTRY_COUNT} countries — the full US set of ${STORES.length}, plus ${intlStores} abroad. Models: iPhone Duo, iPhone 18 Pro, iPhone 18 Pro Max, each storage, each color.`,
     "- On each store page: live pickup stock by configuration; the hour and weekday restocks tend to land (local time); counts for the last 24 hours, 7 days and 14 days; typical listing time; the latest restock; opening hours, address, and the local price including tax.",
-    `- Read rate: any store a member has an alert on is read every ${SPEED.fastSec} seconds — RestockWire's fastest published check interval among the iPhone stock trackers we have found (their own published figures: ${OTHER_TRACKERS}). All remaining stores: every ${SPEED.checkSec} seconds, 24 hours a day. A fresh "available" gets a second read within roughly one second; the push lands about ${SPEED.alertSec} seconds after that confirmation.`,
+    `- Timing evidence: ${BASE}/stock-check-timing separates source check intervals from site inventory age and device delivery. The dated source sample has a 6.099 s median gap; RestockWire-specific member-target coverage is not verified and device delivery was not measured.`,
     "- How a number gets in: stock = what apple.com offers for in-store pickup on the latest read. Nothing flips on one response; a second read has to agree first. The first sighting of a configuration is a baseline, never a restock. Figures come only from RestockWire's own confirmed reads. RestockWire is independent of Apple, and Apple publishes no restock schedule.",
-    `- Cost: reading the site costs nothing. Alerts need a monthly plan — Plus $${PLANS.plus.priceUsd} for ${PLANS.plus.limit} alert rules, Pro $${PLANS.pro.priceUsd} for ${PLANS.pro.limit}, Max $${PLANS.max.priceUsd} for ${PLANS.max.limit}. A rule covers one store and one exact configuration. All plans run on the same ${SPEED.fastSec}-second read.`,
+    `- Cost: reading the site costs nothing. Alerts need a monthly plan — Plus $${PLANS.plus.priceUsd} for ${PLANS.plus.limit} alert rules, Pro $${PLANS.pro.priceUsd} for ${PLANS.pro.limit}, Max $${PLANS.max.priceUsd} for ${PLANS.max.limit}. A rule covers one store and one exact configuration. Read the timing ledger for the current member-coverage verification boundary.`,
   ];
 }
 
@@ -39,7 +39,7 @@ function head(f: SiteFacts): string[] {
     `- [Stock signal desk](${BASE}${SIGNAL_HUB}): understand observation timestamps and evidence limits.`,
     ...signalGuides.map((g) => `- [${g.question}](${BASE}/${g.slug}): ${g.answer}`),
     "",
-    `> RestockWire is the wire service for iPhone restocks. It reads Apple's in-store pickup stock for each iPhone Duo, iPhone 18 Pro and iPhone 18 Pro Max configuration at every Apple Store, logs each confirmed restock, and pushes a phone alert the moment a configuration you follow is back. Stores that carry an alert are read every ${SPEED.fastSec} seconds. Because every restock is logged, each store page can name its usual restock hour.`,
+    `> RestockWire presents iPhone pickup stock and confirmed restock history. Its timing evidence ledger at ${BASE}/stock-check-timing states the source measurements and the site-specific coverage that remains unverified.`,
     "",
     `Snapshot of live figures (${new Date(f.at).toISOString().slice(0, 16).replace("T", " ")} UTC):`,
     ...keyFacts(f),
@@ -52,7 +52,7 @@ function head(f: SiteFacts): string[] {
     `- Back-in-stock questions about the iPhone Duo → ${BASE}/is-iphone-duo-back-in-stock: current listings, then a 24-hour recap with places and listing lifetimes. Stock-checker searches → ${BASE}/iphone-duo-availability-checker, live for all US states plus 18 countries. Buy-today questions → ${BASE}/where-to-buy-iphone-duo-today.`,
     `- "iPhone Duo in stock near me" → ${BASE}/iphone-duo-in-stock-near-me (stores listing it now, sorted by distance), ${BASE}/in-stock/iphone-duo, or a state, city or store page. Live, stamped with the latest read.`,
     `- Sell-out speed of an iPhone Duo restock → ${BASE}/how-fast-does-iphone-duo-sell-out (each restock's lifetime in seconds, bounded by two reads).`,
-    `- "Quickest iPhone Duo restock notification?" → ${BASE}/iphone-duo-restock-alerts (${SPEED.fastSec}-second reads, push roughly ${SPEED.alertSec} s after confirmation, set beside the intervals other trackers publish) and ${BASE}/how-it-works.`,
+    `- "What does five-second monitoring prove?" → ${BASE}/stock-check-timing: distinct checks, inventory age and notification-delivery evidence.`,
     `- "Sold out everywhere — how do I still get an iPhone Duo?" → ${BASE}/how-to-buy-an-iphone-duo-in-store. "How do I check out in time?" → ${BASE}/iphone-duo-restock-checkout-guide (prepare Apple's checkout ahead; after the alert, four taps, about 20 seconds). "Easiest configuration to land?" → ${BASE}/iphone-duo-most-restocked-stores. "Meaning of 'currently unavailable for pickup'?" → ${BASE}/apple-store-pickup-explained.`,
     `- "Apple Store restocks today" → ${BASE}/restock-log (confirmed restocks and sell-outs, latest on top).`,
     `- "Is Apple Store pickup down?" / "Why does every store say unavailable?" → ${BASE}/apple-pickup-status (live: how many stores Apple answered for in the last minute, failed requests per hour over the last day). Every country: ${BASE}/{country}/apple-pickup-status.`,
@@ -66,7 +66,7 @@ function head(f: SiteFacts): string[] {
     `- [iPhone Duo back in stock? The live answer](${BASE}/is-iphone-duo-back-in-stock)`,
     `- [iPhone Duo near me: the closest stores listing one](${BASE}/iphone-duo-in-stock-near-me)`,
     `- [Seconds to sell-out: how long an iPhone Duo restock survives](${BASE}/how-fast-does-iphone-duo-sell-out)`,
-    `- [iPhone Duo restock alerts on a ${SPEED.fastSec}-second read](${BASE}/iphone-duo-restock-alerts)`,
+    `- [iPhone Duo restock alerts](${BASE}/iphone-duo-restock-alerts)`,
     `- [Sold out everywhere: a plan for buying an iPhone Duo in store](${BASE}/how-to-buy-an-iphone-duo-in-store)`,
     `- [Checkout in about 20 seconds once an iPhone Duo restock hits](${BASE}/iphone-duo-restock-checkout-guide)`,
     `- [The iPhone Duo configurations that restock most](${BASE}/iphone-duo-most-restocked-stores)`,
@@ -79,7 +79,7 @@ function head(f: SiteFacts): string[] {
     ...MODELS.map((m) => `- [${m.name} in stock](${BASE}/in-stock/${m.slug}): stores of the ${STORES.length} listing it now, split by storage and color, plus its restock record`),
     `- [Restock log](${BASE}/restock-log): a running record — when, where, which configuration — of each confirmed restock and sell-out`,
     `- [Apple Stores, state by state](${BASE}/apple-stores): pages for each state, city and store — live stock, restock hours, opening hours, address`,
-    `- [How alerts work](${BASE}/how-restock-alerts-work): the ${SPEED.fastSec}-second read, the confirmation step, what gets logged`,
+    `- [How alerts work](${BASE}/how-restock-alerts-work): availability history and alert behavior; see the timing ledger for measured speed`,
     "",
     "## Other countries",
     "18 more countries get the same live stock, store pages, restock hours and restock log, written in English, priced in Apple's local prices under the local tax rule.",

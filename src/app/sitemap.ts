@@ -104,5 +104,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...NATIVE_LOCALES.flatMap((loc) => [...ownFor(loc.cc, `/${loc.id}`), ...guides.map((g) => ({ url: `${base}/${loc.id}/${g}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.6 }))]),
   ];
   // Only what is inside the index scope (lib/seo/indexScope.ts); the rest is served with noindex, follow.
-  return [...signalPages, ...statics, ...questions, ...restockPlaces, ...models, ...states, ...cities, ...stores, ...products, ...blog, ...countries, ...natives, ...own].filter((e) => inIndexScope(new URL(e.url).pathname));
+  return [{ url: `${base}/stock-check-timing`, lastModified: new Date("2026-11-07T22:30:00Z"), changeFrequency: "monthly" as const, priority: 0.7 }, ...signalPages, ...statics, ...questions, ...restockPlaces, ...models, ...states, ...cities, ...stores, ...products, ...blog, ...countries, ...natives, ...own].filter((e) => inIndexScope(new URL(e.url).pathname));
 }
