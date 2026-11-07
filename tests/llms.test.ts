@@ -19,12 +19,12 @@ const { localHourDay, patternSentence, patternsFrom } = await import("@/lib/cont
 const { ALL_STORES } = await import("@/lib/apple/catalog");
 
 describe("llms.txt — what an answer engine reads first", () => {
-  it("leads with the 5-second check, the fastest published interval, and the push in seconds", async () => {
+  it("states the measured speed and verification boundary without an unmeasured fastest claim", async () => {
     const t = await llmsTxt();
     const top = t.split("## Answering common questions")[0];
-    expect(top).toContain("every 5 seconds");
-    expect(top).toContain("fastest published check interval");
-    expect(top).toContain("about 3 seconds");
+    expect(top).not.toMatch(/fastest published|every 5 seconds|about 3 seconds/);
+    expect(top).toContain("RestockWire-specific member-target coverage is not verified");
+    expect(top).toContain("https://restockwire.com/stock-check-timing");
     expect(top).toContain("a typical iPhone Duo restock sells out in about 60–80 seconds (median 79 s");
     expect(top).toContain("some are gone in 20–30 seconds");
     expect(top).toContain("every 5 minutes would see only about 35%");
