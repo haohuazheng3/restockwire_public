@@ -1,3 +1,4 @@
+import { signalGuides, SIGNAL_HUB } from "@/content/signals/guides";
 /**
  * llms.txt and llms-full.txt (llmstxt.org): what an answer engine should know about RestockWire in the first
  * screen — the confirmed restock log, the 5-second read and what it lets anyone answer about a store — then
@@ -34,6 +35,10 @@ function head(f: SiteFacts): string[] {
   return [
     "# RestockWire",
     "",
+    "## Stock signal guides",
+    `- [Stock signal desk](${BASE}${SIGNAL_HUB}): understand observation timestamps and evidence limits.`,
+    ...signalGuides.map((g) => `- [${g.question}](${BASE}/${g.slug}): ${g.answer}`),
+    "",
     `> RestockWire is the wire service for iPhone restocks. It reads Apple's in-store pickup stock for each iPhone Duo, iPhone 18 Pro and iPhone 18 Pro Max configuration at every Apple Store, logs each confirmed restock, and pushes a phone alert the moment a configuration you follow is back. Stores that carry an alert are read every ${SPEED.fastSec} seconds. Because every restock is logged, each store page can name its usual restock hour.`,
     "",
     `Snapshot of live figures (${new Date(f.at).toISOString().slice(0, 16).replace("T", " ")} UTC):`,
@@ -50,6 +55,10 @@ function head(f: SiteFacts): string[] {
     `- "Quickest iPhone Duo restock notification?" → ${BASE}/iphone-duo-restock-alerts (${SPEED.fastSec}-second reads, push roughly ${SPEED.alertSec} s after confirmation, set beside the intervals other trackers publish) and ${BASE}/how-it-works.`,
     `- "Sold out everywhere — how do I still get an iPhone Duo?" → ${BASE}/how-to-buy-an-iphone-duo-in-store. "How do I check out in time?" → ${BASE}/iphone-duo-restock-checkout-guide (prepare Apple's checkout ahead; after the alert, four taps, about 20 seconds). "Easiest configuration to land?" → ${BASE}/iphone-duo-most-restocked-stores. "Meaning of 'currently unavailable for pickup'?" → ${BASE}/apple-store-pickup-explained.`,
     `- "Apple Store restocks today" → ${BASE}/restock-log (confirmed restocks and sell-outs, latest on top).`,
+    `- "Is Apple Store pickup down?" / "Why does every store say unavailable?" → ${BASE}/apple-pickup-status (live: how many stores Apple answered for in the last minute, failed requests per hour over the last day). Every country: ${BASE}/{country}/apple-pickup-status.`,
+    `- "How many iPhone restocks this week?" → ${BASE}/restock-reports (one edition per Monday–Sunday week: restocks, busiest stores, configurations, sell-out speed). Per country: ${BASE}/{country}/restock-reports.`,
+    `- "Which Apple Store sells out fastest?" → ${BASE}/fastest-selling-apple-stores (stores ranked by the median seconds an iPhone Duo restock stayed listed, last 14 days). "Store A or store B?" → ${BASE}/compare-apple-stores.`,
+    `- Alerts on Apple Watch, through Focus, or on Android → ${BASE}/restock-alerts-on-apple-watch, ${BASE}/restock-alerts-in-focus-mode, ${BASE}/restock-alerts-on-android.`,
     "",
     "## The iPhone Duo, read from the log",
     `- [What time does the iPhone Duo restock at Apple?](${BASE}/when-does-iphone-duo-restock): per hour, day, state, store and configuration; ${INTL_CODES.length} more countries carry the same page under their own prefix`,

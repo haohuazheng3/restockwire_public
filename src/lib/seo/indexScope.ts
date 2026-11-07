@@ -17,12 +17,19 @@ const INTL = new Set<string>(INTL_CODES);
 const NATIVE = new Set<string>(NATIVE_LOCALES.map((l) => l.id));
 const MODEL_SLUGS = new Set(MODELS.map((m) => m.slug));
 const INTL_KEPT = new Set(["", "apple-stores", "restock-log", "when-does-iphone-duo-restock"]);
+/**
+ * RestockWire's own page families (2026-11-07): the sister site has nothing like them, so they are indexed in every
+ * country and every language version, native ones included. Single pages, and the two families with one more segment.
+ */
+const OWN_PAGES = new Set(["apple-pickup-status", "fastest-selling-apple-stores", "restock-alerts-on-apple-watch", "restock-alerts-in-focus-mode", "restock-alerts-on-android"]);
+const OWN_TREES = new Set(["restock-reports", "compare-apple-stores"]);
+const own = (seg: string[]) => (seg.length === 2 && (OWN_PAGES.has(seg[1]) || OWN_TREES.has(seg[1]))) || (seg.length === 3 && OWN_TREES.has(seg[1]));
 
 export function inIndexScope(pathname: string): boolean {
   const seg = pathname.replace(/\/+$/, "").split("/").slice(1);
   const first = seg[0] ?? "";
-  if (NATIVE.has(first)) return false;
-  if (INTL.has(first)) return seg.length <= 2 && INTL_KEPT.has(seg[1] ?? "");
+  if (NATIVE.has(first)) return own(seg);
+  if (INTL.has(first)) return own(seg) || (seg.length <= 2 && INTL_KEPT.has(seg[1] ?? ""));
   if (first === "when-does-iphone-duo-restock") return seg.length === 1;
   if (first === "in-stock") return seg.length <= 2 && (seg.length === 1 || MODEL_SLUGS.has(seg[1]));
   return true;

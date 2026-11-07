@@ -113,13 +113,21 @@ describe("sitemap: every indexable country page, once, and nothing else", () => 
     }
   });
   it("has no duplicates and lists exactly the index scope (lib/seo/indexScope.ts)", async () => {
-    const all = (await sitemap()).map((e) => e.url);
-    expect(new Set(all).size).toBe(all.length);
-    for (const url of all) expect(inIndexScope(new URL(url).pathname), url).toBe(true);
+    const every = (await sitemap()).map((e) => e.url);
+    expect(new Set(every).size).toBe(every.length);
+    for (const url of every) expect(inIndexScope(new URL(url).pathname), url).toBe(true);
+    // RestockWire's own families (components/pages/insight) are indexed everywhere; the rest keeps the narrow scope.
+    const OWN = /\/(apple-pickup-status|restock-reports|fastest-selling-apple-stores|compare-apple-stores|restock-alerts-on-apple-watch|restock-alerts-in-focus-mode|restock-alerts-on-android)(\/|$)/;
+    const ownUrls = every.filter((u) => OWN.test(new URL(u).pathname));
+    for (const l of NATIVE_LOCALES) expect(ownUrls, l.id).toContain(`${base}/${l.id}/apple-pickup-status`);
+    for (const cc of INTL_CODES) expect(ownUrls, cc).toContain(`${base}/${cc}/apple-pickup-status`);
+    expect(ownUrls).toContain(`${base}/restock-alerts-on-apple-watch`);
+    expect(ownUrls).not.toContain(`${base}/jp/restock-alerts-on-apple-watch`);
+    const all = every.filter((u) => !OWN.test(new URL(u).pathname));
     const prefixes = [...INTL_CODES, ...NATIVE_LOCALES.map((l) => l.id)];
     const us = all.filter((u) => !prefixes.some((p) => u === `${base}/${p}` || u.startsWith(`${base}/${p}/`)));
     // US: 12 static pages, 11 question pages, 3 model pages, 32 states, 26 cities, 269 stores.
-    expect(us).toHaveLength(353);
+    expect(us).toHaveLength(358); // Includes five Stock Signal guides.
     for (const p of ["/when-does-iphone-duo-restock", "/how-fast-does-iphone-duo-sell-out", "/iphone-duo-restock-alerts", "/iphone-duo-in-stock-near-me", "/how-to-buy-an-iphone-duo-in-store", "/iphone-duo-most-restocked-stores", "/apple-store-pickup-explained", "/iphone-duo-restock-checkout-guide", "/is-iphone-duo-back-in-stock", "/iphone-duo-availability-checker", "/where-to-buy-iphone-duo-today", "/in-stock/iphone-duo"]) expect(us).toContain(`${base}${p}`);
     expect(us).not.toContain(`${base}/when-does-iphone-duo-restock/california`);
     expect(us.filter((u) => u.includes("/in-stock/"))).toHaveLength(3);

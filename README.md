@@ -58,6 +58,10 @@ npm run typecheck && npm run lint
 Without `IPV6_PREFIX`, a local poller shares one source address and Apple throttles it to roughly one
 request a minute: enough for a smoke test, not for real coverage.
 
+## Maintainer notes
+
+The private checkout includes `AGENTS.md` and `docs/multi-site-operations.md` for project identity, database boundaries and deployment ownership. Follow those records before operational changes. They are intentionally excluded from the public source mirror.
+
 ## License
 
 MIT — see `LICENSE`.

@@ -7,6 +7,8 @@ import type { Locale } from "@/lib/i18n/locales";
 import { dict } from "@/lib/i18n/dict";
 import { cityPages, regionPages, storeRefs } from "@/lib/seo/countryLinks";
 import { cityLabel, regionLabel, storeLabel } from "@/lib/i18n/places";
+import { comparePairs, hasRankingPage } from "@/lib/content/insight";
+import { EN_US } from "@/lib/i18n/locales";
 
 /** English pages keep the US-wide footer; a native version gets its own country's links in its language. */
 export function Footer({ loc }: { loc: Locale }) {
@@ -42,6 +44,7 @@ export function Footer({ loc }: { loc: Locale }) {
               <li className="not-in-app"><Link href="/phone-alerts" className="hover:text-ink">Alerts on your phone</Link></li>
               <li><Link href="/about" className="hover:text-ink">About</Link></li>
               <li><Link href="/blog" className="hover:text-ink">Blog</Link></li>
+              <li><Link href="/stock-signal-guides" className="hover:text-ink">Stock signal guides</Link></li>
               <li><Link href="/contact" className="hover:text-ink">Contact</Link></li>
             </ul>
           </div>
@@ -78,6 +81,7 @@ export function Footer({ loc }: { loc: Locale }) {
             <li><Link href="/where-to-buy-iphone-duo-today" className="hover:text-ink">Where to buy it today</Link></li>
           </ul>
         </div>
+        <OwnLinks loc={EN_US} />
         <div className="hairline mt-6 pt-5 text-sm">
           <div className="eyebrow mb-3">Other countries</div>
           <ul className="flex flex-wrap gap-x-4 gap-y-2 text-ink-2">
@@ -153,6 +157,7 @@ function NativeFooter({ loc }: { loc: Locale }) {
             </ul>
           </div>
         </div>
+        <OwnLinks loc={loc} />
         <div className="hairline mt-6 pt-5 text-sm">
           <div className="eyebrow mb-3">{F.countries}</div>
           <ul className="flex flex-wrap gap-x-4 gap-y-2 text-ink-2">
@@ -166,5 +171,29 @@ function NativeFooter({ loc }: { loc: Locale }) {
       </div>
       </div>
     </footer>
+  );
+}
+
+/** RestockWire's own page families (components/pages/insight), in the footer's language and country tree. */
+function OwnLinks({ loc }: { loc: Locale }) {
+  const N = dict(loc.lang).insight.nav;
+  const G = dict(loc.lang).insight.guides;
+  const tree = loc.native ? `/${loc.id}` : loc.cc === "us" ? "" : `/${loc.cc}`;
+  const guideBase = loc.native ? `/${loc.id}` : "";
+  const links = [
+    { href: `${tree}/apple-pickup-status`, label: N.status },
+    { href: `${tree}/restock-reports`, label: N.reports },
+    ...(hasRankingPage(loc.cc) ? [{ href: `${tree}/fastest-selling-apple-stores`, label: N.fastest }] : []),
+    ...(comparePairs(loc.cc).length ? [{ href: `${tree}/compare-apple-stores`, label: N.compare }] : []),
+    { href: `${guideBase}/restock-alerts-on-apple-watch`, label: G.watch.title },
+    { href: `${guideBase}/restock-alerts-in-focus-mode`, label: G.focus.title },
+    { href: `${guideBase}/restock-alerts-on-android`, label: G.android.title },
+  ];
+  return (
+    <div className="hairline mt-6 pt-5 text-sm">
+      <ul className="flex flex-wrap gap-x-4 gap-y-2 text-ink-2">
+        {links.map((l) => <li key={l.href}><Link href={l.href} className="hover:text-ink">{l.label}</Link></li>)}
+      </ul>
+    </div>
   );
 }

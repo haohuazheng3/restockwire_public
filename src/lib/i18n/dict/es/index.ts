@@ -10,5 +10,6 @@ import { alerts } from "./alerts";
 import { account } from "./account";
 import { wire } from "./wire";
 import { views } from "./views";
+import { insight } from "./insight";
 
-export const es: Dict = { common, chrome, place, pages, views, modules, content, alerts, account, wire };
+export const es: Dict = { common, chrome, place, pages, views, modules, content, alerts, account, wire, insight };

@@ -10,16 +10,23 @@ import { blogRouteCheck } from "@/lib/blog/routes";
  * extension, and the public/ folders (a test keeps this in step with src/app and public/).
  */
 export const TOP_LEVEL: ReadonlySet<string> = new Set([
+  "stock-signal-guides", "why-iphone-stock-disappears-at-checkout", "iphone-stock-alert-delay", "does-apple-restock-iphones-on-weekends", "how-accurate-are-iphone-stock-trackers",
   "about", "account", "admin", "api", "apple-stores", "checkout", "contact", "how-restock-alerts-work", "in-stock", "live-map", "phone-alerts", "pricing", "privacy", "refunds", "restock-log", "terms",
   // The iPhone Duo question pages (the SEO plan §13): one answer page per question people put to search and answer engines.
   "when-does-iphone-duo-restock", "how-fast-does-iphone-duo-sell-out", "iphone-duo-restock-alerts", "iphone-duo-in-stock-near-me", "how-to-buy-an-iphone-duo-in-store", "iphone-duo-most-restocked-stores", "apple-store-pickup-explained", "iphone-duo-restock-checkout-guide",
   // The phrasing pages (docs/research.md §8.3 C): the words people type when they do not know a tracker exists.
   "is-iphone-duo-back-in-stock", "iphone-duo-availability-checker", "where-to-buy-iphone-duo-today",
+  // RestockWire's own page families (2026-11-07; components/pages/insight): status, reports, ranking, comparisons, guides.
+  "apple-pickup-status", "restock-reports", "fastest-selling-apple-stores", "compare-apple-stores",
+  "restock-alerts-on-apple-watch", "restock-alerts-in-focus-mode", "restock-alerts-on-android",
   "blog", "opengraph-image", "_not-found", "icons", "img", "vendor", "zip",
 ]);
 
 /** Question pages that exist for every country under its prefix (/ca/when-does-iphone-duo-restock …). */
 export const COUNTRY_QUESTION_PAGES: ReadonlySet<string> = new Set(["when-does-iphone-duo-restock"]);
+/** RestockWire's own families under a country prefix: single pages, and the two with one more segment (a week, a pair). */
+export const COUNTRY_INSIGHT_PAGES: ReadonlySet<string> = new Set(["apple-pickup-status", "fastest-selling-apple-stores", "restock-alerts-on-apple-watch", "restock-alerts-in-focus-mode", "restock-alerts-on-android"]);
+export const COUNTRY_INSIGHT_TREES: ReadonlySet<string> = new Set(["restock-reports", "compare-apple-stores"]);
 
 /** Every public place address, built once per process. */
 let known: { states: Set<string>; oneStoreStates: Map<string, string>; cities: Set<string>; oneStoreCities: Map<string, string>; stores: Set<string>; legacy: Map<string, string>; models: Set<string> } | null = null;
@@ -157,6 +164,8 @@ function countryRouteCheck(cc: CountryCode, rest: string[], search: string): { n
     if ("redirect" in place) return { redirect: `${productPath(product, { segments: place.redirect, country: cc })}${search}` };
     return null;
   }
-  if ((head === "restock-log" || head === "live-map" || COUNTRY_QUESTION_PAGES.has(head)) && tail.length === 0) return null;
+  if ((head === "restock-log" || head === "live-map" || COUNTRY_QUESTION_PAGES.has(head) || COUNTRY_INSIGHT_PAGES.has(head)) && tail.length === 0) return null;
+  // The pages decide the rest themselves (a week without an edition, a pair that does not exist, a country without a ranking: 404).
+  if (COUNTRY_INSIGHT_TREES.has(head) && tail.length <= 1) return null;
   return { notFound: true };
 }

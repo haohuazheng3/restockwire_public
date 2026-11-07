@@ -240,6 +240,38 @@
   "pexelsId": 4801686
  },
  {
+  "id": "compare-pickup-bag",
+  "base": "/img/insight/compare-pickup-bag",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Two people handing over a shopping bag indoors",
+  "caption": "Pickup ends at the counter; choosing the right store starts much earlier.",
+  "credit": "Mikhail Nilov",
+  "creditUrl": "https://www.pexels.com/photo/a-person-handed-the-brown-paper-bags-to-the-customer-6969967/",
+  "pexelsId": 6969967
+ },
+ {
+  "id": "compare-two-stores",
+  "base": "/img/insight/compare-two-stores",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Pedestrians reflected in a glass storefront on a busy street",
+  "caption": "Two stores in one city often restock at different hours.",
+  "credit": "Arnie Chou",
+  "creditUrl": "https://www.pexels.com/photo/man-and-woman-passing-through-building-with-glass-facade-913231/",
+  "pexelsId": 913231
+ },
+ {
   "id": "courier-delivery",
   "base": "/img/buying/courier-delivery",
   "widths": [
@@ -334,6 +366,102 @@
   "credit": "Andrey Matveev",
   "creditUrl": "https://www.pexels.com/photo/person-holding-a-sleek-black-flip-smartphone-outdoors-32973377/",
   "pexelsId": 32973377
+ },
+ {
+  "id": "guide-android-phone",
+  "base": "/img/insight/guide-android-phone",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Hand holding an Android smartphone with the home screen showing",
+  "caption": "On Android, Chrome delivers the alerts without installing anything.",
+  "credit": "Zain Ali",
+  "creditUrl": "https://www.pexels.com/photo/person-holding-black-mobile-phone-6901037/",
+  "pexelsId": 6901037
+ },
+ {
+  "id": "guide-android-watch",
+  "base": "/img/insight/guide-android-watch",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Close-up of a woman wearing a smartwatch",
+  "caption": "A paired Wear OS watch shows the alerts Chrome receives.",
+  "credit": "Nicolas Postiglioni",
+  "creditUrl": "https://www.pexels.com/photo/person-wearing-round-face-smartwatch-7376108/",
+  "pexelsId": 7376108
+ },
+ {
+  "id": "guide-focus-desk",
+  "base": "/img/insight/guide-focus-desk",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Young woman checking her smartphone at an office desk beside a laptop",
+  "caption": "Work Focus is the one people forget to add RestockWire to.",
+  "credit": "Vitaly Gariev",
+  "creditUrl": "https://www.pexels.com/photo/39853387/",
+  "pexelsId": 39853387
+ },
+ {
+  "id": "guide-focus-phone-night",
+  "base": "/img/insight/guide-focus-phone-night",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Woman using a smartphone in a dark bedroom, lit by the screen",
+  "caption": "Sleep Focus silences alerts unless RestockWire is on its allowed list.",
+  "credit": "SHVETS production",
+  "creditUrl": "https://www.pexels.com/photo/woman-in-white-shirt-using-smartphone-in-dark-room-8036661/",
+  "pexelsId": 8036661
+ },
+ {
+  "id": "guide-watch-notification",
+  "base": "/img/insight/guide-watch-notification",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "A hand tapping a smartwatch worn on the wrist, outdoors",
+  "caption": "Read the store on your wrist, then reserve on your iPhone.",
+  "credit": "Anastasiya Badun",
+  "creditUrl": "https://www.pexels.com/photo/close-up-of-a-watch-18078945/",
+  "pexelsId": 18078945
+ },
+ {
+  "id": "guide-watch-wrist",
+  "base": "/img/insight/guide-watch-wrist",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Black and white close-up of a smartwatch showing notifications on a wrist",
+  "caption": "With the iPhone locked, the restock alert lands on the watch.",
+  "credit": "Deybson Mallony",
+  "creditUrl": "https://www.pexels.com/photo/a-close-up-shot-of-a-smartwatch-4914597/",
+  "pexelsId": 4914597
  },
  {
   "id": "light-blue-case",
@@ -2496,6 +2624,38 @@
   "pexelsId": 13338739
  },
  {
+  "id": "ranking-checkout",
+  "base": "/img/insight/ranking-checkout",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Customer paying with a smartphone at a retail checkout terminal",
+  "caption": "At the fastest stores a reservation has to finish within seconds of the alert.",
+  "credit": "Jack Sparrow",
+  "creditUrl": "https://www.pexels.com/photo/paying-with-a-smartphone-4199526/",
+  "pexelsId": 4199526
+ },
+ {
+  "id": "ranking-queue",
+  "base": "/img/insight/ranking-queue",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "People lining up outside a busy store on a city street",
+  "caption": "Fast sell-outs follow demand around a store, not the size of its delivery.",
+  "credit": "Ayyeee Ayyeee",
+  "creditUrl": "https://www.pexels.com/photo/people-waiting-in-a-queue-in-front-of-a-store-16943858/",
+  "pexelsId": 16943858
+ },
+ {
   "id": "red-iphone-set",
   "base": "/img/phones/red-iphone-set",
   "widths": [
@@ -2526,6 +2686,70 @@
   "credit": "Imthiyaz Syed",
   "creditUrl": "https://www.pexels.com/photo/camera-of-an-iphone-with-red-case-in-close-up-photography-4574587/",
   "pexelsId": 4574587
+ },
+ {
+  "id": "reports-delivery-boxes",
+  "base": "/img/insight/reports-delivery-boxes",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Cardboard boxes stacked in front of warehouse loading docks",
+  "caption": "Stock reaches stores in deliveries; the weekly report counts what reaches the pickup shelf.",
+  "credit": "BOOM 💥 Photography",
+  "creditUrl": "https://www.pexels.com/photo/cartons-near-warehouse-gates-12585837/",
+  "pexelsId": 12585837
+ },
+ {
+  "id": "reports-iphone-boxes",
+  "base": "/img/insight/reports-iphone-boxes",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "A new iPhone, its box and charging accessories laid out on a wooden table",
+  "caption": "Every restock in the report is one configuration coming back at one store.",
+  "credit": "Zana Latif",
+  "creditUrl": "https://www.pexels.com/photo/unboxing-iphone-15-pro-max-box-in-natural-titanium-color-mention-zana_qaradaghy-on-instagram-while-use-this-photo-follow-on-instagram-zana_qaradaghy-18525574/",
+  "pexelsId": 18525574
+ },
+ {
+  "id": "status-phone-check",
+  "base": "/img/insight/status-phone-check",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Woman looking closely at her smartphone in a dim room",
+  "caption": "Waiting on a pickup check: the minutes when knowing the lookup's state matters.",
+  "credit": "Mikhail Nilov",
+  "creditUrl": "https://www.pexels.com/photo/a-woman-in-black-shirt-holding-a-smartphone-7534100/",
+  "pexelsId": 7534100
+ },
+ {
+  "id": "status-store-counter",
+  "base": "/img/insight/status-store-counter",
+  "widths": [
+   480,
+   800,
+   1200
+  ],
+  "width": 1200,
+  "height": 800,
+  "alt": "Hand holding a smartphone that shows a loading spinner",
+  "caption": "A lookup that hangs looks like this; the status page tells you whether it is Apple or your phone.",
+  "credit": "Castorly Stock",
+  "creditUrl": "https://www.pexels.com/photo/iphone-6-connecting-to-internet-4114774/",
+  "pexelsId": 4114774
  },
  {
   "id": "texting-city-street",

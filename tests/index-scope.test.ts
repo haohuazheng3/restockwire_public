@@ -12,3 +12,10 @@ describe("index scope", () => {
     for (const p of ["/ja-jp", "/ja-jp/apple-stores", "/de-at/restock-log", "/jp/apple-stores/tokyo", "/jp/apple-stores/tokyo/ginza", "/jp/in-stock/iphone-duo", "/jp/live-map", "/when-does-iphone-duo-restock/california", "/when-does-iphone-duo-restock/california/los-angeles", "/in-stock/iphone-duo-512gb", "/in-stock/iphone-duo/california"]) expect(inIndexScope(p), p).toBe(false);
   });
 });
+
+describe("index scope: RestockWire's own families", () => {
+  it("indexes them in every country and language version", () => {
+    for (const p of ["/apple-pickup-status", "/jp/apple-pickup-status", "/ja-jp/apple-pickup-status", "/restock-reports/2026-w45", "/de-de/restock-reports/2026-w45", "/uk/compare-apple-stores/a-vs-b", "/fr-fr/fastest-selling-apple-stores", "/ja-jp/restock-alerts-on-apple-watch", "/restock-alerts-in-focus-mode"]) expect(inIndexScope(p), p).toBe(true);
+    for (const p of ["/ja-jp/apple-pickup-status/x/y", "/ja-jp/live-map"]) expect(inIndexScope(p), p).toBe(false);
+  });
+});

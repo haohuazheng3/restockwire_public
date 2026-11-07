@@ -5,10 +5,11 @@ import { chrome } from "./chrome";
 import { place } from "./place";
 import { pages } from "./pages";
 import { views } from "./views";
+import { insight } from "./insight";
 import { modules } from "./modules";
 import { content } from "./content";
 import { alerts } from "./alerts";
 import { account } from "./account";
 import { wire } from "./wire";
 
-export const ko: Dict = { common, chrome, place, pages, views, modules, content, alerts, account, wire };
+export const ko: Dict = { common, chrome, place, pages, views, modules, content, alerts, account, wire, insight };

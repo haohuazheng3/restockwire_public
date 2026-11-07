@@ -1,3 +1,4 @@
+import { signalGuides, SIGNAL_HUB, SIGNAL_REVIEWED } from "@/content/signals/guides";
 import type { MetadataRoute } from "next";
 import { MODELS, STORES, statesWithStores, citiesWithStores, storePath, cityPath, hasStatePage, storesOf, placeTarget, mapPath, restocksPath } from "@/lib/apple/catalog";
 import { INTL_CODES, prefixOf, type CountryCode } from "@/lib/apple/countries";
@@ -6,6 +7,8 @@ import { PRODUCTS, US, productPath, isIndexedProductPage } from "@/lib/seo/produ
 import { NATIVE_LOCALES, pathInLocale } from "@/lib/i18n/locales";
 import { blogSitemapEntries } from "@/lib/blog/sitemap";
 import { inIndexScope } from "@/lib/seo/indexScope";
+import { GUIDE_SLUGS, comparePairs, hasRankingPage, reportWeeks } from "@/lib/content/insight";
+import { ALL_CODES } from "@/lib/apple/countries";
 
 /** Regenerated hourly: lastModified of a store/city/state page is its latest real availability event when one is known. */
 export const revalidate = 3600;
@@ -56,6 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return best ?? now;
   };
   const statics = ["", "/how-restock-alerts-work", "/pricing", "/phone-alerts", "/live-map", "/restock-log", "/about", "/contact", "/privacy", "/terms", "/refunds", "/apple-stores"].map((p) => ({ url: `${base}${p}`, lastModified: now, changeFrequency: "weekly" as const, priority: p === "" ? 1 : 0.6 }));
+  const signalPages: MetadataRoute.Sitemap = [SIGNAL_HUB, ...signalGuides.map((g) => `/${g.slug}`)].map((path) => ({ url: `${base}${path}`, lastModified: new Date(SIGNAL_REVIEWED), changeFrequency: "weekly", priority: 0.7 }));
   const questions = QUESTION_PAGES.map((p) => ({ url: `${base}${p}`, lastModified: now, changeFrequency: "hourly" as const, priority: 0.8 }));
   // "When does the iPhone Duo restock in {state / city}?" (docs/research.md §8.3 B): one page per US state with a page of
   // its own and per two-plus-store city, under the national restock-times page; its numbers change with every restock.
@@ -78,6 +82,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const natives = NATIVE_LOCALES.flatMap((loc) => countryEntries(loc.cc as Exclude<CountryCode, "us">, base, now, latestOf).map((e) => ({ ...e, url: `${base}${pathInLocale(e.url.slice(base.length), loc)}` })));
   // The blog (lib/blog/sitemap.ts): /blog from its first post, categories with a post, every post; nothing while it is empty.
   const blog = blogSitemapEntries(base);
+  // RestockWire's own families (components/pages/insight): every country, English tree and native versions alike.
+  const weeksByCc = Object.fromEntries(await Promise.all(ALL_CODES.map(async (cc) => [cc, await reportWeeks(cc)] as const)));
+  const ownFor = (cc: CountryCode, prefix: string): MetadataRoute.Sitemap => {
+    const p = (slug: string) => `${base}${prefix}/${slug}`;
+    const out: MetadataRoute.Sitemap = [
+      { url: p("apple-pickup-status"), lastModified: now, changeFrequency: "always", priority: 0.7 },
+      { url: p("restock-reports"), lastModified: now, changeFrequency: "daily", priority: 0.6 },
+      ...weeksByCc[cc].map((w) => ({ url: p(`restock-reports/${w.week}`), lastModified: now, changeFrequency: (w.complete ? "monthly" : "hourly") as "monthly" | "hourly", priority: 0.6 })),
+    ];
+    if (hasRankingPage(cc)) out.push({ url: p("fastest-selling-apple-stores"), lastModified: now, changeFrequency: "hourly", priority: 0.7 });
+    const pairs = comparePairs(cc);
+    if (pairs.length) out.push({ url: p("compare-apple-stores"), lastModified: now, changeFrequency: "daily", priority: 0.5 }, ...pairs.map((x) => ({ url: p(`compare-apple-stores/${x.slug}`), lastModified: now, changeFrequency: "daily" as const, priority: 0.5 })));
+    return out;
+  };
+  const guides = Object.values(GUIDE_SLUGS);
+  const own: MetadataRoute.Sitemap = [
+    ...ownFor("us", ""),
+    ...guides.map((g) => ({ url: `${base}/${g}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.6 })),
+    ...INTL_CODES.flatMap((cc) => ownFor(cc, prefixOf(cc))),
+    ...NATIVE_LOCALES.flatMap((loc) => [...ownFor(loc.cc, `/${loc.id}`), ...guides.map((g) => ({ url: `${base}/${loc.id}/${g}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.6 }))]),
+  ];
   // Only what is inside the index scope (lib/seo/indexScope.ts); the rest is served with noindex, follow.
-  return [...statics, ...questions, ...restockPlaces, ...models, ...states, ...cities, ...stores, ...products, ...blog, ...countries, ...natives].filter((e) => inIndexScope(new URL(e.url).pathname));
+  return [...signalPages, ...statics, ...questions, ...restockPlaces, ...models, ...states, ...cities, ...stores, ...products, ...blog, ...countries, ...natives, ...own].filter((e) => inIndexScope(new URL(e.url).pathname));
 }
