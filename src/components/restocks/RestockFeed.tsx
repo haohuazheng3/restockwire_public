@@ -19,16 +19,16 @@ const MapIcon = () => (
 const cityIn = (s: Store, lang: Lang) => (lang === "en" || s.country === "us" ? cityLine(s) : cityLabel(s.country, s.city, lang));
 
 /**
- * Restocks and sell-outs as wire copy: one ruled line per event, the time first in mono, then the state tag
- * ("Available" / "Sold out", the state now), the store, the configuration and the two actions. A line whose
- * configuration has sold out again is greyed. (Redesign 2026-11-06: a list, not a grid of cards.)
+ * Restocks and sell-outs as an iOS grouped list (redesign 2026-11-07): one row per event on a single panel, a
+ * status disc on the leading edge (green = on the shelf now, grey = gone again), the store as the title, the
+ * configuration as the subtitle, the time and the two actions trailing. Separators are inset past the disc.
  */
 export function RestockFeed({ rows, model, showModel = true, emptyText }: { rows: RestockRow[]; model?: ModelKey; showModel?: boolean; emptyText?: string }) {
   const d = t().modules.feed;
   const lang = pageLocale().lang;
-  if (rows.length === 0) return <p className="border-y border-line py-6 text-center text-sm text-ink-3">{emptyText ?? d.empty}</p>;
+  if (rows.length === 0) return <p className="ios-list px-4 py-6 text-center text-sm text-ink-3">{emptyText ?? d.empty}</p>;
   return (
-    <ul className="@container border-t-2 border-rule">
+    <ul className="ios-list @container">
       {rows.map((r) => {
         const available = r.nowAvailable ?? r.kind === "restock";
         const key = modelKeyFor(r.item.model);
@@ -36,21 +36,33 @@ export function RestockFeed({ rows, model, showModel = true, emptyText }: { rows
         const here = storePlace(r.store);
         const when = <LocalTime iso={r.at.toISOString()} withAgo={false} />;
         return (
-          <li key={r.id} className={`grid min-w-0 grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-0.5 border-b border-line py-2.5 @xl:grid-cols-[11.5rem_auto_minmax(0,1fr)_minmax(0,1fr)_auto] ${available ? "" : "text-ink-2 opacity-70"}`}>
-            <span className="col-span-3 font-mono text-[11px] uppercase tracking-[.08em] text-ink-3 @xl:col-span-1 @xl:text-xs @xl:normal-case @xl:tracking-normal">{r.kind === "soldout" ? d.soldOutAt(when) : available ? d.since(when) : d.restockedAt(when)}</span>
-            <span className={`justify-self-start px-1.5 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-[.12em] ${available ? "bg-ok text-[var(--ok-ink)]" : "border border-line-2 text-ink-3"}`}>{available ? d.available : d.soldOut}</span>
-            <Link href={productPath(productFor(key), here)} className="block min-w-0 truncate">
-              <span className="font-display text-[1.05rem] font-semibold text-ink hover:underline">{lang === "en" ? r.store.name : storeLabel(r.store, lang)}</span>
-              <span className="text-xs text-ink-3"> · {cityIn(r.store, lang)}</span>
-            </Link>
-            <Link href={productPath(config, here)} className="col-start-2 col-end-3 inline-flex min-w-0 items-center gap-1.5 text-sm text-ink-2 hover:text-ink hover:underline @xl:col-auto">
-              <Swatch color={r.item.color} className="h-2.5 w-2.5" />
-              <span className="truncate">{showModel ? `${r.item.model.replace("iPhone ", "")} ` : ""}{configLabel(r.item, lang)}</span>
-            </Link>
-            <span className="col-start-3 row-start-2 flex shrink-0 justify-end gap-1 @xl:col-auto @xl:row-auto">
-              <Link href={`${mapPath(r.store.country)}?store=${r.storeNumber}&model=${model ?? key}`} className="inline-flex h-8 w-8 items-center justify-center border border-line text-ink-2 hover:border-rule hover:text-ink" aria-label={d.mapAria(lang === "en" ? appleName(r.store) : appleStoreLabel(r.store, lang))} title={d.map}><MapIcon /></Link>
-              {available && <a href={appleBuyUrl(r.item, r.store.country)} target="_blank" rel="noopener noreferrer" className="inline-flex h-8 w-8 items-center justify-center border border-rule bg-ink text-on-ink hover:bg-accent" aria-label={d.buyAria(r.item.model, configLabel(r.item, lang))} title={d.buy}><BagIcon /></a>}
+          <li key={r.id} className="ios-row flex min-w-0 items-center gap-3 px-4 py-3">
+            <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${available ? "bg-ok text-[var(--ok-ink)]" : "bg-[var(--fill-2)] text-ink-3"}`} aria-hidden>
+              {available
+                ? <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M3.5 8.5l3 3 6-7" /></svg>
+                : <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M4 8h8" /></svg>}
             </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 items-baseline justify-between gap-3">
+                <Link href={productPath(productFor(key), here)} className="min-w-0 truncate text-[0.9375rem] font-semibold text-ink hover:underline">
+                  {lang === "en" ? r.store.name : storeLabel(r.store, lang)}<span className="font-normal text-ink-3"> · {cityIn(r.store, lang)}</span>
+                </Link>
+                <span className="hidden shrink-0 text-xs tabular-nums text-ink-3 @md:inline">{r.kind === "soldout" ? d.soldOutAt(when) : available ? d.since(when) : d.restockedAt(when)}</span>
+              </div>
+              {/* Narrow lists (a phone, the home page's left column): the time gets a line of its own. */}
+              <div className="text-xs tabular-nums text-ink-3 @md:hidden">{r.kind === "soldout" ? d.soldOutAt(when) : available ? d.since(when) : d.restockedAt(when)}</div>
+              <div className="mt-0.5 flex min-w-0 items-center justify-between gap-3">
+                <Link href={productPath(config, here)} className="inline-flex min-w-0 items-center gap-1.5 text-sm text-ink-2 hover:text-ink">
+                  <Swatch color={r.item.color} className="h-2.5 w-2.5" />
+                  <span className="truncate">{showModel ? `${r.item.model.replace("iPhone ", "")} ` : ""}{configLabel(r.item, lang)}</span>
+                  <span className={`ms-1 shrink-0 text-xs font-medium ${available ? "text-ok" : "text-ink-3"}`}>{available ? d.available : d.soldOut}</span>
+                </Link>
+                <span className="flex shrink-0 items-center gap-1.5">
+                  {available && <a href={appleBuyUrl(r.item, r.store.country)} target="_blank" rel="noopener noreferrer" className="inline-flex h-7 items-center gap-1 rounded-full bg-accent px-2.5 text-xs font-semibold text-[var(--accent-ink)] hover:bg-[var(--accent-hover)]" aria-label={d.buyAria(r.item.model, configLabel(r.item, lang))} title={d.buy}><BagIcon /></a>}
+                  <Link href={`${mapPath(r.store.country)}?store=${r.storeNumber}&model=${model ?? key}`} className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-[var(--fill-1)] text-accent hover:bg-[var(--fill-2)]" aria-label={d.mapAria(lang === "en" ? appleName(r.store) : appleStoreLabel(r.store, lang))} title={d.map}><MapIcon /></Link>
+                </span>
+              </div>
+            </div>
           </li>
         );
       })}

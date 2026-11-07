@@ -30,7 +30,7 @@ export function HeaderNav({ variant }: { variant: "main" | "sections" }) {
     );
   }
   return (
-    <nav className="-mx-1 flex overflow-x-auto border-t border-line md:hidden [scrollbar-width:none]" aria-label={d.sections}>
+    <nav className="-mx-1 flex overflow-x-auto pb-1 md:hidden [scrollbar-width:none]" aria-label={d.sections}>
       {links.map(([href, label]) => <Link key={href} className="nav-link shrink-0" href={href}>{label}</Link>)}
       <Link className="nav-link not-in-app shrink-0" href="/phone-alerts">{d.getApp}</Link>
     </nav>

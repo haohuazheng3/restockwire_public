@@ -1,18 +1,19 @@
 "use client";
-/** One button: tap for the night edition (dark), tap again for paper. Paper is the default. */
+/** One button: flips light / dark. Until the visitor taps it, the theme follows the device (THEME_BOOT). */
 import { useEffect, useState } from "react";
 import { applyTheme, THEME_KEY, type Theme } from "@/lib/theme";
 import { useT } from "@/components/i18n/LangProvider";
 
 function storedTheme(): Theme {
-  try { return localStorage.getItem(THEME_KEY) === "dark" ? "dark" : "light"; } catch { return "light"; }
+  try { const t = localStorage.getItem(THEME_KEY); if (t === "dark" || t === "light") return t; } catch { /* private mode */ }
+  return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 export function ThemeToggle() {
   const d = useT().chrome.theme;
   const [dark, setDark] = useState(false);
   // The boot script sets data-theme before paint; re-assert it after hydration (React may reset
-  // attributes on <html> it does not know about) and sync the icon. Server renders paper.
+  // attributes on <html> it does not know about) and sync the icon. Server renders light.
   useEffect(() => {
     const t = window.setTimeout(() => {
       const stored = storedTheme();
@@ -24,7 +25,7 @@ export function ThemeToggle() {
   const flip = () => { const next = dark ? "light" : "dark"; applyTheme(next); setDark(next === "dark"); };
   return (
     <button type="button" onClick={flip} aria-pressed={dark} aria-label={dark ? d.toLight : d.toDark} title={dark ? d.light : d.dark}
-      className="inline-flex h-9 w-9 shrink-0 items-center justify-center border border-line-2 text-ink transition hover:border-rule hover:bg-ink hover:text-on-ink">
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--fill-1)] text-ink transition hover:bg-[var(--fill-2)] active:scale-95">
       {dark ? (
         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="4" /><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4m11.4-11.4 1.4-1.4" /></svg>
       ) : (

@@ -1,11 +1,11 @@
-/** Paper (default) / dark "night edition" theme: one attribute on <html>, persisted, applied before paint. */
+/** Light / dark theme: follows the device until the visitor picks one: one attribute on <html>, persisted, applied before paint. */
 export type Theme = "light" | "dark";
 export const THEME_KEY = "rw:theme";
 /** theme-color per theme: the header band's colour (--header-band: 5 % accent in --bg), under the status bar on phones. */
-export const THEME_COLORS: Record<Theme, string> = { light: "#f2ede3", dark: "#12110f" };
+export const THEME_COLORS: Record<Theme, string> = { light: "#f5f5f7", dark: "#000000" };
 
 /** Inline in <head> before anything renders, so a paper-theme reader never sees a dark flash and vice versa. */
-export const THEME_BOOT = `(function(){try{var t=localStorage.getItem('${THEME_KEY}');t=t==='dark'?'dark':'light';var d=document.documentElement;d.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'${THEME_COLORS.dark}':'${THEME_COLORS.light}');}catch(e){}})();`;
+export const THEME_BOOT = `(function(){try{var t=localStorage.getItem('${THEME_KEY}');t=t==='dark'||t==='light'?t:(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');var d=document.documentElement;d.setAttribute('data-theme',t);var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content',t==='dark'?'${THEME_COLORS.dark}':'${THEME_COLORS.light}');}catch(e){}})();`;
 
 export function currentTheme(): Theme {
   if (typeof document === "undefined") return "light";

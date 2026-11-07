@@ -13,16 +13,10 @@ import { CDICTS } from "@/lib/i18n/cdict/all";
 export function Header({ loc }: { loc: Locale }) {
   return (
     <header className="site-header sticky top-0 z-40">
-      {/* A masthead, not a floating bar: flat paper, a dateline on wide screens, a double rule underneath. */}
+      {/* The global nav: one translucent bar the page scrolls under (globals.css header.site-header). */}
       <div className="mx-auto max-w-6xl px-4">
-        {!loc.native && (
-          <div className="hidden items-center justify-between border-b border-line py-1.5 font-mono text-[10.5px] uppercase tracking-[.16em] text-ink-3 md:flex">
-            <span>Apple Store pickup stock · iPhone Duo · 18 Pro · 18 Pro Max</span>
-            <span className="inline-flex items-center gap-2"><span className="dot dot-ok dot-live" aria-hidden /> The restock wire is live</span>
-          </div>
-        )}
         {/* One row on every width: mark (+ wordmark from 420 px), nav on md+, then My alerts + search. The "Alert me" call to action lives in the floating AlertBar. */}
-        <div className="flex items-center justify-between gap-2 py-2.5 sm:gap-3">
+        <div className="flex h-[52px] items-center justify-between gap-2 sm:gap-3">
           <HomeMark loc={loc} />
           <HeaderNav variant="main" />
           <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
@@ -35,7 +29,6 @@ export function Header({ loc }: { loc: Locale }) {
         {/* Phones and the Home Screen app (no address bar) still need every section one tap away. */}
         <HeaderNav variant="sections" />
       </div>
-      <div className="rule-double" aria-hidden />
     </header>
   );
 }

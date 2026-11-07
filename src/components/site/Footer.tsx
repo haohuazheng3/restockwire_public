@@ -12,8 +12,9 @@ import { cityLabel, regionLabel, storeLabel } from "@/lib/i18n/places";
 export function Footer({ loc }: { loc: Locale }) {
   if (loc.native) return <NativeFooter loc={loc} />;
   return (
-    <footer className="mx-auto mt-24 w-full max-w-6xl px-4 pb-10">
-      <div className="rule-double pt-8">
+    <footer className="mt-24 w-full border-t border-line bg-[var(--bg-2)]/40 pb-10">
+      <div className="mx-auto max-w-6xl px-4">
+      <div className="pt-10 text-[0.8125rem]">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
           <div>
             <Logo />
@@ -88,6 +89,7 @@ export function Footer({ loc }: { loc: Locale }) {
           <Link href="/api/health" className="hover:text-ink">Wire status</Link>
         </div>
       </div>
+      </div>
     </footer>
   );
 }
@@ -104,8 +106,9 @@ function NativeFooter({ loc }: { loc: Locale }) {
   const list = (places.length ? places : storeRefs(cc).map((x) => ({ href: x.href, label: storeLabel(x.store, loc.lang) }))).slice(0, 8);
   const names = switchCountries();
   return (
-    <footer className="mx-auto mt-24 w-full max-w-6xl px-4 pb-10" lang={loc.tag}>
-      <div className="rule-double pt-8">
+    <footer className="mt-24 w-full border-t border-line bg-[var(--bg-2)]/40 pb-10" lang={loc.tag}>
+      <div className="mx-auto max-w-6xl px-4">
+      <div className="pt-10 text-[0.8125rem]">
         <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
           <div>
             <Logo />
@@ -160,6 +163,7 @@ function NativeFooter({ loc }: { loc: Locale }) {
           <span>© {new Date().getFullYear()} RestockWire</span>
           <Link href="/api/health" className="hover:text-ink">{F.status}</Link>
         </div>
+      </div>
       </div>
     </footer>
   );

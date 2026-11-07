@@ -69,11 +69,11 @@ const Monitor = ({ className = "" }: { className?: string }) => (
 export function AppIcon({ size = 44 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" fill="none" className="shrink-0 rounded-[22%] shadow-[0_6px_18px_-6px_rgba(13,20,17,.35)]">
-      <rect width="64" height="64" fill="#c8321b" />
+      <rect width="64" height="64" fill="#0071e3" />
       <g transform="translate(2.56 2.56) scale(.92)">
         <path d="M24.6 25.6v-3.4a7.4 7.4 0 0 1 14.8 0v3.4" stroke="#0d1411" strokeWidth="4" strokeLinecap="round" />
         <path d="M17.6 25.2h28.8a2.2 2.2 0 0 1 2.19 2.38l-1.6 19.5a4.6 4.6 0 0 1-4.58 4.22H21.6a4.6 4.6 0 0 1-4.58-4.22l-1.6-19.5a2.2 2.2 0 0 1 2.19-2.38z" fill="#0d1411" />
-        <path d="M24.9 38.4l4.9 4.9 9.3-10.1" stroke="#c8321b" strokeWidth="4.6" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M24.9 38.4l4.9 4.9 9.3-10.1" stroke="#0071e3" strokeWidth="4.6" strokeLinecap="round" strokeLinejoin="round" />
       </g>
     </svg>
   );

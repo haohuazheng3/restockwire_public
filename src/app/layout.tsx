@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Newsreader, IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { Header } from "@/components/site/Header";
@@ -24,11 +24,9 @@ import { CDICTS } from "@/lib/i18n/cdict/all";
 // "optional": the page renders in the web font only if it is there within ~100 ms (cached after the first
 // visit); otherwise it keeps the metric-matched fallback for that view instead of swapping mid-read. Pages now
 // paint real text in the first frame, and a late swap re-wrapped the H1 and pushed the content (CLS ~0.15).
-// Three faces: Newsreader, a text serif drawn for news, for headlines (the front-page voice); Plex Sans for reading;
-// Plex Mono for readings — counts, seconds, clock times — and for labels (the .num / .eyebrow helpers in globals.css).
-const display = Newsreader({ variable: "--font-newsreader", subsets: ["latin"], display: "optional", weight: ["500", "600", "700"] });
-const sans = IBM_Plex_Sans({ variable: "--font-plex-sans", subsets: ["latin"], display: "optional", weight: ["400", "500", "600", "700"] });
-const mono = IBM_Plex_Mono({ variable: "--font-plex-mono", subsets: ["latin"], display: "optional", weight: ["400", "500", "600"] });
+// Apple devices render the system face (SF Pro) straight from the font stack in globals.css; Inter, the closest
+// open match, is the fallback everywhere else. Numbers use tabular figures of the same face; code uses the system mono.
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"], display: "optional", weight: ["400", "500", "600", "700"] });
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://restockwire.com";
 const INDEXABLE = process.env.NEXT_PUBLIC_INDEXABLE === "1";
@@ -60,7 +58,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const loc = await requestLocale();
   const app = nativeLocale((await headers()).get(APP_LOCALE_HEADER)) ?? null;
   return (
-    <html lang={loc.native ? loc.tag : "en"} dir={loc.lang === "ar" && loc.native ? "rtl" : undefined} className={`${display.variable} ${sans.variable} ${mono.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang={loc.native ? loc.tag : "en"} dir={loc.lang === "ar" && loc.native ? "rtl" : undefined} className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         {/* Runs as the parser reaches it — before any paint — so a dark reader never sees a light flash. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOT }} />
@@ -71,7 +69,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         <LangProvider loc={loc} app={app} d={loc.lang === "en" ? null : CDICTS[loc.lang]}>
         <ClerkProvider
           publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
-          appearance={{ variables: { colorPrimary: "#c8321b" } }}
+          appearance={{ variables: { colorPrimary: "#0071e3" } }}
           signInUrl="/?signin=1"
           signUpUrl="/?signin=1"
         >

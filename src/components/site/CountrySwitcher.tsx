@@ -68,7 +68,7 @@ export function CountrySwitcher({ countries }: { countries: SwitchCountry[] }) {
   return (
     <div ref={box} className="relative">
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="true" aria-label={fill(d.aria, { country: nameOf(current) })} title={d.title}
-        className="inline-flex h-9 shrink-0 items-center gap-1 border border-line-2 px-2.5 text-xs font-semibold text-ink transition hover:border-rule hover:bg-ink hover:text-on-ink">
+        className="inline-flex h-9 shrink-0 items-center gap-1 rounded-full bg-[var(--fill-1)] px-3 text-xs font-semibold text-ink transition hover:bg-[var(--fill-2)] active:scale-95">
         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></svg>
         {badge}
       </button>
