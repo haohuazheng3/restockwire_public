@@ -325,7 +325,7 @@ export function StockMap({ stores, initial, focus, country }: { stores: MapStore
                 {stats.states.filter((s) => s.withStock > 0).slice(0, 8).map((s) => (
                   <li key={s.code}>
                     <button type="button" className="group grid w-full grid-cols-[2.2rem_1fr_auto] items-center gap-2 text-start text-sm" onClick={() => focusState(s.code)}>
-                      <span className="font-mono text-xs text-ink-3">{s.code}</span>
+                      <span className="text-xs font-medium text-ink-3">{s.code}</span>
                       <span className="h-2 overflow-hidden rounded-full bg-ink/6"><span className="block h-full rounded-full bg-ok transition-[width]" style={{ width: `${Math.max(6, (s.withStock / stats.states[0].withStock) * 100)}%` }} /></span>
                       <span className="text-ink-2 group-hover:text-ink">{s.withStock}/{s.stores}</span>
                     </button>
@@ -381,7 +381,7 @@ export function StockMap({ stores, initial, focus, country }: { stores: MapStore
             <tbody className="divide-y divide-line">
               {stats.states.map((s) => (
                 <tr key={s.code} className="cursor-pointer hover:bg-ink/5" onClick={() => focusState(s.code)}>
-                  <td className="py-2 pe-3"><span className="font-mono text-xs text-ink-3">{L.code(s.code, s.name)}</span> {L.region(s.name)} <Link href={stores.find((x) => x.code === s.code)?.stateHref ?? (country ? `/${country.cc}` : "/apple-stores")} className="ms-1 text-xs text-ink-3 underline hover:text-ink" onClick={(e) => e.stopPropagation()}>{d.table.page}</Link></td>
+                  <td className="py-2 pe-3"><span className="text-xs font-medium text-ink-3">{L.code(s.code, s.name)}</span> {L.region(s.name)} <Link href={stores.find((x) => x.code === s.code)?.stateHref ?? (country ? `/${country.cc}` : "/apple-stores")} className="ms-1 text-xs text-ink-3 underline hover:text-ink" onClick={(e) => e.stopPropagation()}>{d.table.page}</Link></td>
                   <td className="py-2 pe-3 text-ink-2">{s.stores}</td>
                   <td className={`py-2 pe-3 ${s.withStock ? "text-ok" : "text-ink-3"}`}>{s.withStock}</td>
                   <td className="py-2 pe-3 text-ink-2">{s.configs}</td>

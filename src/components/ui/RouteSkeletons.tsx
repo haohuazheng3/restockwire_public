@@ -207,7 +207,7 @@ function MapSkeleton() {
         {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-9 w-28 rounded-full" />)}
       </div>
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="pane relative h-[62vh] min-h-[460px] overflow-hidden"><Skeleton className="h-full w-full rounded-none" /></div>
+        <div className="pane relative h-[62vh] min-h-[460px] overflow-hidden"><Skeleton className="h-full w-full" /></div>
         <aside className="pane p-4">
           <Skeleton className="h-3 w-28" />
           <div className="mt-3 divide-y divide-line">

@@ -92,7 +92,7 @@ export function SiteSearch() {
       <dialog ref={ref} className="search-dialog" aria-label={d.label} onClose={onClose} onClick={(e) => { if (e.target === e.currentTarget) hide(); }}>
         <div className="flex items-center gap-2 border-b border-line px-3 py-3 sm:px-4">
           {/* Ink on the label: the global `input { color: inherit }` is unlayered and beats a text-* utility on the input. */}
-          <label className="search-field flex h-12 min-w-0 flex-1 items-center gap-2.5 rounded-2xl border border-line-2 bg-ink/4 px-3.5 text-ink">
+          <label className="search-field flex h-11 min-w-0 flex-1 items-center gap-2.5 rounded-xl bg-[var(--fill-1)] px-3.5 text-ink">
             <span className="text-ink-3"><SearchIcon className="h-[18px] w-[18px]" /></span>
             <input ref={inputRef} className="search-input h-full min-w-0 flex-1 bg-transparent text-base text-ink placeholder:text-ink-3" placeholder={d.placeholder} value={q}
               onChange={(e) => { setQ(e.target.value); setActive(0); }} onKeyDown={onKeyDown} inputMode="search" enterKeyHint="go"

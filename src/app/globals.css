@@ -464,3 +464,6 @@ html.dialog-open { overflow: hidden; }
 /* Translated labels run longer than English (German ~30 %): on a native version a button or chip may wrap rather
    than run off a phone screen. English pages (html lang="en") keep their one-line buttons exactly as before. */
 html:not([lang="en"]) .btn, html:not([lang="en"]) .chip { white-space: normal; max-width: 100%; line-height: 1.25; text-align: center; }
+
+/* Phones: a long button label wraps inside its panel instead of running past the edge. */
+@media (max-width: 480px) { .btn { white-space: normal; max-width: 100%; text-align: center; line-height: 1.25; } }

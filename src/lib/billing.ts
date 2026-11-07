@@ -109,7 +109,7 @@ async function checkoutSession(userId: string, email: string, plan: PaidPlanKey,
       submit: { message: notifyText(STRIPE_LOCALE[lang] ? lang : "en").checkoutSubmit(PLANS[plan].name, PLANS[plan].limit, SPEED.fastSec, SPEED.checkSec, SPEED.alertSec) },
     },
     // Per-session branding: the Stripe account is shared with sibling products, so the brand is set here.
-    branding_settings: { display_name: "RestockWire", background_color: "#f6f7f5", button_color: "#f5b942", border_style: "rounded" },
+    branding_settings: { display_name: "RestockWire", background_color: "#f5f5f7", button_color: "#0071e3", border_style: "rounded" },
   } as Stripe.Checkout.SessionCreateParams);
   if (!session.url) throw new Error("Stripe did not return a checkout URL");
   return session.url;
