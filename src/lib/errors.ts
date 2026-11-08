@@ -46,6 +46,26 @@ export function errorFingerprintText(message: string): string {
     .slice(0, 300);
 }
 
+/**
+ * Browser reports that say nothing about this site. The error inbox fails /api/health while a group is open and the
+ * probe then mails the owner, so these must not open groups at all (2026-11-08: one visitor's Brave Wallet opened
+ * five groups during checkout and the site read "down" for two hours):
+ *  • "Script error." — the browser hides the message and stack of a script from another origin (extensions, wallet
+ *    injections). The reporter wraps it in a new Error, so its only frame is the reporter itself.
+ *  • wallet / extension globals (window.ethereum, solana, phantom…) that an injected script failed to set up.
+ *  • a bare network loss with no frame of our own: Safari's "Load failed", Chrome's "Failed to fetch", Firefox's
+ *    "NetworkError…" — the connection dropped or the page was left mid-request. With a frame of ours it is kept.
+ */
+export function isBrowserNoise(name: string, message: string, stack: string): boolean {
+  const m = message.trim();
+  if (/^Script error\.?$/i.test(m)) return true;
+  // Nothing on this site is called ethereum/solana/…: any report naming them is a wallet extension talking to itself.
+  if (/\b(ethereum|solana|phantom|keplr|tronWeb|BinanceChain|MetaMask|coinbaseWallet)\b/i.test(m)) return true;
+  const ownFrame = stack.split("\n").some((l) => /restockwire\.com|\/_next\//.test(l) && !/global code@/.test(l));
+  if (!ownFrame && /^TypeError$/i.test(name) && /^(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?|The network connection was lost\.?|cancelled|The request timed out\.?)$/i.test(m)) return true;
+  return false;
+}
+
 export function errorMessage(e: unknown): string {
   if (e instanceof Error) {
     // Drizzle wraps driver errors as "Failed query: <sql>"; the reason lives in .cause — put it first.
