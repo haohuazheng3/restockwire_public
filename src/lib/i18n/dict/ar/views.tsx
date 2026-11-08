@@ -21,7 +21,7 @@ import { OTHER_TRACKERS, SPEED } from "@/lib/plans";
 import { list, stamp, weekdays, price as priceIn, distance, fitTitleW } from "@/lib/i18n/format";
 import { appleStoreLabel, cityLabel, colorLabel, regionLabel, storeLabel } from "@/lib/i18n/places";
 import type { Dict } from "../en";
-import type { RestockTimesMeta, RestockTimesView } from "../en/views";
+import type { RestockTimesMeta, RestockTimesView, RestockTimesPlace } from "../en/views";
 import { content } from "./content";
 import {
   APPLE_STORES, CONFIGS, DAYS, L, N, SECONDS, STORES, STORES_G, TIMES, allWord, apple, count, country, durAr, inCountry,
@@ -167,6 +167,9 @@ function peakAr(p: FaqContext["peak"]): FaqContext["peak"] {
   return { ...p, hour, day: en >= 0 ? weekdayName(en) : p.day };
 }
 
+/** 2026-11-08: a place page (/{cc}/when-does-iphone-duo-restock/{region}[/{city}]) names its region or city where the country page names the country. */
+const rtW = (x: { c: Country; place?: RestockTimesPlace }) => (x.place ? `في ${x.place.name}` : inC(x.c));
+const rtU = (x: { us: boolean; c: Country; place?: RestockTimesPlace }) => (x.place ? (x.place.kind === "region" ? "مدينة" : "متجر") : rtRegion(x));
 export const views: Dict["views"] = {
   common: {
     inCountry: (c: Country) => inC(c),
@@ -348,32 +351,32 @@ export const views: Dict["views"] = {
       store: storeAr,
       storeWithPlace: (s: Store) => `${storeAr(s)} (${cityLabel(s.country ?? "us", s.city, L)})`,
     },
-    title: (c: Country) => `في أي ساعة تعيد Apple توفير iPhone Duo ${inC(c)}؟`,
+    title: (c: Country, place?: RestockTimesPlace) => `في أي ساعة تعيد Apple توفير iPhone Duo ${place ? `في ${place.name}` : inC(c)}؟`,
     metaDescription: (x: RestockTimesMeta) => {
       const { c, t, w, pattern } = x;
-      const region = c.cc === "us" ? "الولاية" : c.regionNoun ? `ال${regionNoun(c)}` : "المتجر";
+      const region = x.place ? (x.place.kind === "region" ? "مدينة" : "متجر") : c.cc === "us" ? "الولاية" : c.regionNoun ? `ال${regionNoun(c)}` : "المتجر";
       const since = dateLabel(t.since, false);
       return t.n > 0 && pattern
         ? fitTitleW([
-          `تأكد توفر iPhone Duo ${count(t.n, TIMES)} في متاجر Apple ${inC(c)} منذ ${since}: ${rtPct(w.share)} منها ${between(w.from, w.to)} بالتوقيت المحلي${t.sellout ? `، و${rtPct(t.sellout.within2min)} نفدت خلال دقيقتين` : ""}. جداول حسب الساعة واليوم و${region} والمتجر والخيار.`,
-          `منذ ${since} عاد iPhone Duo ${count(t.n, TIMES)} إلى متاجر Apple ${inC(c)} بتأكيد مزدوج، ${rtPct(w.share)} منها ${between(w.from, w.to)} بتوقيت المتجر. الجداول: الساعة، اليوم، ${region}، الخيار.`,
-          `متى يعود iPhone Duo ${inC(c)}؟ عاد ${count(t.n, TIMES)} منذ ${since}؛ التوزيع حسب الساعة واليوم و${region} والخيار.`,
+          `تأكد توفر iPhone Duo ${count(t.n, TIMES)} في متاجر Apple ${rtW(x)} منذ ${since}: ${rtPct(w.share)} منها ${between(w.from, w.to)} بالتوقيت المحلي${t.sellout ? `، و${rtPct(t.sellout.within2min)} نفدت خلال دقيقتين` : ""}. جداول حسب الساعة واليوم و${region} والمتجر والخيار.`,
+          `منذ ${since} عاد iPhone Duo ${count(t.n, TIMES)} إلى متاجر Apple ${rtW(x)} بتأكيد مزدوج، ${rtPct(w.share)} منها ${between(w.from, w.to)} بتوقيت المتجر. الجداول: الساعة، اليوم، ${region}، الخيار.`,
+          `متى يعود iPhone Duo ${rtW(x)}؟ عاد ${count(t.n, TIMES)} منذ ${since}؛ التوزيع حسب الساعة واليوم و${region} والخيار.`,
         ], 158)
         : t.n > 0
           ? fitTitleW([
-            `تأكد توفر iPhone Duo ${count(t.n, TIMES)} في متاجر Apple ${inC(c)} منذ ${since}، من فحوص كل ${secs(SPEED.checkSec)}: حسب الساعة المحلية، يومًا بيوم، وحسب ${region} والمتجر والخيار، وكم دام كل توفر.`,
-            `ساعات عودة iPhone Duo ${inC(c)}: عاد ${count(t.n, TIMES)} بتأكيد مزدوج منذ ${since}، مفصّلًا حسب الساعة واليوم و${region} والخيار.`,
+            `تأكد توفر iPhone Duo ${count(t.n, TIMES)} في متاجر Apple ${rtW(x)} منذ ${since}، من فحوص كل ${secs(SPEED.checkSec)}: حسب الساعة المحلية، يومًا بيوم، وحسب ${region} والمتجر والخيار، وكم دام كل توفر.`,
+            `ساعات عودة iPhone Duo ${rtW(x)}: عاد ${count(t.n, TIMES)} بتأكيد مزدوج منذ ${since}، مفصّلًا حسب الساعة واليوم و${region} والخيار.`,
           ], 158)
-          : `أوقات توفر iPhone Duo في متاجر Apple ${inC(c)}، ساعةً بساعة ويومًا بيوم، حسب المتجر والخيار، من قراءة RestockWire لكل متجر كل ${secs(SPEED.checkSec)} منذ ${longDate(t.since)}.`;
+          : `أوقات توفر iPhone Duo في متاجر Apple ${rtW(x)}، ساعةً بساعة ويومًا بيوم، حسب المتجر والخيار، من قراءة RestockWire لكل متجر كل ${secs(SPEED.checkSec)} منذ ${longDate(t.since)}.`;
     },
     h1: (x: RestockTimesView) => x.t.unknown
-      ? `في أي ساعة تعيد Apple توفير iPhone Duo ${inC(x.c)}؟`
+      ? `في أي ساعة تعيد Apple توفير iPhone Duo ${rtW(x)}؟`
       : x.t.n > 0
-        ? `في أي ساعة تعيد Apple توفير iPhone Duo ${inC(x.c)}؟ ${x.pattern ? `غالبًا ${between(x.w.from, x.w.to)} بالتوقيت المحلي` : "فحوصنا ساعةً بساعة"}`
-        : `هل تعيد Apple توفير iPhone Duo ${inC(x.c)}؟ ليس حتى الآن، وهذا ما نراقبه`,
+        ? `في أي ساعة تعيد Apple توفير iPhone Duo ${rtW(x)}؟ ${x.pattern ? `غالبًا ${between(x.w.from, x.w.to)} بالتوقيت المحلي` : "فحوصنا ساعةً بساعة"}`
+        : `هل تعيد Apple توفير iPhone Duo ${rtW(x)}؟ ليس حتى الآن، وهذا ما نراقبه`,
     intro: (x: RestockTimesView) => {
       const { t, one, tracked, pattern, w } = x;
-      const where = inC(x.c);
+      const where = rtW(x);
       return t.unknown ? (
         <>سجل التوفر غير متاح للحظات. ما زالت المتاجر {where} تُفحص كل {secs(SPEED.checkSec)}، وتعود الأرقام عند التحميل التالي للصفحة.</>
       ) : t.n > 0 && pattern ? (
@@ -414,7 +417,7 @@ export const views: Dict["views"] = {
     nav: (x: RestockTimesView): Record<string, string> => ({
       "time-of-day": "الساعة",
       "day-by-day": "الأيام",
-      where: `كل ${rtRegion(x)}`,
+      where: `كل ${rtU(x)}`,
       configuration: "الخيارات",
       "how-long": "سرعة النفاد",
       unavailable: "«غير متوفر»",
@@ -422,18 +425,18 @@ export const views: Dict["views"] = {
       method: "المنهجية",
     }),
     h2: (x: RestockTimesView): Record<string, string> => ({
-      "time-of-day": `في أي ساعة يعود iPhone Duo ${inC(x.c)}؟`,
-      "day-by-day": `في أي أيام توفر iPhone Duo ${inC(x.c)}؟`,
-      where: `أين يتوفر iPhone Duo أكثر من غيره ${inC(x.c)}؟`,
-      configuration: `أي سعة ولون من iPhone Duo يتوفران أكثر ${inC(x.c)}؟`,
-      "how-long": `كم ثانية يدوم توفر iPhone Duo ${inC(x.c)}؟`,
+      "time-of-day": `في أي ساعة يعود iPhone Duo ${rtW(x)}؟`,
+      "day-by-day": `في أي أيام توفر iPhone Duo ${rtW(x)}؟`,
+      where: `أين يتوفر iPhone Duo أكثر من غيره ${rtW(x)}؟`,
+      configuration: `أي سعة ولون من iPhone Duo يتوفران أكثر ${rtW(x)}؟`,
+      "how-long": `كم ثانية يدوم توفر iPhone Duo ${rtW(x)}؟`,
       unavailable: "لماذا يعرض apple.com «غير متوفر حاليًا» في كل متجر؟",
       reddit: "نظريات Reddit عن توفر iPhone Duo، في مواجهة السجل",
       method: "ما الذي يُحتسب توفرًا في RestockWire؟",
     }),
     faq: (x: RestockTimesView): Faq[] => {
       const { t, w, pattern, sell, us, weekend, tracked } = x;
-      const where = inC(x.c);
+      const where = rtW(x);
       const fast = secs(SPEED.fastSec);
       return [
         { q: `متى تعيد Apple توفير iPhone Duo ${where}؟`, a: t.n > 0 && pattern
@@ -458,9 +461,9 @@ export const views: Dict["views"] = {
       reports: (tracker: string) => `${tracker}: تقارير توفر iPhone Duo في أسبوع الإطلاق (ملاحظاتهم الخاصة، معروضة على حدة ولا تُحتسب أبدًا)`,
     },
     ld: (x: RestockTimesView) => ({
-      datasetName: `أوقات توفر iPhone Duo للاستلام من المتجر، متاجر Apple ${inC(x.c)}`,
-      description: `حالات توفر iPhone Duo المؤكدة للاستلام من متاجر Apple ${inC(x.c)} منذ ${x.t.since} (المتجر والخيار والوقت)، من قراءة RestockWire لكل متجر كل ${secs(SPEED.checkSec)}؛ مجمّعة حسب الساعة المحلية واليوم وال${rtRegion(x)} والمتجر والخيار.`,
-      spatial: `فروع Apple ${inC(x.c)}`,
+      datasetName: `أوقات توفر iPhone Duo للاستلام من المتجر، متاجر Apple ${rtW(x)}`,
+      description: `حالات توفر iPhone Duo المؤكدة للاستلام من متاجر Apple ${rtW(x)} منذ ${x.t.since} (المتجر والخيار والوقت)، من قراءة RestockWire لكل متجر كل ${secs(SPEED.checkSec)}؛ مجمّعة حسب الساعة المحلية واليوم ${x.place?.kind === "city" ? "" : `وال${rtU(x)} `}والمتجر والخيار.`,
+      spatial: `فروع Apple ${rtW(x)}`,
       measured: ["لحظة العودة (بتوقيت المتجر)", "متجر Apple", "سعة iPhone Duo ولونه", "ثوانٍ حتى النفاد"],
       size: `عودة مؤكدة ${count(x.t.n, TIMES)} عبر ${count(x.t.stores, STORES_G)}`,
     }),
@@ -478,7 +481,7 @@ export const views: Dict["views"] = {
       { text: <>دفعة من عشر حالات توفر حدث واحد، لا عادة</>, no: true },
       { text: <>كل يوم جديد من البيانات يحدّث هذه الصفحة تلقائيًا</>, step: true },
     ],
-    hourCaption: (x: RestockTimesView) => `iPhone Duo ${inC(x.c)} ساعةً بساعة بتوقيت كل متجر، من ${dateLabel(x.t.since, false)} إلى اليوم؛ المجموع ${N(x.t.n)}`,
+    hourCaption: (x: RestockTimesView) => `iPhone Duo ${rtW(x)} ساعةً بساعة بتوقيت كل متجر، من ${dateLabel(x.t.since, false)} إلى اليوم؛ المجموع ${N(x.t.n)}`,
     hourHead: ["ساعة المتجر", "العودات", "الحصة"],
     morningKeys: (x: RestockTimesView): Point[] => [
       { text: <>ذروة الصباح <b className="text-ink">لا علاقة لها بموعد الافتتاح</b>{x.us ? " (معظم متاجر Apple الأمريكية تفتح الساعة 10:00)" : ""}</> },
@@ -486,7 +489,7 @@ export const views: Dict["views"] = {
       { text: <>تراقب يدويًا؟ غطِّ <b className="text-ink">{rangeLabel(x.w.from, x.w.to)}</b> صباح أيام العمل</>, step: true },
       { text: <><Link href={x.alert}>التنبيه</Link> يغطي <b className="text-ink">الساعات الـ22 الباقية</b>، حين لا ينظر أحد غيره</>, step: true },
     ],
-    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>كل صفحة متجر ترسم ساعاتها الخاصة بتوقيتها (<Link href={x.storesHref}>{x.us ? "متاجر Apple حسب الولاية" : `المتاجر ${inC(x.c)}`}</Link>)، فتكتشف المتجر الذي يتوفر فيه المخزون الساعة 8:00 بينما ذروة منطقته الساعة 9:00</>, step: true }],
+    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>كل صفحة متجر ترسم ساعاتها الخاصة بتوقيتها (<Link href={x.storesHref}>{x.us ? "متاجر Apple حسب الولاية" : `المتاجر ${rtW(x)}`}</Link>)، فتكتشف المتجر الذي يتوفر فيه المخزون الساعة 8:00 بينما ذروة منطقته الساعة 9:00</>, step: true }],
 
     // ---- day by day
     dayLead: (x: RestockTimesView) => {
@@ -496,7 +499,7 @@ export const views: Dict["views"] = {
       ) : t.n > 0 ? (
         <b>{t.days === tracked ? `كل الأيام المتتبَّعة (${N(t.days)})` : `${N(t.days)} من الأيام الـ${N(tracked)} منذ ${longDate(t.since)}`} شهدت توفرًا مؤكدًا واحدًا على الأقل{t.peakWeekday != null ? `؛ ويتصدر ${weekdayName(t.peakWeekday)} أيام الأسبوع` : ""}.</b>
       ) : (
-        <b>صفر عودات مؤكدة {inC(x.c)} منذ {longDate(t.since)}.</b>
+        <b>صفر عودات مؤكدة {rtW(x)} منذ {longDate(t.since)}.</b>
       );
     },
     daysTracked: "أيام متتبَّعة شهدت توفرًا",
@@ -504,7 +507,7 @@ export const views: Dict["views"] = {
     busiestDayNone: "أكبر يوم",
     drop: (x: RestockTimesView, drop: { at: string; restocks: number }) => `متاجر توفر فيها المخزون خلال نصف ساعة واحدة، ${zoneStamp(drop.at, x.c)} (${count(drop.restocks, CONFIGS)})، في طرح على مستوى الدولة`,
     weekend: (x: RestockTimesView) => `في عطلة نهاية الأسبوع (${x.weekend === 0 ? "لا شيء" : count(x.weekend, TIMES)})`,
-    dayCaption: (x: RestockTimesView) => `توفر iPhone Duo اليومي ${inC(x.c)}${x.t.reports.length ? "؛ والصفوف المعلَّمة «مُبلَّغ عنه» مصدرها ملاحظات منشورة لمتتبعات أخرى قبل أن يبدأ تتبعنا، وهي مدرجة للتسلسل الزمني فقط" : ""}`,
+    dayCaption: (x: RestockTimesView) => `توفر iPhone Duo اليومي ${rtW(x)}${x.t.reports.length ? "؛ والصفوف المعلَّمة «مُبلَّغ عنه» مصدرها ملاحظات منشورة لمتتبعات أخرى قبل أن يبدأ تتبعنا، وهي مدرجة للتسلسل الزمني فقط" : ""}`,
     dayHead: { date: "اليوم", restocks: "العودات", stores: "المتاجر المعنية", busiest: "ساعة الذروة", source: "المرجع" },
     soFar: " · اليوم لم ينتهِ",
     reportedBy: (names: string[]) => <>بحسب {names.join(" / ")}</>,
@@ -513,7 +516,7 @@ export const views: Dict["views"] = {
       { text: <><b className="text-ink">{dateLabel(resumed)}</b>: عاد الاستلام من المتجر{x.us ? " (MacRumors)" : ""}</> },
       x.t.reports.length
         ? { text: <>الصفوف <b className="text-ink">المُبلَّغ عنها</b> ملاحظات من {x.reportNames.join(" و")} في أسبوع الإطلاق، مستبعدة من كل عدّ</> }
-        : { text: <>يبدأ سجل RestockWire لكل متجر {inC(x.c)} في <b className="text-ink">{longDate(x.t.since)}</b></> },
+        : { text: <>يبدأ سجل RestockWire لكل متجر {rtW(x)} في <b className="text-ink">{longDate(x.t.since)}</b></> },
       ...(x.t.n > 0 && x.t.peakWeekday == null ? [{ text: <>تحديد أكثر أيام الأسبوع نشاطًا يحتاج بيانات <b className="text-ink">{count(WEEKDAY_MIN_SPAN, DAYS)}</b> (لدينا {count(x.tracked, DAYS)})</>, no: true }] : []),
       { text: <>راقب عمود <b className="text-ink">المتاجر</b>: التوفر الموزع على متاجر أكثر يمنحك فرصًا أفضل</>, step: true },
     ],
@@ -522,11 +525,11 @@ export const views: Dict["views"] = {
     whereLead: (x: RestockTimesView, hit: { name: string; restocks: number; stores: number; storesTotal: number }[], total: number) => (
       <b>{hit[0].name}: توفر {count(hit[0].restocks, TIMES)} في {N(hit[0].stores)} من {count(hit[0].storesTotal, STORES_G)} فيها منذ {dateLabel(x.t.since, false)}{hit[1] ? <>، تليها {hit[1].name} ({N(hit[1].restocks)})</> : null}{hit[2] ? <> ثم {hit[2].name} ({N(hit[2].restocks)})</> : null}؛ {hit.length === total ? `وشهدت كل ال${x.us ? "ولايات" : regionNoun(x.c, true)} توفرًا` : `وشهدت ${N(hit.length)} من ${x.us ? `${N(total)} ولاية` : regionsCount(x.c, total)} توفرًا، و${N(total - hit.length)} لم تشهد أي توفر بعد`}.</b>
     ),
-    whereNone: (x: RestockTimesView) => <b>لم تشهد أي {rtRegion(x)} {inC(x.c)} توفرًا مؤكدًا حتى الآن؛ وأول توفر يفتتح الجدول.</b>,
-    regionCaption: (x: RestockTimesView) => `عودات iPhone Duo المؤكدة ${inC(x.c)} موزعة على كل ${rtRegion(x)}، من ${dateLabel(x.t.since, false)} إلى اليوم`,
-    regionHead: (x: RestockTimesView) => [`ال${rtRegion(x)}`, "التوفر", "متاجر شهدت توفرًا", "أحدث توفر (بالتوقيت المحلي)"],
+    whereNone: (x: RestockTimesView) => <b>لم تشهد أي {rtU(x)} {rtW(x)} توفرًا مؤكدًا حتى الآن؛ وأول توفر يفتتح الجدول.</b>,
+    regionCaption: (x: RestockTimesView) => `عودات iPhone Duo المؤكدة ${rtW(x)} موزعة على كل ${rtU(x)}، من ${dateLabel(x.t.since, false)} إلى اليوم`,
+    regionHead: (x: RestockTimesView) => [`ال${rtU(x)}`, "التوفر", "متاجر شهدت توفرًا", "أحدث توفر (بالتوقيت المحلي)"],
     ofN: (a: number, b: number) => <>{N(a)}/{N(b)}</>,
-    storesCaption: (x: RestockTimesView) => `أكثر المتاجر توفرًا لـiPhone Duo ${inC(x.c)}، من ${dateLabel(x.t.since, false)} حتى اليوم`,
+    storesCaption: (x: RestockTimesView) => `أكثر المتاجر توفرًا لـiPhone Duo ${rtW(x)}، من ${dateLabel(x.t.since, false)} حتى اليوم`,
     storesHead: ["المتجر", "التوفر", "الأيام", "الساعة المعتادة", "الأحدث (بالتوقيت المحلي)"],
     swaps: (x: RestockTimesView) => [
       { no: "مطاردة المتجر الأول في القائمة مهما بعُد", yes: `متجران أو ثلاثة تصل إليها خلال ساعة من ${x.pattern ? `الساعة ${hourLabel(x.w.from)}` : "الصباح"}`, why: "توفر بعيد عن متناولك لا ينفعك، وحتى أكثر المتاجر نشاطًا يظهر «غير متوفر» طوال اليوم إلا بضع دقائق." },
@@ -543,8 +546,8 @@ export const views: Dict["views"] = {
     restocksOf: (a: string) => `عودات ${a}`,
     byStorage: "لكل سعة",
     byColour: "لكل لون",
-    configNone: (x: RestockTimesView) => <b>لم يشهد أي خيار {inC(x.c)} توفرًا مؤكدًا{x.t.n > 0 ? "" : " بعد"}؛ والخيارات الـ{N(x.configs)} كلها مدرجة ليجد أول توفر صفه جاهزًا.</b>,
-    configCaption: (x: RestockTimesView) => `عودات iPhone Duo المؤكدة ${inC(x.c)}، خيارًا خيارًا، من ${dateLabel(x.t.since, false)} إلى اليوم`,
+    configNone: (x: RestockTimesView) => <b>لم يشهد أي خيار {rtW(x)} توفرًا مؤكدًا{x.t.n > 0 ? "" : " بعد"}؛ والخيارات الـ{N(x.configs)} كلها مدرجة ليجد أول توفر صفه جاهزًا.</b>,
+    configCaption: (x: RestockTimesView) => `عودات iPhone Duo المؤكدة ${rtW(x)}، خيارًا خيارًا، من ${dateLabel(x.t.since, false)} إلى اليوم`,
     configHead: ["الخيار", "التوفر", "النسبة", "أحدث توفر (بالتوقيت المحلي)"],
     configKeys: (x: RestockTimesView): Point[] => [
       { text: <>اختيار الخيار أهم <b className="text-ink">من اختيار المتجر</b></> },
@@ -556,31 +559,31 @@ export const views: Dict["views"] = {
     ],
 
     // ---- how long
-    howLongLead: (x: RestockTimesView, sell: SelloutFacts) => <b>{secs(sell.medianSec)}: الوسيط لعمر حالات التوفر التي نفدت {inC(x.c)} (وعددها {N(sell.n)})؛ اختفت {rtPct(sell.within2min)} خلال دقيقتين و{rtPct(sell.within20min)} خلال 20 دقيقة.</b>,
+    howLongLead: (x: RestockTimesView, sell: SelloutFacts) => <b>{secs(sell.medianSec)}: الوسيط لعمر حالات التوفر التي نفدت {rtW(x)} (وعددها {N(sell.n)})؛ اختفت {rtPct(sell.within2min)} خلال دقيقتين و{rtPct(sell.within20min)} خلال 20 دقيقة.</b>,
     secUnit: "ث",
     medianListing: "وسيط مدة العرض، من الظهور حتى الاختفاء",
     within2: "اختفى خلال دقيقتين",
     within20: "اختفى خلال 20 دقيقة",
     fastest: "أسرع نفاد مسجّل",
-    howLongNone: (x: RestockTimesView) => <b>حالات النفاد {inC(x.c)} لا تكفي للقياس{x.t.n > 0 ? "" : " بعد"}؛ تبدأ هذه الأرقام من عشر حالات، والصفحة الأمريكية فيها المجموعة الكاملة.</b>,
+    howLongNone: (x: RestockTimesView) => <b>حالات النفاد {rtW(x)} لا تكفي للقياس{x.t.n > 0 ? "" : " بعد"}؛ تبدأ هذه الأرقام من عشر حالات، والصفحة الأمريكية فيها المجموعة الكاملة.</b>,
     howLongKeys: (x: RestockTimesView): Point[] => [
       { text: <>دقيقتان نافذة تناسب <b className="text-ink">التنبيه</b>، لا الضغط على تحديث apple.com</> },
       { text: <>كل رقم آخر في هذه الصفحة ينبع من هذا الرقم</> },
-      { text: <>كل توفر وكم ثانية دام، حسب الخيار وال{rtRegion(x)}: <Link href="/how-fast-does-iphone-duo-sell-out">بأي سرعة ينفد توفر iPhone Duo؟ (بالإنجليزية)</Link></>, step: true },
+      { text: <>كل توفر وكم ثانية دام، حسب الخيار وال{rtU(x)}: <Link href="/how-fast-does-iphone-duo-sell-out">بأي سرعة ينفد توفر iPhone Duo؟ (بالإنجليزية)</Link></>, step: true },
     ],
     measured: "كل رقم يمتد من الفحص الذي وجد الخيار معروضًا أول مرة إلى الفحص الذي وجده قد اختفى، فهو حدٌّ أعلى: الأعمار الحقيقية أقصر.",
 
     // ---- unavailable
-    unavailableLead: (x: RestockTimesView) => <b>التوفر ومضة لا حالة: {x.one ? "متجر واحد" : count(x.stores, STORES)} × {count(x.configs, CONFIGS)} يعني {N(x.pairs)} عرضًا ممكنًا {inC(x.c)}، وفي هذه اللحظة {x.duoNow === 1 ? "يعرض متجر واحد" : `تعرض ${count(x.duoNow, STORES)}`} أي iPhone Duo على الإطلاق.</b>,
+    unavailableLead: (x: RestockTimesView) => <b>التوفر ومضة لا حالة: {x.one ? "متجر واحد" : count(x.stores, STORES)} × {count(x.configs, CONFIGS)} يعني {N(x.pairs)} عرضًا ممكنًا {rtW(x)}، وفي هذه اللحظة {x.duoNow === 1 ? "يعرض متجر واحد" : `تعرض ${count(x.duoNow, STORES)}`} أي iPhone Duo على الإطلاق.</b>,
     pairs: "عروض «متجر × خيار» ممكنة",
     listingNow: "تعرض iPhone Duo للاستلام الآن",
     goneIn2: "من حالات التوفر انتهت خلال دقيقتين",
     last24: "توفر مؤكد، آخر 24 ساعة",
     unavailableKeys: (x: RestockTimesView, today: number): Point[] => [
       x.recent.restocks > 0
-        ? { text: <>خلال 24 ساعة: <b className="text-ink">عاد المخزون {count(x.recent.restocks, TIMES)}</b> في {count(x.recent.stores, STORES_G)} {inC(x.c)}</> }
+        ? { text: <>خلال 24 ساعة: <b className="text-ink">عاد المخزون {count(x.recent.restocks, TIMES)}</b> في {count(x.recent.stores, STORES_G)} {rtW(x)}</> }
         : today > 0
-          ? { text: <>منذ بداية اليوم: <b className="text-ink">عاد المخزون {count(today, TIMES)}</b> {inC(x.c)}</> }
+          ? { text: <>منذ بداية اليوم: <b className="text-ink">عاد المخزون {count(today, TIMES)}</b> {rtW(x)}</> }
           : { text: <>جدول الأيام أعلاه يذكر حالات التوفر التي حدثت فعلًا</> },
       { text: <>كلٌّ منها بقي على apple.com <b className="text-ink">دقيقة أو دقيقتين</b></> },
       { text: <>رؤية «غير متوفر في كل مكان» في اليوم الرابع أو الرابع عشر <b className="text-ink">لا</b> تعني أن Apple توقفت</>, no: true },
@@ -588,7 +591,7 @@ export const views: Dict["views"] = {
     unavailableLinks: { explained: "«غير متوفر حاليًا للاستلام»: شرح (بالإنجليزية)", howToGet: "الحصول على iPhone Duo خطوة بخطوة (بالإنجليزية)" },
 
     // ---- reddit
-    redditLead: (x: RestockTimesView) => <b>كثير من النصائح في <a href="https://www.reddit.com/r/applestore/" target="_blank" rel="noopener nofollow">r/applestore</a> و<a href="https://www.reddit.com/r/iphone/" target="_blank" rel="noopener nofollow">r/iphone</a> صادق، لكنه مبني على متجر واحد ويتقادم في اليوم التالي؛ وفيما يلي أكثر أربعة ادعاءات تكرارًا، مختبَرة على حالات التوفر المؤكدة الـ{N(x.t.n)} {inC(x.c)}.</b>,
+    redditLead: (x: RestockTimesView) => <b>كثير من النصائح في <a href="https://www.reddit.com/r/applestore/" target="_blank" rel="noopener nofollow">r/applestore</a> و<a href="https://www.reddit.com/r/iphone/" target="_blank" rel="noopener nofollow">r/iphone</a> صادق، لكنه مبني على متجر واحد ويتقادم في اليوم التالي؛ وفيما يلي أكثر أربعة ادعاءات تكرارًا، مختبَرة على حالات التوفر المؤكدة الـ{N(x.t.n)} {rtW(x)}.</b>,
     redditCaption: "ادعاءات متكررة على Reddit عن توفر iPhone Duo، مختبَرة على حالات التوفر التي أكدها RestockWire",
     redditHead: ["الادعاء", "ماذا يُظهر السجل"],
     claims: (x: RestockTimesView): { claim: string; answer: ReactNode }[] => {
@@ -608,7 +611,7 @@ export const views: Dict["views"] = {
     // ---- method
     methodLead: <b>التوفر هو ظهور خيار للاستلام من المتجر على apple.com في متجر لم يكن يعرضه، يؤكده فحصان متطابقان.</b>,
     methodKeys: (x: RestockTimesView): Point[] => [
-      { text: <>المتاجر التي عليها تنبيه: كل <b className="text-ink">{secs(SPEED.fastSec)}</b>؛ و{x.one ? "متجر Apple" : "كل متجر Apple"} {inC(x.c)}: كل <b className="text-ink">{secs(SPEED.checkSec)}</b></> },
+      { text: <>المتاجر التي عليها تنبيه: كل <b className="text-ink">{secs(SPEED.fastSec)}</b>؛ و{x.one ? "متجر Apple" : "كل متجر Apple"} {rtW(x)}: كل <b className="text-ink">{secs(SPEED.checkSec)}</b></> },
       { text: <>الفواصل المنشورة للمتتبعات الأخرى: <b className="text-ink">{others}</b>؛ ونقارن بما ينشرونه فقط</> },
       { text: <>أول «متوفر» يُعاد فحصه <b className="text-ink">بعد نحو ثانية</b> قبل أن يُحتسب</> },
       { text: <>النفاد لا يُعتمد قبل <b className="text-ink">جولة الفحص التالية</b></> },
@@ -618,7 +621,7 @@ export const views: Dict["views"] = {
       { text: <>تتحدث هذه الجداول كل خمس دقائق تقريبًا؛ أما <Link href={x.logHref}>سجل التوفر</Link> فمباشر</>, step: true },
     ],
     quote: "استشهد بهذه الصفحة: اقتبس أي رقم هنا مع رابط إليها. RestockWire مستقل عن Apple، ويقرأ توفر الاستلام نفسه الذي يراه أي شخص على apple.com، لكن بتكرار أكبر بكثير.",
-    alertIn: (x: RestockTimesView) => <>فعّل تنبيهات iPhone Duo{x.one ? "" : ` ${inC(x.c)}`}</>,
+    alertIn: (x: RestockTimesView) => <>فعّل تنبيهات iPhone Duo{x.one ? "" : ` ${rtW(x)}`}</>,
 
     // ---- related, FAQ, sources
     related: "أسئلة أخرى عن iPhone Duo",
@@ -632,6 +635,13 @@ export const views: Dict["views"] = {
       unavailable: "«غير متوفر»: شرح",
     },
     otherCountries: (us: boolean): string => (us ? "هذه الصفحة لدول أخرى" : "دول أخرى"),
+    /** Place pages (a region or a city of this country), and the rows on the country page that lead to them. */
+    place: {
+      byCity: "صفحات المدن",
+      storesLive: (x: RestockTimesView) => `متاجر Apple ${rtW(x)}: المخزون المباشر`,
+      countryPage: (c: Country) => `ساعات عودة iPhone Duo ${inC(c)}، كل المتاجر`,
+      sourcesWhere: (x: RestockTimesView) => `كل متاجر Apple ${rtW(x)} (${x.stores})`,
+    },
     faqTitle: "أسئلة شائعة",
   },
 };

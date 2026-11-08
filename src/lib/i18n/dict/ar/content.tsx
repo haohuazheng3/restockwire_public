@@ -176,9 +176,11 @@ export const content: Dict["content"] = {
     configsInStock: "خيارات معروضة",
     storesWithStock: forms({ one: "متجر يعرض مخزونًا", two: "متجران يعرضان مخزونًا", few: "متاجر تعرض مخزونًا", many: "متجرًا يعرض مخزونًا", other: "متجر يعرض مخزونًا" }),
     restocks24h: "التوفر، 24 ساعة",
+    /** A tile that counts one model only (its short name first). */
+    scoped: (label: string, model: string) => `${model} · ${label}`,
     restocksHint: (week: string, month: string, days: string) => `${week} خلال 7 أيام · ${month} خلال ${daysOf(days)}`,
     sellOuts: (days: string) => `حالات النفاد · ${daysOf(days)}`,
-    stays: (duration: string) => `يبقى نحو ${duration}`,
+    stays: (duration: string) => (duration === "دون الدقيقة" ? `يبقى ${duration}` : `يبقى نحو ${duration}`),
     noPairs: "لا حالات نفاد مقترنة بعد",
     lastRestock: "أحدث توفر",
     noneYet: "لا شيء حتى الآن",

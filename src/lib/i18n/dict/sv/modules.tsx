@@ -7,6 +7,8 @@ import type { ReactNode } from "react";
 import type { Dict } from "../en";
 import { n, pl } from "./util";
 
+/** The WireNow bulletin groups its counts ("3 891"). */
+const WN = (v: number) => v.toLocaleString("sv-SE");
 export const modules: Dict["modules"] = {
   daily: {
     empty: (label: string, days: number): string => `${days} dagar bakåt ${label}: varken påfyllning eller slutsålt. Första händelsen ger första stapeln.`,
@@ -191,5 +193,45 @@ export const modules: Dict["modules"] = {
     more: (k: number): string => `+${k}`,
     seen: (ago: ReactNode) => <>Ute {ago}</>,
     loading: "Hämtar lagerläget",
+  },
+  /** WireNow: bulletinen som region-, stads-, butiks-, lands- och iPhone Duo-sidor öppnar med. `label` kommer med preposition („i Stockholm", „hos Apple Täby Centrum"); alla siffror gäller 14 dagar. */
+  wireNow: {
+    eyebrow: (label: string): string => `På tråden · iPhone Duo ${label}`,
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>Senast listad: <b className="text-ink">{o.config}</b>{o.store != null && <> hos {o.store}</>}, {o.when}{o.up ? <> · {o.up}</> : null}.</>,
+    neverYet: (label: string, days: number): string => `Ingen iPhone Duo-listning bekräftad ${label} de senaste ${WN(days)} dagarna.`,
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">Listad just nu i {WN(o.k)} av {WN(o.n)} butiker</b> {o.label} (avläst {o.stamp}): {o.list}.</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">Listad just nu: {o.k} av {o.total} konfigurationer</b> hos {o.name} (avläst {o.stamp}): {o.list}.</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">Inget listat kl. {o.stamp}</b>: ingen av de {WN(o.n)} Apple Store {o.label} visar någon iPhone Duo för hämtning.</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">Inget listat kl. {o.stamp}</b>: {o.name} visar ingen iPhone Duo-konfiguration för hämtning.</>,
+    storeItem: (store: ReactNode, configs: number) => <>{store} ({configs} konfig.)</>,
+    configItem: (config: string): string => config,
+    others: (o: { pro: number; max: number; one: boolean; configs: number }): string => (o.one ? `iPhone 18 Pro: ${o.pro} av ${o.configs} konfigurationer här; 18 Pro Max: ${o.max}.` : `iPhone 18 Pro finns i ${o.pro} av dem, 18 Pro Max i ${o.max}.`),
+    tRestocks: (days: number): string => `Duo-påfyllningar, senaste ${WN(days)} dagarna`,
+    tGone60: "av de tidtagna listningarna borta inom en minut",
+    tLongest: "veckans längsta listning",
+    tWindow: (range: string): string => `av påfyllningarna kom ${range}`,
+    tToday: "påfyllningar i dag hittills",
+    tStores: (n: number): string => `av ${WN(n)} butiker fick påfyllning under perioden`,
+    wireTime: (stamp: string): string => `Trådtid ${stamp}`,
+    reads: (note: string): string => `avläsning ${note}`,
+    window: (days: number): string => `${WN(days)}-dagarsfönster`,
+    method: "en påfyllning räknas först när två avläsningar stämmer överens; en butiks första observation räknas aldrig",
+    zone: (): string => "butikens lokala tid",
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }): string =>
+      `${o.range} ${o.zone}: då kommer iPhone Duo tillbaka ${o.label}. Det fönstret tog ${o.pct} av de ${WN(o.n)} påfyllningar som RestockWire loggade ${o.one ? "här" : `i ${WN(o.stores)} Apple Store ${o.label}`} de senaste ${WN(o.days)} dagarna. Toppen ${o.busiest}, ${WN(o.busiestN)} påfyllningar.${o.config ? ` ${o.config} kom tillbaka oftast (${WN(o.k)} av ${WN(o.n)}).` : ""}${o.median ? ` Medianlistning: borta efter ${o.median}.` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }): string => `${WN(o.n)} iPhone Duo-påfyllning${o.n === 1 ? "" : "ar"} ${o.one ? o.label : `i de ${WN(o.stores)} Apple Store ${o.label}`} de senaste ${WN(o.days)} dagarna: för få för en vanlig timme. Var och en står nedan.`,
+    hourByHour: "Varje timme, varje butik →",
+    lastThree: (n: number, label: string): string => (n === 1 ? `Senaste Duo-listningen ${label}` : `De ${WN(n)} senaste Duo-listningarna ${label}`),
+    secs: (n: number): string => `${WN(n)} s`,
+    mins: (n: number): string => `${WN(n)} min`,
+    upRange: (low: string, high: string): string => `listad ${low}–${high}`,
+    upAbout: (x: string): string => `listad omkring ${x}`,
+    stillUp: (x: string): string => `fortfarande listad (${x})`,
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }): string => (o.one
+      ? `${WN(o.sent)} avisering${o.sent === 1 ? "" : "ar"} gick ut för Duo-påfyllningar ${o.label} de senaste ${WN(o.days)} dagarna.`
+      : `${WN(o.sent)} avisering${o.sent === 1 ? "" : "ar"} gick ut för Duo-påfyllningar i ${WN(o.stores)} av de ${WN(o.total)} butikerna ${o.label} de senaste ${WN(o.days)} dagarna.`),
+    alertMe: (name: string): string => `Lägg ${name} på 5-sekunderstråden`,
+    unknown: "Mönstersiffrorna gick inte att läsa den här gången; listningen ovan är live.",
+    allModels: (o: { n: number; days: number; peak: string | null }): string => `Alla tre iPhone tillsammans: ${WN(o.n)} påfyllningar på ${WN(o.days)} dagar${o.peak ? `, topp ${o.peak}` : ""}.`,
   },
 };

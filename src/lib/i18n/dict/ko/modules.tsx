@@ -9,6 +9,8 @@ import type { Dict } from "../en";
 
 const n = (x: number) => num("ko", x);
 
+/** The WireNow bulletin groups its counts ("3 891"). */
+const WN = (v: number) => v.toLocaleString("ko-KR");
 export const modules: Dict["modules"] = {
   daily: {
     empty: (label: string, days: number) => `${n(days)}일 기록이 비어 있어요. ${label}에서 재입고도 품절도 잡히지 않았고, 첫 변화가 잡히는 날 첫 막대가 생겨요.`,
@@ -193,5 +195,45 @@ export const modules: Dict["modules"] = {
     more: (k: number) => `+${n(k)}`,
     seen: (ago: ReactNode) => <>{ago}부터 남아 있음</>,
     loading: "재고 상태 가져오는 중",
+  },
+  /** WireNow: 지역·도시·매장·국가·Duo 모델 페이지 맨 위의 속보. `label`은 장소 이름(「서울」「Apple 가로수길」). 모든 수치는 최근 14일. */
+  wireNow: {
+    eyebrow: (label: string) => `속보 · ${label} iPhone Duo`,
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>마지막 재고 등록: <b className="text-ink">{o.config}</b>{o.store != null && <> · {o.store}</>}, {o.when}{o.up ? <> · {o.up}</> : null}.</>,
+    neverYet: (label: string, days: number) => `${label}에서 최근 ${WN(days)}일간 확인된 iPhone Duo 재고 등록이 없어요.`,
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">지금 {WN(o.n)}곳 중 {WN(o.k)}곳에 재고 등록</b> ({o.label}, {o.stamp} 기준): {o.list}.</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">지금 등록 중: {o.total}개 구성 중 {o.k}개</b> ({o.name}, {o.stamp} 기준): {o.list}.</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">{o.stamp} 기준 등록 없음</b>: {o.label} Apple Store {WN(o.n)}곳 어디에도 iPhone Duo 매장 픽업 재고가 없어요.</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">{o.stamp} 기준 등록 없음</b>: {o.name}에는 iPhone Duo 구성이 하나도 올라와 있지 않아요.</>,
+    storeItem: (store: ReactNode, configs: number) => <>{store} ({configs}개 구성)</>,
+    configItem: (config: string) => config,
+    others: (o: { pro: number; max: number; one: boolean; configs: number }) => (o.one ? `iPhone 18 Pro는 ${o.configs}개 구성 중 ${o.pro}개, 18 Pro Max는 ${o.max}개.` : `iPhone 18 Pro는 ${o.pro}곳, 18 Pro Max는 ${o.max}곳에 있어요.`),
+    tRestocks: (days: number) => `최근 ${WN(days)}일 Duo 재입고`,
+    tGone60: "측정된 등록 중 1분 안에 사라진 비율",
+    tLongest: "이번 주 가장 오래 버틴 등록",
+    tWindow: (range: string) => `${range}에 들어온 재입고 비율`,
+    tToday: "오늘 재입고 (지금까지)",
+    tStores: (n: number) => `${WN(n)}곳 중 기간 내 재입고가 있던 매장`,
+    wireTime: (stamp: string) => `속보 시각 ${stamp}`,
+    reads: (note: string) => `읽기 주기 ${note}`,
+    window: (days: number) => `${WN(days)}일 집계`,
+    method: "재입고는 두 번의 읽기가 일치할 때만 세고, 매장의 첫 확인은 빼요",
+    zone: () => "매장 현지 시간",
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }) =>
+      `${o.label}에 iPhone Duo가 돌아오는 시간은 ${o.range}(${o.zone})이에요. 최근 ${WN(o.days)}일간 RestockWire가 ${o.one ? "이 매장" : `Apple Store ${WN(o.stores)}곳`}에서 기록한 재입고 ${WN(o.n)}건 중 ${o.pct}가 이 시간대였어요. 피크는 ${o.busiest}, ${WN(o.busiestN)}건.${o.config ? ` 가장 많이 들어온 구성은 ${o.config}(${WN(o.k)}/${WN(o.n)}건).` : ""}${o.median ? ` 등록은 중앙값 ${o.median} 만에 사라졌어요.` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }) => `최근 ${WN(o.days)}일간 ${o.one ? o.label : `${o.label} Apple Store ${WN(o.stores)}곳`}에서 기록한 iPhone Duo 재입고는 ${WN(o.n)}건. 보통 시간대를 말하기엔 아직 적어서 아래에 하나씩 적었어요.`,
+    hourByHour: "매장별·시간대별 전체 →",
+    lastThree: (n: number, label: string) => (n === 1 ? `${label} 최근 Duo 등록` : `${label} 최근 Duo 등록 ${WN(n)}건`),
+    secs: (n: number) => `${WN(n)}초`,
+    mins: (n: number) => `${WN(n)}분`,
+    upRange: (low: string, high: string) => `${low}~${high} 유지`,
+    upAbout: (x: string) => `약 ${x} 유지`,
+    stillUp: (x: string) => `아직 등록 중 (${x})`,
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }) => (o.one
+      ? `최근 ${WN(o.days)}일간 ${o.label} Duo 재입고로 나간 알림 ${WN(o.sent)}건.`
+      : `최근 ${WN(o.days)}일간 ${o.label} ${WN(o.total)}곳 중 ${WN(o.stores)}곳의 Duo 재입고로 나간 알림 ${WN(o.sent)}건.`),
+    alertMe: (name: string) => `${name}을(를) 5초마다 지켜보기`,
+    unknown: "이번에는 패턴 수치를 읽지 못했어요. 위의 등록 현황은 실시간이에요.",
+    allModels: (o: { n: number; days: number; peak: string | null }) => `세 기종 합계: ${WN(o.days)}일간 재입고 ${WN(o.n)}건${o.peak ? `, 피크 ${o.peak}` : ""}.`,
   },
 };

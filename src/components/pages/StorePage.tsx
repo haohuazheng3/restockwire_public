@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { PendingLink as Link } from "@/components/ui/PendingLink";
 import { cache } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
-import { hasStatePage, isOneStoreState, storesOf, MODELS, DEFAULT_MODEL, modelByKey, citySlug, stateSlug, stateCodeOf, storePath, cityPath, statePath, storeTimeZone, modelKeyFor, catalogFor, storesIndexPath, placeTarget, mapPath, restocksPath, type ModelKey, type Store, appleName } from "@/lib/apple/catalog";
+import { partNumbersFor, hasStatePage, isOneStoreState, storesOf, MODELS, DEFAULT_MODEL, modelByKey, citySlug, stateSlug, stateCodeOf, storePath, cityPath, statePath, storeTimeZone, modelKeyFor, catalogFor, storesIndexPath, placeTarget, mapPath, restocksPath, type ModelKey, type Store, appleName } from "@/lib/apple/catalog";
 import { prefixOf, type Country } from "@/lib/apple/countries";
 import { nearestStores, nearbyCities, neighborStates, cityRef, cityLabel } from "@/lib/seo/links";
 import { nearbyCitiesIn, nearestStoresIn, cityRefs as intlCityRefs } from "@/lib/seo/countryLinks";
@@ -29,6 +29,8 @@ import { NearbyStores } from "@/components/stores/NearbyStores";
 import { RestockFeed } from "@/components/restocks/RestockFeed";
 import { RestockClock } from "@/components/restocks/RestockClock";
 import { restockTimesPath } from "@/lib/content/restockTimes";
+import { alertsSentAt, wireNowFrom } from "@/lib/content/wireNow";
+import { WireNow } from "@/components/restocks/WireNow";
 import { SellOutTimes } from "@/components/restocks/SellOutTimes";
 import { sellouts } from "@/lib/stock/sellouts";
 import { DailyBars } from "@/components/restocks/DailyBars";
@@ -74,7 +76,7 @@ const load = cache(async (s: Store) => {
   const inState = nearestInState(s, 4, { excludeCity: true });
   const others = [...new Set([...nearby, ...outside, ...inState].map((n) => n.storeNumber))];
   const wireScope = { storeNumbers: [s.storeNumber], country: s.country, model: "duo" as const };
-  const [rows, stock, feed, stats, pstats, reports, lookupOff, sell, recent, heat, streak] = await Promise.all([
+  const [rows, stock, feed, stats, pstats, reports, lookupOff, sell, recent, heat, streak, duoClock, duoReports, duoStats, duoSell, alerts] = await Promise.all([
     storeStatus(s.storeNumber),
     storesStock([s.storeNumber, ...others]),
     restockFeed({ storeNumber: s.storeNumber, kind: "all", limit: 30, country: s.country }),
@@ -86,6 +88,13 @@ const load = cache(async (s: Store) => {
     recentByConfig({ storeNumbers: [s.storeNumber], country: s.country }),
     restockHeatmap(wireScope),
     restockStreak(wireScope),
+    // iPhone Duo only for the bulletin, the clock and the tiles (2026-11-08): "restocks here usually land around
+    // 2 PM" was the three models mixed, while the Duo at the same store lands at 9 AM.
+    restockStats([s.storeNumber], tz, STATS_DAYS, "duo"),
+    restockReportStats([s.storeNumber], tz, STATS_DAYS, "duo"),
+    placeStats({ storeNumbers: [s.storeNumber], model: "duo", tz }),
+    sellouts({ storeNumbers: [s.storeNumber], parts: partNumbersFor("duo", [], [], s.country), country: s.country }),
+    alertsSentAt([s.storeNumber]),
   ]);
   const summary = stock.get(s.storeNumber);
   const stockNow = Object.fromEntries(MODELS.map((m) => [m.key, summary?.perModel[m.key].available ?? 0])) as Record<ModelKey, number>;
@@ -93,7 +102,8 @@ const load = cache(async (s: Store) => {
   // The last Duo restock in the feed (30 rows, all models): what the 24-hour block names on a quiet day.
   const lastDuo = feed.find((r) => r.kind === "restock" && modelKeyFor(r.item.model) === "duo");
   const lastDuoRestock = lastDuo ? { storeNumber: lastDuo.storeNumber, partNumber: lastDuo.partNumber, at: lastDuo.at.toISOString() } : null;
-  return { tz, nearby, outside, inState, rows, stock, summary, feed, stats, pstats, reports, lookupOff, stockNow, configs, sell, recent, lastDuoRestock, heat, streak };
+  const now = wireNowFrom({ stores: [s], stock, clock: duoClock, stats: duoStats, sell: duoSell, alerts, configsTotal: catalogFor("duo", s.country).length });
+  return { tz, nearby, outside, inState, rows, stock, summary, feed, stats, pstats, reports, lookupOff, stockNow, configs, sell, recent, lastDuoRestock, heat, streak, duoClock, duoReports, duoStats, now };
 });
 
 /** True when this is the only Apple Store in its city (the city query lands here). */
@@ -156,15 +166,15 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
   const sCity = N.city(s.city);
   const sRegion = N.region(s.state);
   const alert = alertHref({ model: DEFAULT_MODEL, store: s.storeNumber, country: cc });
-  const questions = faq({ kind: "store", place, stores: [s], stockNow: d.stockNow, stats: d.pstats, peak: peakOf(d.stats, lang), nearest: d.nearby, hours: compressHours(week, lang), todayText: `${hoursText(today.today, lang)} (${lang === "en" ? today.label.toLowerCase() : today.label})`, omit: ["lasts", "nearest"] }, lang);
+  const questions = faq({ kind: "store", place, stores: [s], stockNow: d.stockNow, stats: d.pstats, peak: peakOf(d.duoClock, lang), nearest: d.nearby, hours: compressHours(week, lang), todayText: `${hoursText(today.today, lang)} (${lang === "en" ? today.label.toLowerCase() : today.label})`, omit: ["lasts", "nearest"] }, lang);
   const tax = us ? SALES_TAX[s.state] : undefined;
   const duoTaxed = us ? withTax(1999, s.state) : null;
   if (tax) questions.push({ q: `What does the iPhone Duo cost after tax at ${place}?`, a: tax.combined === 0 ? `$1,999 for the 256GB. ${s.state} charges no sales tax, so you pay the apple.com price at pickup.` : `Roughly $${withTax(1999, s.state)!.total.toLocaleString("en-US")} for the 256GB, at ${s.state}'s ${tax.combined}% average combined rate. Local rates differ, and a pickup order is taxed at the store's address.` });
   if (!us) { const tf = P.taxFaq(cc, place, cc === "ca" ? s.state : undefined); questions.push({ q: cc === "ca" ? S.taxQ(place) : tf.q, a: tf.a }); }
   questions.push({ q: S.pickupQ(place), a: S.pickupA(place) });
   const alone = onlyInCity(s);
-  // The restock-times page of this store's city (two-plus stores) or state (with a page of its own), US only.
-  const rtLink = us ? [{ href: restockTimesPath(s.state, s.city), place: s.city }, { href: restockTimesPath(s.state), place: s.state }].find((l) => l.href.startsWith("/when-does-iphone-duo-restock/")) : undefined;
+  // The restock-hour page of this store's city (two-plus stores) or region (with a page of its own), every country.
+  const rtLink = [{ href: restockTimesPath(s.state, s.city, cc), place: s.city }, { href: restockTimesPath(s.state, undefined, cc), place: s.state }].find((l) => /^(\/[a-z]{2})?\/when-does-iphone-duo-restock\//.test(l.href));
   const soleInState = us && isOneStoreState(s.state);
   const soleInCountry = !us && all.length === 1;
   const sole = soleRegion(s);
@@ -173,8 +183,7 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
     ? (!tax ? "" : tax.combined === 0 ? `No sales tax in ${s.state}: the 256GB iPhone Duo is $1,999 at the counter.` : `256GB iPhone Duo here: about $${duoTaxed!.total.toLocaleString("en-US")} after ${s.state}'s ${tax.combined}% average sales tax.`)
     : P.taxSentence(cc, cc === "ca" ? s.state : undefined);
   const [photo1, photo2] = storePhotos(s);
-  const facts = lang === "en" ? emptyFacts(cc) : { ...emptyFacts(cc), lang };
-  const street = (s.street ?? "").trim();
+  const facts = lang === "en" ? emptyFacts(cc, d.tz) : { ...emptyFacts(cc, d.tz), lang };
   const storeWord = S.storeWord(N.store(s));
   const backups = d.nearby.slice(0, 2);
   const help = us ? pickupHelp(cc) : P.sources(cc as Exclude<typeof cc, "us">).pickupHelp;
@@ -207,8 +216,9 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
     : [{ href: prefixOf(cc), label: N.countryShort() }, ...(index?.indexable ? [{ href: storesIndexPath(cc), label: G.appleStores }] : []), ...(hasStatePage(s.state, cc) ? [{ href: statePath(s.state, cc), label: sRegion }] : []), ...(alone || !placeTarget(cc, stateSlug(s.state), citySlug(s.city))?.indexable ? [] : [{ href: cityPath(s.state, s.city, cc), label: sCity }]), { label: place }];
   const restocksAll = `${restocksPath(cc)}?model=all&state=${stateSlug(s.state)}`;
   const regionWord = us ? "state" : (c.regionNoun ?? "area");
-  // The restock pattern in the first paragraph: the sentence answer engines lift for "when does this store restock".
-  const peak = peakOf(d.stats, lang);
+  // All three models' 14-day pattern, one line under the Duo-only clock.
+  const peakAll = peakOf(d.stats, lang);
+  const W = t().modules.wireNow;
   return (
     <div className="mx-auto max-w-6xl px-4 pt-8">
       <JsonLd data={storeJsonLd(s, week, lang)} />
@@ -216,8 +226,7 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
       <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <h1 className="display text-3xl sm:text-5xl">{title}</h1>
-          <p className="mt-3 max-w-3xl text-lg leading-relaxed text-ink-2">{S.intro({ place, street, duo: d.stockNow.duo, duoOf: d.configs.duo, pro: d.stockNow["18-pro"], proOf: d.configs["18-pro"], pm: d.stockNow["18-pro-max"], pmOf: d.configs["18-pro-max"], peak: peak ? peak.hour : null })}</p>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-3">{peak && <span>{S.restocks30(peak.total)}</span>}<span>{today.label}</span>{taxLine && <span>{taxLine}</span>}</div>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink-3"><span>{today.label}</span>{taxLine && <span>{taxLine}</span>}</div>
           <div className="mt-3"><StoreInfo store={s} showMapLink={false} /></div>
           {d.lookupOff && <p className="mt-2 text-sm font-medium text-warn">{S.lookupOff}</p>}
           <p className="mt-2 text-sm text-ink-3">{S.checked} <LiveChecked iso={d.summary?.lastCheckedAt ?? null} stores={[s.storeNumber]} /> · {G.checkNote}</p>
@@ -228,23 +237,25 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
         </div>
       </div>
 
-      {/* RestockWire order: live wire → this store's pattern → stock tables → alert → hours & guide. */}
-      <div className="mt-6"><Last24Hours data={d.recent} label={G.atPlace(place)} stores={[s]} country={cc} stock={d.stock} lastBefore={d.lastDuoRestock} alert={alert} /></div>
+      {/* RestockWire order: the bulletin → live wire → this store's pattern → stock tables → alert → hours & guide. */}
+      <div className="mt-5"><WireNow d={d.now} label={G.atPlace(place)} name={place} one stores={[s]} country={cc} restockTimesHref={rtLink?.href ?? null} alertHref={alert} /></div>
+      <div className="mt-6"><Last24Hours data={d.recent} label={G.atPlace(place)} stores={[s]} country={cc} stock={d.stock} lastBefore={d.lastDuoRestock} alert={alert} compact /></div>
       <section className="mt-6 min-w-0">
         <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">{S.history}</h2><Link href={restocksAll} className="text-sm text-ink-3 hover:text-ink">{G.allOfArrow(sRegion)}</Link></div>
         <RestockFeed rows={d.feed.slice(0, 8)} showModel emptyText={S.historyEmpty} />
       </section>
       <div className="mt-6"><ModelPlaceCards place={storePlace(s)} stockNow={d.stockNow} of={Object.fromEntries(MODELS.map((m) => [m.key, catalogFor(m.key, cc).length])) as Record<ModelKey, number>} unit={S.configsInStock} /></div>
-      <div className="mt-3"><PlaceStatStrip stores={1} stockNow={d.stockNow} stats={d.pstats} storeMode /></div>
+      <div className="mt-3"><PlaceStatStrip stores={1} stockNow={d.stockNow} stats={d.duoStats} storeMode model="duo" scoped="Duo" /></div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-6">
           <RestockHeatmap data={d.heat} label={G.here} stores={[s]} />
           <RestockStreak data={d.streak} label={G.here} />
           <section className="pane p-5">
-            <h2 className="text-xl font-semibold">{S.whenRestock(N.store(s))}</h2>
-            <div className="mt-3"><RestockClock stats={d.stats} label={G.here} reports={d.reports} /></div>
-            {rtLink && <p className="mt-3 text-sm"><Link href={rtLink.href} className="font-medium text-ink underline-offset-2 hover:underline">{rtLink.place}: the hours the iPhone Duo comes back, store by store →</Link></p>}
+            <h2 className="text-xl font-semibold">{S.whenDuoRestocks(N.store(s))}</h2>
+            <div className="mt-3"><RestockClock stats={d.duoClock} label={G.here} reports={d.duoReports} /></div>
+            <p className="mt-2 text-xs text-ink-3">{W.allModels({ n: d.pstats.month, days: d.pstats.days, peak: peakAll ? peakAll.hour : null })}</p>
+            {rtLink && <p className="mt-3 text-sm"><Link href={rtLink.href} className="font-medium text-ink underline-offset-2 hover:underline">{us ? `${rtLink.place}: the hours the iPhone Duo comes back, store by store →` : W.hourByHour}</Link></p>}
           </section>
           <section className="pane p-5">
             <h2 className="text-xl font-semibold">{S.howFast(N.store(s))}</h2>
@@ -252,7 +263,7 @@ export async function StorePage({ country: c, params: p }: { country: Country; p
           </section>
           <section className="pane p-5">
             <h2 className="text-xl font-semibold">{G.lastDays(d.pstats.days)}</h2>
-            <div className="mt-3"><DailyBars stats={d.pstats} label={G.here} /></div>
+            <div className="mt-3"><DailyBars stats={d.duoStats} label={G.here} /></div>
           </section>
           <section className="pane p-5">
             <h2 className="text-xl font-semibold">{G.restocksBy}</h2>

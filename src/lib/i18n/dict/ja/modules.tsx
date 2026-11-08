@@ -12,6 +12,8 @@ const N = (n: number) => num("ja", n);
 const dayWord = (day: string) => (day.length === 1 ? `${day}曜日` : day);
 const CHECK = "全店舗15秒ごと・通知設定店舗は5秒ごと";
 
+/** The WireNow bulletin groups its counts ("3 891"). */
+const WN = (v: number) => v.toLocaleString("ja-JP");
 export const modules: Dict["modules"] = {
   daily: {
     empty: (label: string, days: number) => `${label}のグラフはまだ空です。過去${N(days)}日間、入荷も完売もありません。最初の1件で最初のバーが立ちます。`,
@@ -196,5 +198,45 @@ export const modules: Dict["modules"] = {
     more: (n: number) => `+${N(n)}`,
     seen: (ago: ReactNode) => <>{ago}に在庫</>,
     loading: "在庫を取得しています",
+  },
+  /** WireNow：地域・都市・店舗・国・Duo機種ページの冒頭に置く速報。`label` は場所の名詞句（「東京」「Apple 銀座」）。数値はすべて過去14日間。 */
+  wireNow: {
+    eyebrow: (label: string) => `速報 · ${label}のiPhone Duo`,
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>直近の掲載：<b className="text-ink">{o.config}</b>{o.store != null && <>（{o.store}）</>}、{o.when}{o.up ? <> · {o.up}</> : null}。</>,
+    neverYet: (label: string, days: number) => `${label}では過去${WN(days)}日間、iPhone Duoの掲載を確認していません。`,
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">いま{WN(o.n)}店舗中{WN(o.k)}店舗に掲載</b>（{o.label}、{o.stamp}時点）：{o.list}。</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">いま掲載中：{o.total}構成中{o.k}構成</b>（{o.name}、{o.stamp}時点）：{o.list}。</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">{o.stamp}時点で掲載なし</b>：{o.label}の{WN(o.n)}店舗のどこにもiPhone Duoの店頭受け取りはありません。</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">{o.stamp}時点で掲載なし</b>：{o.name}にはiPhone Duoの構成がひとつも掲載されていません。</>,
+    storeItem: (store: ReactNode, configs: number) => <>{store}（{configs}構成）</>,
+    configItem: (config: string) => config,
+    others: (o: { pro: number; max: number; one: boolean; configs: number }) => (o.one ? `iPhone 18 Proは${o.configs}構成中${o.pro}構成、18 Pro Maxは${o.max}構成。` : `iPhone 18 Proは${o.pro}店舗、18 Pro Maxは${o.max}店舗に掲載。`),
+    tRestocks: (days: number) => `過去${WN(days)}日のDuo入荷`,
+    tGone60: "計測した掲載のうち1分以内に消えた割合",
+    tLongest: "今週いちばん長く残った掲載",
+    tWindow: (range: string) => `入荷が${range}に集中した割合`,
+    tToday: "きょうの入荷（ここまで）",
+    tStores: (n: number) => `${WN(n)}店舗中、期間内に入荷があった店舗`,
+    wireTime: (stamp: string) => `速報時刻 ${stamp}`,
+    reads: (note: string) => `読み取り：${note}`,
+    window: (days: number) => `${WN(days)}日間の集計`,
+    method: "入荷は2回の読み取りが一致したときだけ数え、店舗の初回確認は含めません",
+    zone: () => "店舗の現地時間",
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }) =>
+      `${o.label}でiPhone Duoが戻ってくるのは${o.range}（${o.zone}）。過去${WN(o.days)}日にRestockWireが${o.one ? "この店舗" : `${WN(o.stores)}店舗`}で記録した入荷${WN(o.n)}回のうち${o.pct}がこの時間帯でした。ピークは${o.busiest}の${WN(o.busiestN)}回。${o.config ? `最多は${o.config}（${WN(o.k)}／${WN(o.n)}回）。` : ""}${o.median ? `掲載の中央値は${o.median}で消えています。` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }) => `過去${WN(o.days)}日に${o.one ? o.label : `${o.label}の${WN(o.stores)}店舗`}で記録したiPhone Duoの入荷は${WN(o.n)}回。いつもの時間帯を言うにはまだ足りないので、1件ずつ下に並べています。`,
+    hourByHour: "全店舗・時間帯別 →",
+    lastThree: (n: number, label: string) => (n === 1 ? `${label}の直近のDuo掲載` : `${label}の直近${WN(n)}回のDuo掲載`),
+    secs: (n: number) => `${WN(n)}秒`,
+    mins: (n: number) => `${WN(n)}分`,
+    upRange: (low: string, high: string) => `掲載${low}〜${high}`,
+    upAbout: (x: string) => `掲載約${x}`,
+    stillUp: (x: string) => `掲載中（${x}）`,
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }) => (o.one
+      ? `過去${WN(o.days)}日間に${o.label}のDuo入荷で送った通知は${WN(o.sent)}件。`
+      : `過去${WN(o.days)}日間に${o.label}の${WN(o.total)}店舗中${WN(o.stores)}店舗のDuo入荷で送った通知は${WN(o.sent)}件。`),
+    alertMe: (name: string) => `${name}を5秒ごとの見張りに入れる`,
+    unknown: "傾向の数値を今回は読み取れませんでした。上の掲載状況は最新です。",
+    allModels: (o: { n: number; days: number; peak: string | null }) => `3機種合計：${WN(o.days)}日間で入荷${WN(o.n)}回${o.peak ? `、ピークは${o.peak}` : ""}。`,
   },
 };

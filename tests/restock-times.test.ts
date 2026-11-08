@@ -162,6 +162,7 @@ describe("one place's restock times (a state or a city)", async () => {
     expect(restockTimesPath("Delaware")).toBe(storePath(delaware));
     const oneStoreCity = STORES.find((s) => STORES.filter((x) => x.state === s.state && x.city === s.city).length === 1)!;
     expect(restockTimesPath(oneStoreCity.state, oneStoreCity.city)).toBe(storePath(oneStoreCity));
-    expect(restockTimesPath("Ontario", undefined, "ca")).toBe("/ca/when-does-iphone-duo-restock");
+    // Other countries (2026-11-08): their own region and city pages, by the store-tree rules (restockPlaces.ts).
+    expect(restockTimesPath("Ontario", undefined, "ca")).toBe("/ca/when-does-iphone-duo-restock/ontario");
   });
 });

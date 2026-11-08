@@ -249,10 +249,13 @@ export const content = {
     configsInStock: "configs listed",
     storesWithStock: f({ one: "store listing stock", other: "stores listing stock" }),
     restocks24h: "Restocks, 24 h",
+    /** A tile that counts one model only: "Duo · Restocks, 24 h". */
+    scoped: (label: string, model: string) => `${model} · ${label}`,
     /** "9 in 7 d · 31 in 30 d" (d = days). */
     restocksHint: (week: string, month: string, days: string) => `${week} in 7 d · ${month} in ${days} d`,
     sellOuts: (days: string) => `Sell-outs ${days} d`,
-    stays: (duration: string) => `stays ~${duration}`,
+    /** "stays ~3 min"; "under a minute" takes no tilde. */
+    stays: (duration: string) => (/^under\b/.test(duration) ? `stays ${duration}` : `stays ~${duration}`),
     noPairs: "no sell-outs paired yet",
     lastRestock: "Newest restock",
     noneYet: "none so far",

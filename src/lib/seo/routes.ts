@@ -4,6 +4,7 @@ import { nativeLocale, pathInLocale } from "@/lib/i18n/locales";
 import { productBySlug, productFor, productPath, resolvePlace } from "./products";
 import { treeOf } from "./tree";
 import { blogRouteCheck } from "@/lib/blog/routes";
+import { restockPlaceTarget } from "@/lib/content/restockPlaces";
 
 /**
  * First path segments that are not another country: the app's own top-level routes, metadata routes without an
@@ -168,5 +169,12 @@ function countryRouteCheck(cc: CountryCode, rest: string[], search: string): { n
   if ((head === "restock-log" || head === "live-map" || COUNTRY_QUESTION_PAGES.has(head) || COUNTRY_INSIGHT_PAGES.has(head)) && tail.length === 0) return null;
   // The pages decide the rest themselves (a week without an edition, a pair that does not exist, a country without a ranking: 404).
   if (COUNTRY_INSIGHT_TREES.has(head) && tail.length <= 1) return null;
+  // /{cc}/when-does-iphone-duo-restock/{region}[/{city}]: the store-tree rules (restockPlaces.ts), so a wrong slug is a real
+  // 404 and a place without a page of its own a real 308 (to its store, its city's page or the country's page).
+  if (head === "when-does-iphone-duo-restock" && (tail.length === 1 || tail.length === 2)) {
+    const r = restockPlaceTarget(cc, tail[0], tail[1]);
+    if (!r) return { notFound: true };
+    return "page" in r ? null : { redirect: r.redirect + search };
+  }
   return { notFound: true };
 }

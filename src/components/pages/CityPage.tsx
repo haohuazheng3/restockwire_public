@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 import { PendingLink as Link } from "@/components/ui/PendingLink";
 import { cache } from "react";
 import { notFound, permanentRedirect } from "next/navigation";
-import { hasStatePage, storesOf, MODELS, DEFAULT_MODEL, citiesWithStores, cityBySlug, stateSlug, storePath, statePath, cityPath, storeTimeZone, STATE_CODES, placeTarget, storesIndexPath, mapPath, restocksPath, type ModelKey } from "@/lib/apple/catalog";
+import { partNumbersFor, catalogFor, hasStatePage, storesOf, MODELS, DEFAULT_MODEL, citiesWithStores, cityBySlug, stateSlug, storePath, statePath, cityPath, storeTimeZone, STATE_CODES, placeTarget, storesIndexPath, mapPath, restocksPath, type ModelKey } from "@/lib/apple/catalog";
 import { prefixOf, type Country } from "@/lib/apple/countries";
 import { nearbyCities, neighborStates, cityRef, cityLabel } from "@/lib/seo/links";
 import { nearbyCitiesIn, cityRefs as intlCityRefs } from "@/lib/seo/countryLinks";
@@ -30,6 +30,8 @@ import { StoreInfo } from "@/components/stores/StoreInfo";
 import { RestockFeed } from "@/components/restocks/RestockFeed";
 import { RestockClock } from "@/components/restocks/RestockClock";
 import { restockTimesPath } from "@/lib/content/restockTimes";
+import { alertsSentAt, wireNowFrom } from "@/lib/content/wireNow";
+import { WireNow } from "@/components/restocks/WireNow";
 import { SellOutTimes } from "@/components/restocks/SellOutTimes";
 import { sellouts } from "@/lib/stock/sellouts";
 import { DailyBars } from "@/components/restocks/DailyBars";
@@ -40,10 +42,9 @@ import { RestockHeatmap } from "@/components/restocks/RestockHeatmap";
 import { SellOutRanking } from "@/components/restocks/SellOutRanking";
 import { RestockLeaderboard } from "@/components/restocks/RestockLeaderboard";
 import { restockHeatmap, selloutRanking, restockLeaderboard } from "@/lib/content/wire";
-import { placeTitle, placeDescription, placeIntro, placeSections, taxFaq, type PlaceCopyInput } from "@/lib/seo/placeCopy";
+import { placeTitle, placeDescription, placeSections, taxFaq, type PlaceCopyInput } from "@/lib/seo/placeCopy";
 import { type IntlPlaceInput } from "@/lib/seo/countryCopy";
 import { KeywordSections } from "@/components/content/KeywordSections";
-import { Inline } from "@/components/content/Inline";
 import { Figure } from "@/components/content/Figure";
 import { SourceList } from "@/components/content/RichFaq";
 import { emptyFacts } from "@/lib/content/facts";
@@ -77,7 +78,7 @@ const load = cache(async (cc: Country["cc"], state: string, city: string) => {
   const extra = [...new Set([...near, ...outside, ...(thin ? [...nearestOutsideState(stores[0], 4), ...nearestInState(stores[0], 3)] : [])].map((x) => x.storeNumber))];
   // The leaderboard is state-scoped: the city's stores against the rest of its state.
   const stateNumbers = storesOf(cc).filter((x) => x.state === c.state).map((x) => x.storeNumber);
-  const [stock, feed, stats, pstats, full, duoStats, maxStats, reports, sell, recent, heat, ranking, leaders] = await Promise.all([
+  const [stock, feed, stats, pstats, full, duoStats, maxStats, reports, sell, recent, heat, ranking, leaders, duoClock, duoReports, duoSell, alerts] = await Promise.all([
     storesStock([...numbers, ...extra]),
     restockFeed({ state: c.state, city: c.name, limit: 12, country: cc }),
     restockStats(numbers, tz, STATS_DAYS),
@@ -91,12 +92,18 @@ const load = cache(async (cc: Country["cc"], state: string, city: string) => {
     restockHeatmap({ storeNumbers: numbers, country: cc, model: "duo" }),
     selloutRanking({ storeNumbers: numbers, country: cc, model: "duo" }),
     restockLeaderboard({ storeNumbers: stateNumbers, country: cc, model: "duo" }),
+    // iPhone Duo only for the bulletin, the clock and the tiles (RegionPage says why).
+    restockStats(numbers, tz, STATS_DAYS, "duo"),
+    restockReportStats(numbers, tz, STATS_DAYS, "duo"),
+    sellouts({ storeNumbers: numbers, parts: partNumbersFor("duo", [], [], cc), country: cc }),
+    alertsSentAt(numbers),
   ]);
+  const now = wireNowFrom({ stores, stock, clock: duoClock, stats: duoStats, sell: duoSell, alerts, configsTotal: catalogFor("duo", cc).length });
   const stockNow = Object.fromEntries(MODELS.map((m) => [m.key, stores.filter((x) => (stock.get(x.storeNumber)?.perModel[m.key].available ?? 0) > 0).length])) as Record<ModelKey, number>;
   const duoStores = stores.filter((x) => (stock.get(x.storeNumber)?.perModel[DEFAULT_MODEL].available ?? 0) > 0);
   const copy: PlaceCopyInput = { kind: "city", name: c.name, state: c.state, stateSlug: c.stateSlug, citySlug: c.slug, stores, stockNow, stock, duo: duoStats, max: maxStats };
   const intl: IntlPlaceInput | null = cc === "us" ? null : { cc, kind: "city", name: c.name, region: c.state, regionSlug: c.stateSlug, citySlug: c.slug, stores, stockNow, stock, duo: duoStats, max: maxStats };
-  return { c, stores, numbers, tz, thin, near, outside, stock, feed, stats, pstats, full, stockNow, duoStores, copy, intl, reports, sell, recent, heat, ranking, leaders };
+  return { c, stores, numbers, tz, thin, near, outside, stock, feed, stats, pstats, full, stockNow, duoStores, copy, intl, reports, sell, recent, heat, ranking, leaders, duoClock, duoReports, now };
 });
 
 export async function cityMetadata(country: Country, p: { state: string; city: string }, loc: Locale = englishLocale(country.cc)): Promise<Metadata> {
@@ -145,9 +152,11 @@ export async function CityPage({ country, params: p }: { country: Country; param
   const place = us ? `${c.name}, ${code}` : P.placeLabel(cc, cname);
   const alert = alertHref({ model: DEFAULT_MODEL, state: c.stateSlug, city: c.slug, country: cc });
   const tq = us ? taxFaq(d.copy) : P.taxFaq(cc, cname, cc === "ca" ? c.state : undefined);
-  const questions = faq({ kind: "city", place: cname, stores, stockNow: d.stockNow, duoStores: d.duoStores, stats: d.pstats, peak: peakOf(d.stats, lang), nearest: d.near, omit: ["lasts"] }, lang);
+  const questions = faq({ kind: "city", place: cname, stores, stockNow: d.stockNow, duoStores: d.duoStores, stats: d.pstats, peak: peakOf(d.duoClock, lang), nearest: d.near, omit: ["lasts"] }, lang);
+  const peakAll = peakOf(d.stats, lang);
+  const W = t().modules.wireNow;
   if (tq) questions.splice(2, 0, tq);
-  const facts = lang === "en" ? emptyFacts(cc) : { ...emptyFacts(cc), lang };
+  const facts = lang === "en" ? emptyFacts(cc, d.tz) : { ...emptyFacts(cc, d.tz), lang };
   const [photo1, photo2] = us ? placePhotos(`${c.name}, ${c.state}`) : [INTL_PLACE_PHOTOS[`${cc}:${c.name}, ${c.state}`] ?? INTL_PLACE_PHOTOS[`${cc}:${c.state}`] ?? INTL_PLACE_PHOTOS[cc] ?? "phone-map", "apple-store-pickup-counter"];
   const index = placeTarget(cc);
   const crumbs: Crumb[] = us
@@ -162,8 +171,7 @@ export async function CityPage({ country, params: p }: { country: Country; param
       <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
           <h1 className="display text-3xl sm:text-5xl">{title}</h1>
-          <p className="mt-3 max-w-3xl text-lg leading-relaxed text-ink-2"><Inline text={d.intl ? P.placeIntro(d.intl) : placeIntro(d.copy)} facts={facts} /></p>
-          <p className="mt-1 text-sm text-ink-3">{CT.counts(stores.length)}</p>
+          <p className="mt-2 text-sm text-ink-3">{CT.counts(stores.length)}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link href={`${mapPath(cc)}?stores=${d.numbers.join(",")}&model=${DEFAULT_MODEL}`} className="btn btn-ghost btn-sm">{G.showOnMap}</Link>
@@ -171,7 +179,9 @@ export async function CityPage({ country, params: p }: { country: Country; param
         </div>
       </div>
 
-      <div className="mt-6"><Last24Hours data={d.recent} label={G.inPlace(cname)} stores={stores} country={cc} stock={d.stock} lastBefore={d.copy.duo.lastRestock} alert={alert} /></div>
+      {/* The bulletin first (lib/content/wireNow.ts). */}
+      <div className="mt-5"><WireNow d={d.now} label={G.inPlace(cname)} name={cname} stores={stores} country={cc} restockTimesHref={!d.thin ? restockTimesPath(c.state, c.name, cc) : null} alertHref={alert} /></div>
+      <div className="mt-6"><Last24Hours data={d.recent} label={G.inPlace(cname)} stores={stores} country={cc} stock={d.stock} lastBefore={d.copy.duo.lastRestock} alert={alert} compact /></div>
       <section className="mt-6 min-w-0">
         <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">{G.latestIn(cname)}</h2><Link href={restocksRegion} className="text-sm text-ink-3 hover:text-ink">{G.allOfArrow(rname)}</Link></div>
         <RestockFeed rows={d.feed.slice(0, 8)} showModel emptyText={G.noneIn(cname)} />
@@ -183,9 +193,10 @@ export async function CityPage({ country, params: p }: { country: Country; param
         <RestockHeatmap data={d.heat} label={G.inPlace(cname)} stores={stores} />
         <SellOutRanking data={d.ranking} label={G.inPlace(cname)} storesTotal={stores.length} />
         <section className="pane p-5">
-          <h2 className="text-xl font-semibold">{G.whenRestock(cname)}</h2>
-          <div className="mt-3"><RestockClock stats={d.stats} label={G.inPlace(cname)} reports={d.reports} /></div>
-          {us && !d.thin && <p className="mt-3 text-sm"><Link href={restockTimesPath(c.state, c.name)} className="font-medium text-ink underline-offset-2 hover:underline">{c.name}: the hours the iPhone Duo comes back, store by store →</Link></p>}
+          <h2 className="text-xl font-semibold">{G.whenDuoRestocks(cname)}</h2>
+          <div className="mt-3"><RestockClock stats={d.duoClock} label={G.inPlace(cname)} reports={d.duoReports} /></div>
+          <p className="mt-2 text-xs text-ink-3">{W.allModels({ n: d.pstats.month, days: d.pstats.days, peak: peakAll ? peakAll.hour : null })}</p>
+          {!d.thin && <p className="mt-3 text-sm"><Link href={restockTimesPath(c.state, c.name, cc)} className="font-medium text-ink underline-offset-2 hover:underline">{us ? `${c.name}: the hours the iPhone Duo comes back, store by store →` : W.hourByHour}</Link></p>}
         </section>
         <section className="pane p-5">
           <h2 className="text-xl font-semibold">{G.howFast(cname)}</h2>
@@ -193,7 +204,7 @@ export async function CityPage({ country, params: p }: { country: Country; param
         </section>
         <section className="pane p-5">
           <h2 className="text-xl font-semibold">{G.lastDays(d.pstats.days)}</h2>
-          <div className="mt-3"><DailyBars stats={d.pstats} label={G.inPlace(cname)} /></div>
+          <div className="mt-3"><DailyBars stats={d.copy.duo} label={G.inPlace(cname)} /></div>
         </section>
         <section className="pane p-5">
           <h2 className="text-xl font-semibold">{G.restocksBy}</h2>
@@ -202,7 +213,7 @@ export async function CityPage({ country, params: p }: { country: Country; param
       </div>
 
       <div className="mt-6"><ModelPlaceCards place={(us ? cityPlace(c.state, c.name) : treeOf(cc).cityPlace(c.state, c.name)) ?? storePlace(stores[0])} stockNow={d.stockNow} of={stores.length} unit={G.storesWithIt} /></div>
-      <div className="mt-3"><PlaceStatStrip stores={stores.length} stockNow={d.stockNow} stats={d.pstats} /></div>
+      <div className="mt-3"><PlaceStatStrip stores={stores.length} stockNow={d.stockNow} stats={d.copy.duo} model="duo" scoped="Duo" /></div>
 
       {d.thin ? (
         <div className="mt-8"><StoreBlock store={stores[0]} summary={d.stock.get(stores[0].storeNumber)} rows={d.full.get(stores[0].storeNumber) ?? []} stock={d.stock} /></div>

@@ -13,6 +13,8 @@ const RESTOCKS_G = forms({ one: "عودة توفر واحدة", two: "عودتي
 const SOLD_RESTOCKS = forms({ one: "عودة توفر واحدة نفدت", two: "عودتي توفر نفدتا", few: "# عودات توفر نفدت", many: "# عودةً للتوفر نفدت", other: "# عودة توفر نفدت" });
 const d = (n: number) => count(n, DAYS);
 
+/** The WireNow bulletin groups its counts ("3 891"). */
+const WN = (v: number) => v.toLocaleString("ar-AE-u-nu-latn");
 export const modules: Dict["modules"] = {
   daily: {
     empty: (label: string, days: number) => `لا شيء يُرسم ${label} بعد: لا عودة توفر ولا نفاد في آخر ${d(days)}. أول حالة ترسم أول عمود.`,
@@ -197,5 +199,45 @@ export const modules: Dict["modules"] = {
     more: (n: number) => `+${N(n)}`,
     seen: (ago: ReactNode) => <>عُرض {ago}</>,
     loading: "نقرأ المخزون…",
+  },
+  /** WireNow: النشرة التي تفتتح صفحات المنطقة والمدينة والمتجر والبلد وiPhone Duo. يصل `label` مع حرف الجر («في دبي»، «في Apple Dubai Mall»)؛ كل الأرقام لآخر 14 يومًا. */
+  wireNow: {
+    eyebrow: (label: string) => `على الخط · iPhone Duo ${label}`,
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>آخر إدراج: <b className="text-ink">{o.config}</b>{o.store != null && <> في {o.store}</>}، {o.when}{o.up ? <> · {o.up}</> : null}.</>,
+    neverYet: (label: string, days: number) => `لم يُدرج أي iPhone Duo ${label} خلال آخر ${WN(days)} يومًا.`,
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">مُدرج الآن في {WN(o.k)} من {WN(o.n)} متجرًا</b> {o.label} (قراءة {o.stamp}): {o.list}.</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">مُدرج الآن: {o.k} من {o.total} خيارات</b> في {o.name} (قراءة {o.stamp}): {o.list}.</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">لا شيء مُدرج حتى {o.stamp}</b>: لا يعرض أي من متاجر Apple الـ{WN(o.n)} {o.label} هاتف iPhone Duo للاستلام.</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">لا شيء مُدرج حتى {o.stamp}</b>: لا يعرض {o.name} أي خيار من iPhone Duo للاستلام.</>,
+    storeItem: (store: ReactNode, configs: number) => <>{store} ({configs} خيارات)</>,
+    configItem: (config: string) => config,
+    others: (o: { pro: number; max: number; one: boolean; configs: number }) => (o.one ? `iPhone 18 Pro: ${o.pro} من ${o.configs} خيارًا هنا؛ 18 Pro Max: ${o.max}.` : `iPhone 18 Pro في ${o.pro} منها، و18 Pro Max في ${o.max}.`),
+    tRestocks: (days: number) => `عودات Duo، آخر ${WN(days)} يومًا`,
+    tGone60: "من الإدراجات المقيسة نفدت خلال دقيقة",
+    tLongest: "أطول إدراج هذا الأسبوع",
+    tWindow: (range: string) => `من العودات وقعت ${range}`,
+    tToday: "عودات اليوم حتى الآن",
+    tStores: (n: number) => `من ${WN(n)} متجرًا شهدت عودة خلال الفترة`,
+    wireTime: (stamp: string) => `وقت الخط ${stamp}`,
+    reads: (note: string) => `قراءة ${note}`,
+    window: (days: number) => `نافذة ${WN(days)} يومًا`,
+    method: "لا تُحتسب العودة إلا بقراءتين متطابقتين؛ وأول رصد لمتجر لا يُحتسب أبدًا",
+    zone: () => "بتوقيت المتجر",
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }) =>
+      `${o.range} ${o.zone}: هذا هو وقت عودة iPhone Duo ${o.label}. حازت هذه الفترة ${o.pct} من العودات الـ${WN(o.n)} التي سجّلها RestockWire ${o.one ? "هنا" : `في متاجر Apple الـ${WN(o.stores)} ${o.label}`} خلال آخر ${WN(o.days)} يومًا. ساعة الذروة ${o.busiest} بـ${WN(o.busiestN)} عودة.${o.config ? ` تصدّر ${o.config} السجل (${WN(o.k)} من ${WN(o.n)}).` : ""}${o.median ? ` الإدراج الوسيط: نفد خلال ${o.median}.` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }) => `${WN(o.n)} عودة لـiPhone Duo ${o.one ? o.label : `في متاجر Apple الـ${WN(o.stores)} ${o.label}`} خلال آخر ${WN(o.days)} يومًا: أقل من أن تحدد ساعة معتادة. كل واحدة مدرجة أدناه.`,
+    hourByHour: "كل ساعة، كل متجر →",
+    lastThree: (n: number, label: string) => (n === 1 ? `آخر إدراج لـDuo ${label}` : `آخر ${WN(n)} إدراجات لـDuo ${label}`),
+    secs: (n: number) => `${WN(n)} ث`,
+    mins: (n: number) => `${WN(n)} د`,
+    upRange: (low: string, high: string) => `مُدرج ${low}–${high}`,
+    upAbout: (x: string) => `مُدرج نحو ${x}`,
+    stillUp: (x: string) => `لا يزال مُدرجًا (${x})`,
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }) => (o.one
+      ? `أُرسل ${WN(o.sent)} تنبيهًا لعودات Duo ${o.label} خلال آخر ${WN(o.days)} أيام.`
+      : `أُرسل ${WN(o.sent)} تنبيهًا لعودات Duo في ${WN(o.stores)} من ${WN(o.total)} متجرًا ${o.label} خلال آخر ${WN(o.days)} أيام.`),
+    alertMe: (name: string) => `ضع ${name} على خط الـ5 ثوانٍ`,
+    unknown: "تعذّر قراءة أرقام النمط هذه المرة؛ حالة الإدراج أعلاه مباشرة.",
+    allModels: (o: { n: number; days: number; peak: string | null }) => `الهواتف الثلاثة معًا: ${WN(o.n)} عودة خلال ${WN(o.days)} يومًا${o.peak ? `، والذروة ${o.peak}` : ""}.`,
   },
 };

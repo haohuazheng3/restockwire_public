@@ -72,3 +72,30 @@ describe("the state and city restock-times pages (/when-does-iphone-duo-restock/
     expect(publicRouteCheck(`/when-does-iphone-duo-restock/${state}/${city}`)).toEqual({ redirect: storePath(store) });
   });
 });
+
+describe("other countries' region and city restock-hour pages (/{cc}/when-does-iphone-duo-restock/{region}[/{city}])", () => {
+  it("lets the place pages through, in English and in the native versions", () => {
+    expect(publicRouteCheck("/uk/when-does-iphone-duo-restock/greater-london")).toBeNull();
+    expect(publicRouteCheck("/uk/when-does-iphone-duo-restock/greater-london/london")).toBeNull();
+    expect(publicRouteCheck("/ca/when-does-iphone-duo-restock/ontario/toronto")).toBeNull();
+    expect(publicRouteCheck("/jp/when-does-iphone-duo-restock/tokyo/tokyo")).toBeNull();
+    expect(publicRouteCheck("/ja-jp/when-does-iphone-duo-restock/tokyo/tokyo")).toBeNull();
+    expect(publicRouteCheck("/fr-ca/when-does-iphone-duo-restock/ontario")).toBeNull();
+    expect(publicRouteCheck("/de-de/when-does-iphone-duo-restock/bavaria/munich")).toBeNull();
+  });
+  it("308s a place without a page of its own, kept in its language version", () => {
+    // Tokyo prefecture is one city: its city's page. Glasgow's region likewise.
+    expect(publicRouteCheck("/jp/when-does-iphone-duo-restock/tokyo")).toEqual({ redirect: "/jp/when-does-iphone-duo-restock/tokyo/tokyo" });
+    expect(publicRouteCheck("/ja-jp/when-does-iphone-duo-restock/tokyo")).toEqual({ redirect: "/ja-jp/when-does-iphone-duo-restock/tokyo/tokyo" });
+    expect(publicRouteCheck("/uk/when-does-iphone-duo-restock/glasgow", "?x=1")).toEqual({ redirect: "/uk/when-does-iphone-duo-restock/glasgow/glasgow?x=1" });
+    // Singapore and Hong Kong: the region is the country, so the country's page.
+    expect(publicRouteCheck("/sg/when-does-iphone-duo-restock/singapore")).toEqual({ redirect: "/sg/when-does-iphone-duo-restock" });
+    expect(publicRouteCheck("/sg/when-does-iphone-duo-restock/singapore/singapore")).toEqual({ redirect: "/sg/when-does-iphone-duo-restock" });
+  });
+  it("answers 404 for a wrong region, city or an extra segment", () => {
+    expect(publicRouteCheck("/uk/when-does-iphone-duo-restock/atlantis")).toEqual({ notFound: true });
+    expect(publicRouteCheck("/uk/when-does-iphone-duo-restock/greater-london/nowhere")).toEqual({ notFound: true });
+    expect(publicRouteCheck("/uk/when-does-iphone-duo-restock/greater-london/london/extra")).toEqual({ notFound: true });
+    expect(publicRouteCheck("/ja-jp/when-does-iphone-duo-restock/atlantis")).toEqual({ notFound: true });
+  });
+});

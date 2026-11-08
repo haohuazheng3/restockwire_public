@@ -19,7 +19,10 @@ import { childPlaces, configGrid, facetsFor, indexStock, lastChecked, nearestWit
 import { productJsonLdFor } from "@/lib/seo/productCopy";
 import { priceRange } from "@/lib/seo/countryCopy";
 import { alertHref, distText } from "@/lib/seo/enrich";
-import { modelStock, placeStats, restockFeed, restockStats, restockReportStats } from "@/lib/stock/queries";
+import { storesStock, modelStock, placeStats, restockFeed, restockStats, restockReportStats } from "@/lib/stock/queries";
+import { alertsSentAt, wireNowFrom } from "@/lib/content/wireNow";
+import { WireNow } from "@/components/restocks/WireNow";
+import { restockTimesPath } from "@/lib/content/restockTimes";
 import { Breadcrumbs, LinkRow, RelatedBlock } from "@/components/seo/Related";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { StatStrip, type Stat } from "@/components/seo/StatStrip";
@@ -68,7 +71,10 @@ const load = cache(async (cc: Country["cc"], slug: string, path: string) => {
   if (!place) return null;
   if ("redirect" in place) return { kind: "redirect" as const, to: productPath(product, { segments: place.redirect, country: product.country }) };
   const numbers = place.stores.map((s) => s.storeNumber);
-  const [duo, pro, max, stats, clock, feed, reports, sell, heat, leaders] = await Promise.all([
+  // The iPhone Duo model page of a place opens with the bulletin (lib/content/wireNow.ts): it needs the place's live
+  // stock per store and the alerts pushed; the clock, statistics and sell-outs are already the Duo's.
+  const duoPage = product.model === "duo" && product.kind === "model";
+  const [duo, pro, max, stats, clock, feed, reports, sell, heat, leaders, stock, alerts] = await Promise.all([
     modelStock("duo", cc),
     modelStock("18-pro", cc),
     modelStock("18-pro-max", cc),
@@ -80,7 +86,10 @@ const load = cache(async (cc: Country["cc"], slug: string, path: string) => {
     // National, whatever the place: the configuration's heatmap and the model's leaderboard across the country.
     restockHeatmap({ country: cc, parts: product.parts }),
     restockLeaderboard({ country: cc, model: product.model }),
+    duoPage ? storesStock(numbers) : Promise.resolve(new Map<string, never>()),
+    duoPage ? alertsSentAt(numbers) : Promise.resolve(null),
   ]);
+  const now = duoPage ? wireNowFrom({ stores: place.stores, stock, clock, stats, sell, alerts, configsTotal: product.parts.length }) : null;
   const ix = indexStock({ duo, "18-pro": pro, "18-pro-max": max });
   const lines = storeLines(ix, product, place.stores);
   const inStock = lines.filter((l) => l.available.length > 0).length;
@@ -88,7 +97,7 @@ const load = cache(async (cc: Country["cc"], slug: string, path: string) => {
   // place-level product page and every exact configuration is noindex, follow: the /apple-stores page of that place
   // is the single indexed page for the model in that place, which keeps near-duplicates out of the index.
   const indexable = isIndexedProductPage(product, place);
-  return { kind: "page" as const, product, place, ix, lines, inStock, stats, clock, feed, reports, indexable, sell, heat, leaders };
+  return { kind: "page" as const, product, place, ix, lines, inStock, stats, clock, feed, reports, indexable, sell, heat, leaders, now };
 });
 
 /** Another country's model page binds its own titles (the SEO plan §12). */
@@ -155,7 +164,7 @@ export async function ProductPage({ country: c, params: p }: { country: Country;
   const V = D.views.product;
   const C = D.views.common;
   const inLoc = (path: string) => (loc.native ? pathInLocale(path, loc) : path);
-  const { product, place, ix, lines, inStock, stats, clock, feed, reports, sell, heat, leaders } = d;
+  const { product, place, ix, lines, inStock, stats, clock, feed, reports, sell, heat, leaders, now } = d;
   const top = place.level === "country";
   const atStore = place.level === "store";
   const line = lines[0];
@@ -229,6 +238,11 @@ export async function ProductPage({ country: c, params: p }: { country: Country;
         <Link href={placePagePath(place)} className="btn btn-ghost btn-sm max-w-full truncate">{top ? (us ? "Every store" : V.allStoresIn(c)) : atStore ? V.everyIphoneHere : V.everyIphone(where)}</Link>
       </div>
       <AlertPanelFor href={placeAlert(product, place)} summary={V.panel(product.name, top ? (us ? null : inCountry) : where)} country={c.cc} />
+      {now && (
+        <div className="mt-5"><WireNow d={now} label={label} name={placeName(place, lang)} one={atStore} stores={place.stores} country={c.cc}
+          restockTimesHref={top ? `${prefixOf(c.cc)}/when-does-iphone-duo-restock` : atStore ? null : restockTimesPath(place.state!, place.level === "city" ? place.city! : undefined, c.cc)}
+          alertHref={placeAlert(product, place)} /></div>
+      )}
 
       {us && top && <div className="mt-5 max-w-3xl"><QuickCheckServer model={product.model} product={product} /></div>}
 

@@ -187,9 +187,11 @@ export const content: Dict["content"] = {
     configsInStock: "掲載中の構成",
     storesWithStock: f({ other: "在庫を掲載中の店舗" }),
     restocks24h: "入荷（24時間）",
+    /** A tile that counts one model only (its short name first). */
+    scoped: (label: string, model: string) => `${model}・${label}`,
     restocksHint: (week: string, month: string, days: string) => `7日で${week}回 · ${days}日で${month}回`,
     sellOuts: (days: string) => `完売（${days}日）`,
-    stays: (duration: string) => `掲載は約${duration}`,
+    stays: (duration: string) => (duration === "1分足らず" ? `掲載は${duration}` : `掲載は約${duration}`),
     noPairs: "完売の記録はまだなし",
     lastRestock: "直近の入荷",
     noneYet: "現時点でなし",

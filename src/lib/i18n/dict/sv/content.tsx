@@ -174,9 +174,11 @@ export const content: Dict["content"] = {
     configsInStock: "konfig. att hämta",
     storesWithStock: f({ one: "butik har lager", other: "butiker har lager" }),
     restocks24h: "Påfyllningar (24 tim)",
+    /** A tile that counts one model only (its short name first). */
+    scoped: (label: string, model: string): string => `${model} · ${label}`,
     restocksHint: (week: string, month: string, days: string): string => `7 d: ${week} · ${days} d: ${month}`,
     sellOuts: (days: string): string => `Slutsålt, ${days} d`,
-    stays: (duration: string): string => `ute ~${duration}`,
+    stays: (duration: string): string => (duration === "mindre än en minut" ? `ute ${duration}` : `ute ~${duration}`),
     noPairs: "inga slutsålda att para ihop ännu",
     lastRestock: "Senast påfyllt",
     noneYet: "ingen ännu",

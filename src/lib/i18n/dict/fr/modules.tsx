@@ -3,6 +3,7 @@
  * `label` arrive avec sa préposition de lieu (« à Paris », « dans le Rhône », « chez Apple Opéra », « ici »).
  * Nombres bruts (num / plural) ; durées, heures et dates déjà mises en forme par l’appelant.
  */
+import type { ReactNode } from "react";
 import type { Dict } from "../en";
 import { num, plural } from "@/lib/i18n/format";
 
@@ -12,6 +13,8 @@ const soldouts = (v: number) => plural("fr", v, { one: "# rupture", other: "# ru
 const jours = (v: number) => plural("fr", v, { one: "# jour", other: "# jours" });
 const variantes = (v: number) => plural("fr", v, { one: "# variante", other: "# variantes" });
 
+/** The WireNow bulletin groups its counts ("3 891"). */
+const WN = (v: number) => v.toLocaleString("fr-FR");
 export const modules: Dict["modules"] = {
   daily: {
     empty: (label, days) => `Graphique vide ${label} : ${days} jours sans remise en stock ni rupture. La première barre viendra avec le premier mouvement.`,
@@ -194,5 +197,45 @@ export const modules: Dict["modules"] = {
     more: (k) => `+${n(k)}`,
     seen: (ago) => <>En ligne {ago}</>,
     loading: "Stock en cours de lecture",
+  },
+  /** WireNow : la dépêche qui ouvre les pages région, ville, magasin, pays et iPhone Duo. `label` arrive avec sa préposition (« à Paris », « chez Apple Opéra ») ; tous les chiffres portent sur 14 jours. */
+  wireNow: {
+    eyebrow: (label: string) => `Sur le fil · iPhone Duo ${label}`,
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>Dernière mise en stock : <b className="text-ink">{o.config}</b>{o.store != null && <> chez {o.store}</>}, {o.when}{o.up ? <> · {o.up}</> : null}.</>,
+    neverYet: (label: string, days: number) => `Aucune mise en stock de l’iPhone Duo confirmée ${label} depuis ${WN(days)} jours.`,
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">En stock à l’instant dans {WN(o.k)} magasin{o.k > 1 ? "s" : ""} sur {WN(o.n)}</b> {o.label} (relevé {o.stamp}) : {o.list}.</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">En stock à l’instant : {o.k} variante{o.k > 1 ? "s" : ""} sur {o.total}</b> chez {o.name} (relevé {o.stamp}) : {o.list}.</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">Rien en stock au relevé de {o.stamp}</b> : aucun des {WN(o.n)} Apple Store {o.label} n’affiche d’iPhone Duo en retrait.</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">Rien en stock au relevé de {o.stamp}</b> : {o.name} n’affiche aucune variante de l’iPhone Duo en retrait.</>,
+    storeItem: (store: ReactNode, configs: number) => <>{store} ({configs} variante{configs > 1 ? "s" : ""})</>,
+    configItem: (config: string) => config,
+    others: (o: { pro: number; max: number; one: boolean; configs: number }) => (o.one ? `iPhone 18 Pro : ${o.pro} variante${o.pro > 1 ? "s" : ""} sur ${o.configs} ici ; 18 Pro Max : ${o.max}.` : `L’iPhone 18 Pro est présent dans ${o.pro} d’entre eux, le 18 Pro Max dans ${o.max}.`),
+    tRestocks: (days: number) => `remises en stock Duo, ${WN(days)} derniers jours`,
+    tGone60: "des mises en stock chronométrées parties en moins d’une minute",
+    tLongest: "la plus longue de la semaine",
+    tWindow: (range: string) => `des remises en stock tombées ${range}`,
+    tToday: "remises en stock aujourd’hui, pour l’instant",
+    tStores: (n: number) => `magasins sur ${WN(n)} réapprovisionnés sur la période`,
+    wireTime: (stamp: string) => `Heure du fil ${stamp}`,
+    reads: (note: string) => `relevés ${note}`,
+    window: (days: number) => `fenêtre de ${WN(days)} jours`,
+    method: "une remise en stock n’est comptée qu’après deux relevés concordants ; la première apparition d’un magasin ne compte jamais",
+    zone: () => "heure du magasin",
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }) =>
+      `${o.range}, ${o.zone} : c’est là que l’iPhone Duo revient ${o.label}. Ce créneau a pris ${o.pct} des ${WN(o.n)} remises en stock que RestockWire a relevées ${o.one ? "ici" : `dans ${WN(o.stores)} Apple Store ${o.label}`} sur les ${WN(o.days)} derniers jours. Heure de pointe ${o.busiest}, ${WN(o.busiestN)} remises en stock.${o.config ? ` La variante ${o.config} revient le plus (${WN(o.k)} sur ${WN(o.n)}).` : ""}${o.median ? ` Mise en stock médiane : partie en ${o.median}.` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }) => `${WN(o.n)} remise${o.n > 1 ? "s" : ""} en stock de l’iPhone Duo relevée${o.n > 1 ? "s" : ""} ${o.one ? o.label : `dans les ${WN(o.stores)} Apple Store ${o.label}`} sur ${WN(o.days)} jours : trop peu pour parler d’une heure habituelle. Chacune figure ci-dessous.`,
+    hourByHour: "Toutes les heures, tous les magasins →",
+    lastThree: (n: number, label: string) => (n === 1 ? `La dernière mise en stock Duo ${label}` : `Les ${WN(n)} dernières mises en stock Duo ${label}`),
+    secs: (n: number) => `${WN(n)} s`,
+    mins: (n: number) => `${WN(n)} min`,
+    upRange: (low: string, high: string) => `en ligne ${low}–${high}`,
+    upAbout: (x: string) => `en ligne environ ${x}`,
+    stillUp: (x: string) => `toujours en ligne (${x})`,
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }) => (o.one
+      ? `${WN(o.sent)} alerte${o.sent > 1 ? "s" : ""} envoyée${o.sent > 1 ? "s" : ""} pour des remises en stock Duo ${o.label} ces ${WN(o.days)} derniers jours.`
+      : `${WN(o.sent)} alerte${o.sent > 1 ? "s" : ""} envoyée${o.sent > 1 ? "s" : ""} pour des remises en stock Duo dans ${WN(o.stores)} des ${WN(o.total)} magasins ${o.label} ces ${WN(o.days)} derniers jours.`),
+    alertMe: (name: string) => `Mettre ${name} sur le fil des 5 secondes`,
+    unknown: "Les chiffres de tendance n’ont pas pu être lus cette fois ; l’état du stock ci-dessus est en direct.",
+    allModels: (o: { n: number; days: number; peak: string | null }) => `Les trois iPhone réunis : ${WN(o.n)} remises en stock en ${WN(o.days)} jours${o.peak ? `, pointe à ${o.peak}` : ""}.`,
   },
 };

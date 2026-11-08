@@ -19,7 +19,7 @@ import { SPEED } from "@/lib/plans";
 import { includedRate, taxName } from "@/content/country-tax";
 import { distance, fitTitleW, list, num, price, stamp, weekdays } from "@/lib/i18n/format";
 import { appleStoreLabel, cityLabel, colorLabel, countryLabel, regionLabel, storeLabel } from "@/lib/i18n/places";
-import type { RestockTimesMeta, RestockTimesView } from "../en/views";
+import type { RestockTimesMeta, RestockTimesView, RestockTimesPlace } from "../en/views";
 import type { Dict } from "../en";
 import { euro, eulReul, iGa, ieyo } from "./common";
 
@@ -163,6 +163,9 @@ function priceLabel(product: Product): string {
 
 /* ---------------------------------------------------------------- views */
 
+/** 2026-11-08: a place page (/{cc}/when-does-iphone-duo-restock/{region}[/{city}]) names its region or city where the country page names the country. */
+const rtW = (x: { c: Country; place?: RestockTimesPlace }) => (x.place ? x.place.name : dom(x.c));
+const rtU = (x: { us: boolean; c: Country; place?: RestockTimesPlace }) => (x.place ? (x.place.kind === "region" ? "도시" : "매장") : (x.us ? "주" : rw(x.c)));
 export const views: Dict["views"] = {
   common: {
     inCountry: (c: Country) => dom(c),
@@ -344,34 +347,34 @@ export const views: Dict["views"] = {
       store: (s: Store) => appleStoreLabel(s, L),
       storeWithPlace: (s: Store) => `${appleStoreLabel(s, L)}(${cityLabel(s.country ?? "us", s.city, L)})`,
     },
-    title: (c: Country) => `${dom(c)} iPhone Duo(아이폰 듀오), Apple은 몇 시에 재입고할까?`,
+    title: (c: Country, place?: RestockTimesPlace) => `${place?.name ?? dom(c)} iPhone Duo(아이폰 듀오), Apple은 몇 시에 재입고할까?`,
     metaDescription: (x: RestockTimesMeta) => {
       const { c, t, w, pattern } = x;
-      const region = c.cc === "us" ? "주" : rw(c);
+      const region = x.place ? (x.place.kind === "region" ? "도시" : "매장") : c.cc === "us" ? "주" : rw(c);
       const since = dateLabel(t.since, false);
       return t.n > 0 && pattern
         ? fitTitleW([
-          `현지 ${range(w.from, w.to)}에 ${rtPct(w.share)}. ${dom(c)} 애플스토어에 iPhone Duo가 ${n(t.n)}번 들어옴(${since}~)${t.sellout ? `, 그중 ${rtPct(t.sellout.within2min)}는 2분 안에 품절` : ""}. 시각·날짜·${region}·매장·구성으로 나눈 표.`,
-          `현지 ${range(w.from, w.to)}에 ${rtPct(w.share)}. ${dom(c)} 애플스토어 iPhone Duo 입고 ${n(t.n)}건(${since}~)을 시각·날짜·${region}·구성으로 나눈 표.`,
-          `${dom(c)} iPhone Duo가 들어오는 시각: ${since}부터 ${n(t.n)}건, ${region}·구성으로 나눠 봄.`,
+          `현지 ${range(w.from, w.to)}에 ${rtPct(w.share)}. ${rtW(x)} 애플스토어에 iPhone Duo가 ${n(t.n)}번 들어옴(${since}~)${t.sellout ? `, 그중 ${rtPct(t.sellout.within2min)}는 2분 안에 품절` : ""}. 시각·날짜·${region}·매장·구성으로 나눈 표.`,
+          `현지 ${range(w.from, w.to)}에 ${rtPct(w.share)}. ${rtW(x)} 애플스토어 iPhone Duo 입고 ${n(t.n)}건(${since}~)을 시각·날짜·${region}·구성으로 나눈 표.`,
+          `${rtW(x)} iPhone Duo가 들어오는 시각: ${since}부터 ${n(t.n)}건, ${region}·구성으로 나눠 봄.`,
         ], 158)
         : t.n > 0
           ? fitTitleW([
-            `${dom(c)} 애플스토어에서 iPhone Duo 입고 ${n(t.n)}건(${since}~)을 확인했어요. ${SPEED.checkSec}초 간격 확인 데이터를 현지 시각·날짜·${region}·매장·구성으로 나누고, 재고가 몇 초 버텼는지도 붙였어요.`,
-            `${dom(c)} iPhone Duo가 들어오는 시각: ${since}부터 확인된 재입고 ${n(t.n)}건, ${region}·구성으로 나눠 봄.`,
+            `${rtW(x)} 애플스토어에서 iPhone Duo 입고 ${n(t.n)}건(${since}~)을 확인했어요. ${SPEED.checkSec}초 간격 확인 데이터를 현지 시각·날짜·${region}·매장·구성으로 나누고, 재고가 몇 초 버텼는지도 붙였어요.`,
+            `${rtW(x)} iPhone Duo가 들어오는 시각: ${since}부터 확인된 재입고 ${n(t.n)}건, ${region}·구성으로 나눠 봄.`,
           ], 158)
-          : `${dom(c)} Apple Store에 iPhone Duo가 들어오는 시각을 시간·날짜·매장·구성으로 정리하는 페이지. ${longDate(t.since)}부터 RestockWire가 모든 매장을 ${SPEED.checkSec}초 간격으로 읽고 있어요.`;
+          : `${rtW(x)} Apple Store에 iPhone Duo가 들어오는 시각을 시간·날짜·매장·구성으로 정리하는 페이지. ${longDate(t.since)}부터 RestockWire가 모든 매장을 ${SPEED.checkSec}초 간격으로 읽고 있어요.`;
     },
     h1: (x: RestockTimesView) => x.t.unknown
-      ? `${dom(x.c)}에서 Apple은 iPhone Duo를 몇 시에 재입고하나요?`
+      ? `${rtW(x)}에서 Apple은 iPhone Duo를 몇 시에 재입고하나요?`
       : x.t.n > 0
-        ? `${dom(x.c)}에서 Apple은 iPhone Duo를 몇 시에 재입고하나요? ${x.pattern ? `가장 잦은 건 현지 시간 ${range(x.w.from, x.w.to)}` : "저희가 직접 확인한 시간별 기록"}`
-        : `${dom(x.c)}에서 Apple이 iPhone Duo를 재입고하고 있나요? 아직은 아니에요, 저희가 지켜보는 내용은 이래요`,
+        ? `${rtW(x)}에서 Apple은 iPhone Duo를 몇 시에 재입고하나요? ${x.pattern ? `가장 잦은 건 현지 시간 ${range(x.w.from, x.w.to)}` : "저희가 직접 확인한 시간별 기록"}`
+        : `${rtW(x)}에서 Apple이 iPhone Duo를 재입고하고 있나요? 아직은 아니에요, 저희가 지켜보는 내용은 이래요`,
     intro: (x: RestockTimesView) => {
       const { t, one, tracked, pattern, w } = x;
-      const where = one ? `${cn(x.c)}의 Apple Store` : `${dom(x.c)} Apple Store`;
+      const where = one ? `${rtW(x)}의 Apple Store` : `${rtW(x)} Apple Store`;
       return t.unknown ? (
-        <>재입고 기록을 잠시 불러올 수 없어요. {dom(x.c)} 매장은 계속 {SPEED.checkSec}초 주기로 확인 중이고, 다음에 페이지를 열면 수치가 돌아와요.</>
+        <>재입고 기록을 잠시 불러올 수 없어요. {rtW(x)} 매장은 계속 {SPEED.checkSec}초 주기로 확인 중이고, 다음에 페이지를 열면 수치가 돌아와요.</>
       ) : t.n > 0 && pattern ? (
         <>
           {longDate(t.since)} 이후 RestockWire가 {where}에서 확인한 <b className="text-ink">iPhone Duo 재입고 {n(t.n)}회 중 {rtPct(w.share)}</b>가 매장 현지 시간 <b className="text-ink">{range(w.from, w.to)}</b>에 들어왔어요{x.sell ? <>. 보통은 약 {n(Math.round(x.sell.medianSec / 5) * 5)}초 만에 사라졌어요</> : null}. <b className="text-ink">재입고는 지금도 이어지고 있어요</b>{tracked > 1 ? <>: 추적한 {n(tracked)}일 중 {n(t.days)}일에 재입고가 있었어요</> : <>(아직 추적 1일째)</>}.
@@ -382,7 +385,7 @@ export const views: Dict["views"] = {
         </>
       ) : (
         <>
-          <b className="text-ink">아직은 아니에요.</b> RestockWire는 {longDate(t.since)}부터 {one ? `${cn(x.c)}의 Apple Store` : `${dom(x.c)} Apple Store ${n(x.stores)}곳 전체`}를 {SPEED.checkSec}초마다 읽었지만, 확인된 iPhone Duo 매장 픽업 재입고는 한 번도 없었어요.
+          <b className="text-ink">아직은 아니에요.</b> RestockWire는 {longDate(t.since)}부터 {one ? `${rtW(x)}의 Apple Store` : `${rtW(x)} Apple Store ${n(x.stores)}곳 전체`}를 {SPEED.checkSec}초마다 읽었지만, 확인된 iPhone Duo 매장 픽업 재입고는 한 번도 없었어요.
         </>
       );
     },
@@ -411,7 +414,7 @@ export const views: Dict["views"] = {
     nav: (x: RestockTimesView): Record<string, string> => ({
       "time-of-day": "시간대",
       "day-by-day": "날짜",
-      where: `${x.us ? "주" : rw(x.c)}별`,
+      where: `${rtU(x)}별`,
       configuration: "구성",
       "how-long": "품절 속도",
       unavailable: "“픽업 불가”",
@@ -419,18 +422,18 @@ export const views: Dict["views"] = {
       method: "방법",
     }),
     h2: (x: RestockTimesView): Record<string, string> => ({
-      "time-of-day": `${dom(x.c)}에서 iPhone Duo는 몇 시에 돌아오나요?`,
-      "day-by-day": `${dom(x.c)}에서 iPhone Duo가 재입고된 날은 언제였나요?`,
-      where: `${dom(x.c)}에서 iPhone Duo가 가장 자주 재입고되는 곳은 어디인가요?`,
-      configuration: `${dom(x.c)}에서 가장 많이 재입고되는 iPhone Duo 용량과 색상은?`,
-      "how-long": `${dom(x.c)}에서 iPhone Duo 재입고는 몇 초나 가나요?`,
+      "time-of-day": `${rtW(x)}에서 iPhone Duo는 몇 시에 돌아오나요?`,
+      "day-by-day": `${rtW(x)}에서 iPhone Duo가 재입고된 날은 언제였나요?`,
+      where: `${rtW(x)}에서 iPhone Duo가 가장 자주 재입고되는 곳은 어디인가요?`,
+      configuration: `${rtW(x)}에서 가장 많이 재입고되는 iPhone Duo 용량과 색상은?`,
+      "how-long": `${rtW(x)}에서 iPhone Duo 재입고는 몇 초나 가나요?`,
       unavailable: "왜 apple.com은 모든 매장에서 “현재 구매 불가”라고 보여 주나요?",
       reddit: "Reddit의 iPhone Duo 재입고 속설, 기록과 대조해 보기",
       method: "RestockWire에서 재입고로 치는 건 무엇인가요?",
     }),
     faq: (x: RestockTimesView): Faq[] => {
       const { t, w, pattern, sell, us, weekend, tracked } = x;
-      const where = dom(x.c);
+      const where = rtW(x);
       const win = range(w.from, w.to);
       return [
         { q: `${where}에서 Apple은 iPhone Duo를 언제 재입고하나요?`, a: t.n > 0 && pattern
@@ -455,9 +458,9 @@ export const views: Dict["views"] = {
       reports: (tracker: string) => `${tracker}: 출시 주간 iPhone Duo 재입고 보고(해당 사이트의 자체 관찰, 따로 표시하고 집계에는 넣지 않음)`,
     },
     ld: (x: RestockTimesView) => ({
-      datasetName: `${dom(x.c)} Apple Store iPhone Duo 매장 픽업 재입고 시간`,
-      description: `${x.t.since} 이후 ${dom(x.c)} Apple Store에서 확인된 iPhone Duo 매장 픽업 재입고(매장, 구성, 시각). RestockWire가 매장마다 ${SPEED.checkSec}초마다 읽은 데이터를 현지 시간, 날짜, ${x.us ? "주" : rw(x.c)}, 매장, 구성별로 묶었어요.`,
-      spatial: `${cn(x.c)} Apple Store`,
+      datasetName: `${rtW(x)} Apple Store iPhone Duo 매장 픽업 재입고 시간`,
+      description: `${x.t.since} 이후 ${rtW(x)} Apple Store에서 확인된 iPhone Duo 매장 픽업 재입고(매장, 구성, 시각). RestockWire가 매장마다 ${SPEED.checkSec}초마다 읽은 데이터를 현지 시간, 날짜, ${x.place?.kind === "city" ? "" : `${rtU(x)}, `}매장, 구성별로 묶었어요.`,
+      spatial: `${rtW(x)} Apple Store`,
       measured: ["매장 현지 기준 재입고 시각", "Apple Store 매장", "iPhone Duo 용량과 색상", "품절까지 버틴 초"],
       size: `재입고 ${n(x.t.n)}건 · 매장 ${n(x.t.stores)}곳`,
     }),
@@ -474,7 +477,7 @@ export const views: Dict["views"] = {
       { text: <>한 번에 몰린 재입고 10회는 한 번의 일이지, 습관이 아니에요</>, no: true },
       { text: <>데이터가 하루씩 늘 때마다 이 페이지가 알아서 갱신돼요</>, step: true },
     ],
-    hourCaption: (x: RestockTimesView) => `${dom(x.c)} iPhone Duo 재입고 ${n(x.t.n)}회, 매장 현지 시각별, ${dateLabel(x.t.since, false)}부터 오늘까지`,
+    hourCaption: (x: RestockTimesView) => `${rtW(x)} iPhone Duo 재입고 ${n(x.t.n)}회, 매장 현지 시각별, ${dateLabel(x.t.since, false)}부터 오늘까지`,
     hourHead: ["매장 현지 시각", "재입고 건수", "점유율"],
     morningKeys: (x: RestockTimesView): Point[] => [
       { text: <>오전에 몰리는 건 <b className="text-ink">개점 시간과는 상관없어요</b>{x.us ? "(미국 Apple Store는 대부분 오전 10시에 열어요)" : ""}</> },
@@ -482,7 +485,7 @@ export const views: Dict["views"] = {
       { text: <>직접 지켜본다면 평일 오전 <b className="text-ink">{range(x.w.from, x.w.to)}</b>를 노리세요</>, step: true },
       { text: <>아무도 보지 않는 <b className="text-ink">나머지 22시간</b>은 <Link href={x.alert}>알림</Link>이 맡아요</>, step: true },
     ],
-    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>매장 페이지마다 그 매장 시간대로 그린 시간 차트가 있어요(<Link href={x.storesHref}>{x.us ? "주별 Apple Store" : `${dom(x.c)} 매장`}</Link>). 지역 전체는 9시에 몰려도 8시에 재입고되는 매장을 찾아낼 수 있어요</>, step: true }],
+    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>매장 페이지마다 그 매장 시간대로 그린 시간 차트가 있어요(<Link href={x.storesHref}>{x.us ? "주별 Apple Store" : `${rtW(x)} 매장`}</Link>). 지역 전체는 9시에 몰려도 8시에 재입고되는 매장을 찾아낼 수 있어요</>, step: true }],
 
     dayLead: (x: RestockTimesView) => {
       const { t, tracked, one } = x;
@@ -491,7 +494,7 @@ export const views: Dict["views"] = {
       ) : t.n > 0 ? (
         <b>{t.days === tracked ? `추적한 ${n(t.days)}일 모두` : `${longDate(t.since)} 이후 ${n(tracked)}일 중 ${n(t.days)}일`} 확인된 재입고가 한 번 이상 있었어요{t.peakWeekday != null ? `. 요일 중에서는 ${iGa(wd(t.peakWeekday))} 앞서요` : ""}.</b>
       ) : (
-        <b>{longDate(t.since)} 이후 {dom(x.c)}에서 확인된 재입고는 0회예요.</b>
+        <b>{longDate(t.since)} 이후 {rtW(x)}에서 확인된 재입고는 0회예요.</b>
       );
     },
     daysTracked: "추적한 날 중 재입고가 있었던 날",
@@ -499,7 +502,7 @@ export const views: Dict["views"] = {
     busiestDayNone: "최다 기록일",
     drop: (x: RestockTimesView, drop: { at: string; restocks: number }) => `${zoneStamp(drop.at, x.c)}, 30분 안에 재입고된 매장 수(구성 ${n(drop.restocks)}개): 전국 단위로 풀린 물량`,
     weekend: (x: RestockTimesView) => `주말에 들어옴(재입고 ${n(x.weekend)}회)`,
-    dayCaption: (x: RestockTimesView) => `${dom(x.c)} iPhone Duo 일별 재입고${x.t.reports.length ? "; “보고” 표시 행은 저희 추적이 시작되기 전 다른 트래커가 공개한 관찰로, 타임라인 참고용으로만 넣었어요" : ""}`,
+    dayCaption: (x: RestockTimesView) => `${rtW(x)} iPhone Duo 일별 재입고${x.t.reports.length ? "; “보고” 표시 행은 저희 추적이 시작되기 전 다른 트래커가 공개한 관찰로, 타임라인 참고용으로만 넣었어요" : ""}`,
     dayHead: { date: "날짜", restocks: "재입고", stores: "매장", busiest: "가장 바쁜 시간", source: "출처" },
     soFar: " · 현재까지 집계",
     reportedBy: (names: string[]) => <>{names.join(" / ")} 보고</>,
@@ -508,19 +511,19 @@ export const views: Dict["views"] = {
       { text: <><b className="text-ink">{dateLabel(resumed)}</b>: 매장 픽업 재개{x.us ? " (MacRumors)" : ""}</> },
       x.t.reports.length
         ? { text: <><b className="text-ink">보고</b> 행은 {x.reportNames.join(", ")}의 출시 주간 관찰로, 모든 집계에서 빠져 있어요</> }
-        : { text: <>{dom(x.c)} 모든 매장에 대한 RestockWire 기록은 <b className="text-ink">{longDate(x.t.since)}</b>부터 시작해요</> },
+        : { text: <>{rtW(x)} 모든 매장에 대한 RestockWire 기록은 <b className="text-ink">{longDate(x.t.since)}</b>부터 시작해요</> },
       ...(x.t.n > 0 && x.t.peakWeekday == null ? [{ text: <>가장 바쁜 요일을 말하려면 <b className="text-ink">{WEEKDAY_MIN_SPAN}일</b>치 데이터가 필요해요(지금 {n(x.tracked)}일)</>, no: true }] : []),
       { text: <><b className="text-ink">매장</b> 열을 보세요: 재입고가 더 많은 매장에 퍼질수록 내 확률이 올라가요</>, step: true },
     ],
 
     whereLead: (x: RestockTimesView, hit: { name: string; restocks: number; stores: number; storesTotal: number }[], total: number) => (
-      <b>{hit[0].name}: {dateLabel(x.t.since, false)} 이후 매장 {n(hit[0].storesTotal)}곳 중 {n(hit[0].stores)}곳에서 재입고 {n(hit[0].restocks)}회{hit[1] ? <>, 이어서 {hit[1].name}({n(hit[1].restocks)}회)</> : null}{hit[2] ? <>, {hit[2].name}({n(hit[2].restocks)}회)</> : null}. {x.us ? "주" : rw(x.c)} {n(total)}곳 중 {n(hit.length)}곳에 재입고가 있었어요{total - hit.length > 0 ? `, ${n(total - hit.length)}곳은 아직 없어요` : ""}.</b>
+      <b>{hit[0].name}: {dateLabel(x.t.since, false)} 이후 매장 {n(hit[0].storesTotal)}곳 중 {n(hit[0].stores)}곳에서 재입고 {n(hit[0].restocks)}회{hit[1] ? <>, 이어서 {hit[1].name}({n(hit[1].restocks)}회)</> : null}{hit[2] ? <>, {hit[2].name}({n(hit[2].restocks)}회)</> : null}. {rtU(x)} {n(total)}곳 중 {n(hit.length)}곳에 재입고가 있었어요{total - hit.length > 0 ? `, ${n(total - hit.length)}곳은 아직 없어요` : ""}.</b>
     ),
-    whereNone: (x: RestockTimesView) => <b>{dom(x.c)}의 어느 {x.us ? "주" : rw(x.c)}에도 아직 확인된 재입고가 없어요. 첫 재입고부터 표가 시작돼요.</b>,
-    regionCaption: (x: RestockTimesView) => `iPhone Duo 확인 재입고를 ${x.us ? "주" : rw(x.c)} 단위로 · ${dom(x.c)} · ${dateLabel(x.t.since, false)}~오늘`,
-    regionHead: (x: RestockTimesView) => [x.us ? "주" : rw(x.c), "재입고", "재입고된 매장", "최신 재입고(현지 시간)"],
+    whereNone: (x: RestockTimesView) => <b>{rtW(x)}의 어느 {rtU(x)}에도 아직 확인된 재입고가 없어요. 첫 재입고부터 표가 시작돼요.</b>,
+    regionCaption: (x: RestockTimesView) => `iPhone Duo 확인 재입고를 ${rtU(x)} 단위로 · ${rtW(x)} · ${dateLabel(x.t.since, false)}~오늘`,
+    regionHead: (x: RestockTimesView) => [rtU(x), "재입고", "재입고된 매장", "최신 재입고(현지 시간)"],
     ofN: (a: number, b: number) => <>{n(b)}곳 중 {n(a)}곳</>,
-    storesCaption: (x: RestockTimesView) => `${dom(x.c)} iPhone Duo 재입고 상위 매장, ${dateLabel(x.t.since, false)}부터 오늘까지`,
+    storesCaption: (x: RestockTimesView) => `${rtW(x)} iPhone Duo 재입고 상위 매장, ${dateLabel(x.t.since, false)}부터 오늘까지`,
     storesHead: ["매장", "재입고", "일수", "평소 시간대", "최신(현지 시간)"],
     swaps: (x: RestockTimesView) => [
       { no: "멀든 가깝든 목록 1위 매장을 쫓기", yes: `${x.pattern ? hr(x.w.from) : "오전"}부터 1시간 안에 갈 수 있는 매장 2~3곳`, why: "닿을 수 없는 재입고는 소용이 없고, 가장 바쁜 매장도 하루 중 몇 분을 빼면 구매 불가로 보여요." },
@@ -536,8 +539,8 @@ export const views: Dict["views"] = {
     restocksOf: (a: string) => `${a} 재입고`,
     byStorage: "용량별",
     byColour: "색상별",
-    configNone: (x: RestockTimesView) => <b>{dom(x.c)}에서 확인된 재입고가 있는 구성은 {yet(x)}하나도 없어요. 첫 재입고가 바로 들어갈 수 있게 8개 구성을 모두 올려 뒀어요.</b>,
-    configCaption: (x: RestockTimesView) => `iPhone Duo 확인 재입고를 구성 단위로 · ${dom(x.c)} · ${dateLabel(x.t.since, false)}~오늘`,
+    configNone: (x: RestockTimesView) => <b>{rtW(x)}에서 확인된 재입고가 있는 구성은 {yet(x)}하나도 없어요. 첫 재입고가 바로 들어갈 수 있게 8개 구성을 모두 올려 뒀어요.</b>,
+    configCaption: (x: RestockTimesView) => `iPhone Duo 확인 재입고를 구성 단위로 · ${rtW(x)} · ${dateLabel(x.t.since, false)}~오늘`,
     configHead: ["구성", "재입고", "비율", "최신 재입고(현지 시간)"],
     configKeys: (x: RestockTimesView): Point[] => [
       { text: <>구성을 고르는 게 <b className="text-ink">매장을 고르는 것보다 중요해요</b></> },
@@ -548,37 +551,37 @@ export const views: Dict["views"] = {
       { text: <>가격과 실시간 재고: <Link href="/iphone-duo-most-restocked-stores">어떤 iPhone Duo가 가장 많이 재입고될까?</Link></>, step: true },
     ],
 
-    howLongLead: (x: RestockTimesView, sell: SelloutFacts) => <b>{n(sell.medianSec)}초: {dom(x.c)}에서 품절된 재입고 {n(sell.n)}회의 수명 중앙값이에요. {rtPct(sell.within2min)}는 2분 안에, {rtPct(sell.within20min)}는 20분 안에 사라졌어요.</b>,
+    howLongLead: (x: RestockTimesView, sell: SelloutFacts) => <b>{n(sell.medianSec)}초: {rtW(x)}에서 품절된 재입고 {n(sell.n)}회의 수명 중앙값이에요. {rtPct(sell.within2min)}는 2분 안에, {rtPct(sell.within20min)}는 20분 안에 사라졌어요.</b>,
     secUnit: "초",
     medianListing: "뜬 순간부터 사라질 때까지, 중앙값",
     within2: "2분 안에 사라짐",
     within20: "20분 안에 사라짐",
     fastest: "기록상 가장 빠른 품절",
-    howLongNone: (x: RestockTimesView) => <b>{dom(x.c)}에서 품절된 재입고가 {yet(x)}측정하기엔 적어요. 이 수치는 10회부터 나오고, 전체 데이터는 미국 페이지에 있어요.</b>,
+    howLongNone: (x: RestockTimesView) => <b>{rtW(x)}에서 품절된 재입고가 {yet(x)}측정하기엔 적어요. 이 수치는 10회부터 나오고, 전체 데이터는 미국 페이지에 있어요.</b>,
     howLongKeys: (x: RestockTimesView): Point[] => [
       { text: <>2분은 apple.com 새로고침이 아니라 <b className="text-ink">알림</b>으로 잡는 시간이에요</> },
       { text: <>이 페이지의 다른 모든 수치는 이 숫자에서 나와요</> },
-      { text: <>구성·{x.us ? "주" : rw(x.c)}별로 재입고마다 몇 초 갔는지: <Link href="/how-fast-does-iphone-duo-sell-out">iPhone Duo 재입고는 얼마나 빨리 품절될까?</Link></>, step: true },
+      { text: <>구성·{rtU(x)}별로 재입고마다 몇 초 갔는지: <Link href="/how-fast-does-iphone-duo-sell-out">iPhone Duo 재입고는 얼마나 빨리 품절될까?</Link></>, step: true },
     ],
     measured: "각 수치는 구성이 처음 올라온 것을 본 확인부터 사라진 것을 본 확인까지라 상한값이에요. 실제 수명은 더 짧아요.",
 
-    unavailableLead: (x: RestockTimesView) => <b>재입고는 상태가 아니라 순간이에요. {x.one ? "매장 1곳" : `매장 ${n(x.stores)}곳`} × 구성 {n(x.configs)}개로 {dom(x.c)}에는 {n(x.pairs)}가지 재고 가능성이 있는데, 지금 iPhone Duo를 하나라도 올린 매장은 {n(x.duoNow)}곳이에요.</b>,
+    unavailableLead: (x: RestockTimesView) => <b>재입고는 상태가 아니라 순간이에요. {x.one ? "매장 1곳" : `매장 ${n(x.stores)}곳`} × 구성 {n(x.configs)}개로 {rtW(x)}에는 {n(x.pairs)}가지 재고 가능성이 있는데, 지금 iPhone Duo를 하나라도 올린 매장은 {n(x.duoNow)}곳이에요.</b>,
     pairs: "가능한 매장 × 구성 조합",
     listingNow: "지금 iPhone Duo 픽업 재고가 있는 매장",
     goneIn2: "2분 안에 끝난 재입고 비율",
     last24: "확인된 재입고, 최근 24시간",
     unavailableKeys: (x: RestockTimesView, today: number): Point[] => [
       x.recent.restocks > 0
-        ? { text: <><b className="text-ink">재입고 {n(x.recent.restocks)}건 확인</b> · 지난 24시간 · {dom(x.c)} 매장 {n(x.recent.stores)}곳</> }
+        ? { text: <><b className="text-ink">재입고 {n(x.recent.restocks)}건 확인</b> · 지난 24시간 · {rtW(x)} 매장 {n(x.recent.stores)}곳</> }
         : today > 0
-          ? { text: <><b className="text-ink">재입고 {n(today)}건 확인</b> · 오늘 · {dom(x.c)}</> }
+          ? { text: <><b className="text-ink">재입고 {n(today)}건 확인</b> · 오늘 · {rtW(x)}</> }
           : { text: <>실제로 있었던 재입고는 위 날짜 표에 있어요</> },
       { text: <>각각 apple.com에 <b className="text-ink">1~2분</b> 올라와 있었어요</> },
       { text: <>4일째든 14일째든 “어디서나 구매 불가”가 Apple이 멈췄다는 뜻은 <b className="text-ink">아니에요</b></>, no: true },
     ],
     unavailableLinks: { explained: "“현재 픽업 불가”의 뜻", howToGet: "iPhone Duo 구하는 법, 단계별로" },
 
-    redditLead: (x: RestockTimesView) => <b><a href="https://www.reddit.com/r/applestore/" target="_blank" rel="noopener nofollow">r/applestore</a>와 <a href="https://www.reddit.com/r/iphone/" target="_blank" rel="noopener nofollow">r/iphone</a>의 조언은 대부분 솔직하지만 매장 한 곳의 경험이고, 다음 날이면 낡아요. 가장 자주 나오는 주장 네 가지를 {dom(x.c)}의 확인된 재입고 {n(x.t.n)}회와 대조했어요.</b>,
+    redditLead: (x: RestockTimesView) => <b><a href="https://www.reddit.com/r/applestore/" target="_blank" rel="noopener nofollow">r/applestore</a>와 <a href="https://www.reddit.com/r/iphone/" target="_blank" rel="noopener nofollow">r/iphone</a>의 조언은 대부분 솔직하지만 매장 한 곳의 경험이고, 다음 날이면 낡아요. 가장 자주 나오는 주장 네 가지를 {rtW(x)}의 확인된 재입고 {n(x.t.n)}회와 대조했어요.</b>,
     redditCaption: "iPhone Duo 재입고에 관한 흔한 Reddit 주장을 RestockWire의 확인된 재입고와 대조",
     redditHead: ["주장", "기록이 보여 주는 것"],
     claims: (x: RestockTimesView): { claim: string; answer: ReactNode }[] => {
@@ -598,7 +601,7 @@ export const views: Dict["views"] = {
 
     methodLead: <b>재입고란 그 매장에 없던 구성이 apple.com에 매장 픽업으로 나타나고, 두 번의 확인이 일치한 경우예요.</b>,
     methodKeys: (x: RestockTimesView): Point[] => [
-      { text: <>알림이 걸린 매장은 <b className="text-ink">{SPEED.fastSec}초</b>마다, {x.one ? `${cn(x.c)}의 Apple Store` : `${dom(x.c)}의 모든 Apple Store`}는 <b className="text-ink">{SPEED.checkSec}초</b>마다</> },
+      { text: <>알림이 걸린 매장은 <b className="text-ink">{SPEED.fastSec}초</b>마다, {x.one ? `${rtW(x)}의 Apple Store` : `${rtW(x)}의 모든 Apple Store`}는 <b className="text-ink">{SPEED.checkSec}초</b>마다</> },
       { text: <>다른 트래커가 공개한 주기: <b className="text-ink">8초~15분</b>. 저희는 그들이 공개한 수치끼리만 비교해요</> },
       { text: <>처음 보인 “구매 가능”은 <b className="text-ink">약 1초 뒤</b> 다시 확인한 다음에야 인정해요</> },
       { text: <>사라진 재고는 <b className="text-ink">다음 회차</b>에서 확정해요</> },
@@ -608,7 +611,7 @@ export const views: Dict["views"] = {
       { text: <>이 표들은 약 5분마다 갱신되고, <Link href={x.logHref}>재입고 기록</Link>은 실시간이에요</>, step: true },
     ],
     quote: "이 페이지 인용: 링크만 남겨 주시면 어떤 수치든 인용하셔도 좋아요. RestockWire는 Apple과 무관한 독립 서비스이고, 누구나 apple.com에서 볼 수 있는 픽업 가능 여부를 훨씬 자주 읽을 뿐이에요.",
-    alertIn: (x: RestockTimesView) => <>{x.one ? "" : `${dom(x.c)} `}iPhone Duo 알림 받기</>,
+    alertIn: (x: RestockTimesView) => <>{x.one ? "" : `${rtW(x)} `}iPhone Duo 알림 받기</>,
 
     related: "iPhone Duo 질문 더 보기",
     sameData: "같은 기록으로 만든 페이지",
@@ -621,6 +624,13 @@ export const views: Dict["views"] = {
       unavailable: "“구매 불가”의 뜻",
     },
     otherCountries: ((us: boolean): string => (us ? "다른 나라의 이 페이지" : "다른 나라")) as Dict["views"]["restockTimes"]["otherCountries"],
+    /** Place pages (a region or a city of this country), and the rows on the country page that lead to them. */
+    place: {
+      byCity: "도시별 페이지",
+      storesLive: (x: RestockTimesView) => `${rtW(x)} Apple Store 실시간 재고`,
+      countryPage: (c: Country) => `${dom(c)} iPhone Duo 재입고 시각, 전체 매장`,
+      sourcesWhere: (x: RestockTimesView) => `${rtW(x)} Apple Store ${x.stores}곳 전체`,
+    },
     faqTitle: "자주 받는 질문",
   },
 };

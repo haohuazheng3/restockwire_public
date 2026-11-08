@@ -6,6 +6,8 @@ import type { ReactNode } from "react";
 import type { Dict } from "../en";
 import { CHECK, n, zhCfg } from "./common";
 
+/** The WireNow bulletin groups its counts ("3 891"). */
+const WN = (v: number) => v.toLocaleString("zh-HK");
 export const modules: Dict["modules"] = {
   daily: {
     empty: (label: string, days: number) => `圖表暫時空白：最近 ${n(days)} 日，${label}未錄得任何補貨或售罄。一有記錄，第一條棒便會出現。`,
@@ -190,5 +192,45 @@ export const modules: Dict["modules"] = {
     more: (k: number) => `+${n(k)}`,
     seen: (ago: ReactNode) => <>{ago}上架</>,
     loading: "正在載入現貨",
+  },
+  /** WireNow：地區／城市／分店／國家／Duo 機型頁最頂的快訊。`label` 係地名（「香港」「Apple ifc mall」）。所有數字都係最近 14 日。 */
+  wireNow: {
+    eyebrow: (label: string) => `快訊 · ${label}的 iPhone Duo`,
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>最近一次上架：<b className="text-ink">{o.config}</b>{o.store != null && <>（{o.store}）</>}，{o.when}{o.up ? <> · {o.up}</> : null}。</>,
+    neverYet: (label: string, days: number) => `${label}最近 ${WN(days)} 日未有確認過任何 iPhone Duo 上架。`,
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">此刻 {WN(o.n)} 間分店中有 {WN(o.k)} 間上架</b>（{o.label}，{o.stamp} 讀取）：{o.list}。</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">此刻上架中：{o.total} 個款式中的 {o.k} 個</b>（{o.name}，{o.stamp} 讀取）：{o.list}。</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">{o.stamp} 時沒有上架</b>：{o.label}的 {WN(o.n)} 間 Apple Store 都無 iPhone Duo 可供店舖取貨。</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">{o.stamp} 時沒有上架</b>：{o.name}無任何一個 iPhone Duo 款式可取貨。</>,
+    storeItem: (store: ReactNode, configs: number) => <>{store}（{configs} 個款式）</>,
+    configItem: (config: string) => config,
+    others: (o: { pro: number; max: number; one: boolean; configs: number }) => (o.one ? `iPhone 18 Pro：${o.configs} 個款式中有 ${o.pro} 個；18 Pro Max：${o.max} 個。` : `iPhone 18 Pro 喺其中 ${o.pro} 間，18 Pro Max 喺 ${o.max} 間。`),
+    tRestocks: (days: number) => `最近 ${WN(days)} 日的 Duo 補貨`,
+    tGone60: "有計時的上架中，一分鐘內消失的比例",
+    tLongest: "今個星期撐得最耐的一次上架",
+    tWindow: (range: string) => `落在 ${range} 的補貨比例`,
+    tToday: "今日到目前為止的補貨",
+    tStores: (n: number) => `${WN(n)} 間分店中，期內補過貨的`,
+    wireTime: (stamp: string) => `快訊時間 ${stamp}`,
+    reads: (note: string) => `讀取 ${note}`,
+    window: (days: number) => `${WN(days)} 日區間`,
+    method: "兩次讀取一致先算一次補貨；分店第一次出現不算",
+    zone: () => "分店當地時間",
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }) =>
+      `${o.label}的 iPhone Duo 多數喺 ${o.range}（${o.zone}）返貨：最近 ${WN(o.days)} 日 RestockWire 喺${o.one ? "呢間分店" : `${WN(o.stores)} 間 Apple Store`}錄得的 ${WN(o.n)} 次補貨，有 ${o.pct} 落在呢個時段。高峰 ${o.busiest}，${WN(o.busiestN)} 次。${o.config ? `最常補的是 ${o.config}（${WN(o.k)}／${WN(o.n)}）。` : ""}${o.median ? `上架中位數 ${o.median} 就售罄。` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }) => `最近 ${WN(o.days)} 日喺${o.one ? o.label : `${o.label}的 ${WN(o.stores)} 間 Apple Store`}錄得 ${WN(o.n)} 次 iPhone Duo 補貨，未夠講得出固定時段；每一次都列在下面。`,
+    hourByHour: "每個鐘、每間分店 →",
+    lastThree: (n: number, label: string) => (n === 1 ? `${label}最近一次 Duo 上架` : `${label}最近 ${WN(n)} 次 Duo 上架`),
+    secs: (n: number) => `${WN(n)} 秒`,
+    mins: (n: number) => `${WN(n)} 分鐘`,
+    upRange: (low: string, high: string) => `上架 ${low}–${high}`,
+    upAbout: (x: string) => `上架約 ${x}`,
+    stillUp: (x: string) => `仍在架上（${x}）`,
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }) => (o.one
+      ? `過去 ${WN(o.days)} 日，${o.label}的 Duo 補貨共發出 ${WN(o.sent)} 個通知。`
+      : `過去 ${WN(o.days)} 日，${o.label} ${WN(o.total)} 間分店中有 ${WN(o.stores)} 間的 Duo 補貨共發出 ${WN(o.sent)} 個通知。`),
+    alertMe: (name: string) => `將${name}放上每 5 秒的監察`,
+    unknown: "今次讀唔到規律數字；上面的上架狀態係即時的。",
+    allModels: (o: { n: number; days: number; peak: string | null }) => `三款合計：${WN(o.days)} 日內補貨 ${WN(o.n)} 次${o.peak ? `，高峰 ${o.peak}` : ""}。`,
   },
 };

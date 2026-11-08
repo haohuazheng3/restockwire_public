@@ -192,9 +192,11 @@ export const content: Dict["content"] = {
     configsInStock: "configuraciones disponibles",
     storesWithStock: f({ one: "tienda con stock", other: "tiendas con stock" }),
     restocks24h: "Reposiciones, 24 h",
+    /** A tile that counts one model only (its short name first). */
+    scoped: (label: string, model: string) => `${model} · ${label}`,
     restocksHint: (week: string, month: string, days: string) => `${week} en 7 d · ${month} en ${days} d`,
     sellOuts: (days: string) => `Agotamientos ${days} d`,
-    stays: (duration: string) => `dura ~${duration}`,
+    stays: (duration: string) => (duration === "menos de 1 minuto" ? `dura ${duration}` : `dura ~${duration}`),
     noPairs: "aún sin agotamientos emparejados",
     lastRestock: "Reposición más reciente",
     noneYet: "de momento ninguna",

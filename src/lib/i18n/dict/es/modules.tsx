@@ -12,6 +12,8 @@ const CHECK_NOTE = "ronda de 15 s · 5 s si tiene alerta";
 /** Article for an hour: la before 1:xx, las otherwise. */
 const las = (hour: string) => (/^1:/.test(hour) ? `la ${hour}` : `las ${hour}`);
 
+/** The WireNow bulletin groups its counts ("3 891"). */
+const WN = (v: number) => v.toLocaleString("es-ES");
 export const modules: Dict["modules"] = {
   daily: {
     empty: (label: string, days: number) => `Todavía no hay nada que dibujar ${label}: ninguna reposición ni agotamiento en los últimos ${n(days)} días. La primera dibujará la primera barra.`,
@@ -196,5 +198,45 @@ export const modules: Dict["modules"] = {
     more: (k: number) => `+${n(k)}`,
     seen: (ago: ReactNode) => <>Disponible {ago}</>,
     loading: "Cargando stock",
+  },
+  /** WireNow: el boletín con el que abren las páginas de región, ciudad, tienda, país e iPhone Duo. `label` llega con preposición («en Madrid», «en Apple Puerta del Sol»); todas las cifras son de los últimos 14 días. */
+  wireNow: {
+    eyebrow: (label: string) => `En el hilo · iPhone Duo ${label}`,
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>Última vez listado: <b className="text-ink">{o.config}</b>{o.store != null && <> en {o.store}</>}, {o.when}{o.up ? <> · {o.up}</> : null}.</>,
+    neverYet: (label: string, days: number) => `Ningún iPhone Duo listado ${label} en los últimos ${WN(days)} días.`,
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">Listado ahora mismo en {WN(o.k)} de {WN(o.n)} tiendas</b> {o.label} (lectura {o.stamp}): {o.list}.</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">Listado ahora mismo: {o.k} de {o.total} configuraciones</b> en {o.name} (lectura {o.stamp}): {o.list}.</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">Nada listado a las {o.stamp}</b>: ninguna de las {WN(o.n)} tiendas Apple {o.label} muestra un iPhone Duo para recogida.</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">Nada listado a las {o.stamp}</b>: {o.name} no muestra ninguna configuración del iPhone Duo para recogida.</>,
+    storeItem: (store: ReactNode, configs: number) => <>{store} ({configs} config.)</>,
+    configItem: (config: string) => config,
+    others: (o: { pro: number; max: number; one: boolean; configs: number }) => (o.one ? `iPhone 18 Pro: ${o.pro} de ${o.configs} configuraciones aquí; 18 Pro Max: ${o.max}.` : `El iPhone 18 Pro está en ${o.pro} de ellas, el 18 Pro Max en ${o.max}.`),
+    tRestocks: (days: number) => `reposiciones del Duo, últimos ${WN(days)} días`,
+    tGone60: "de los listados cronometrados se agotó en menos de un minuto",
+    tLongest: "listado más largo de la semana",
+    tWindow: (range: string) => `de las reposiciones cayeron ${range}`,
+    tToday: "reposiciones de hoy, por ahora",
+    tStores: (n: number) => `de ${WN(n)} tiendas repusieron en el periodo`,
+    wireTime: (stamp: string) => `Hora del hilo ${stamp}`,
+    reads: (note: string) => `lecturas ${note}`,
+    window: (days: number) => `ventana de ${WN(days)} días`,
+    method: "una reposición cuenta solo con dos lecturas coincidentes; la primera aparición de una tienda nunca cuenta",
+    zone: () => "hora de la tienda",
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }) =>
+      `${o.range}, ${o.zone}: a esa hora vuelve el iPhone Duo ${o.label}. Esa franja se llevó el ${o.pct} de las ${WN(o.n)} reposiciones que RestockWire registró ${o.one ? "aquí" : `en las ${WN(o.stores)} tiendas Apple ${o.label}`} en los últimos ${WN(o.days)} días. Hora punta ${o.busiest}, ${WN(o.busiestN)} reposiciones.${o.config ? ` La ${o.config} fue la más repuesta (${WN(o.k)} de ${WN(o.n)}).` : ""}${o.median ? ` Listado mediano: agotado en ${o.median}.` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }) => `${WN(o.n)} reposición${o.n === 1 ? "" : "es"} del iPhone Duo ${o.one ? o.label : `en las ${WN(o.stores)} tiendas Apple ${o.label}`} en los últimos ${WN(o.days)} días: pocas para hablar de una hora habitual. Cada una aparece abajo.`,
+    hourByHour: "Cada hora, cada tienda →",
+    lastThree: (n: number, label: string) => (n === 1 ? `El último listado del Duo ${label}` : `Los últimos ${WN(n)} listados del Duo ${label}`),
+    secs: (n: number) => `${WN(n)} s`,
+    mins: (n: number) => `${WN(n)} min`,
+    upRange: (low: string, high: string) => `listado ${low}–${high}`,
+    upAbout: (x: string) => `listado unos ${x}`,
+    stillUp: (x: string) => `sigue listado (${x})`,
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }) => (o.one
+      ? `${WN(o.sent)} aviso${o.sent === 1 ? "" : "s"} por reposiciones del Duo ${o.label} en los últimos ${WN(o.days)} días.`
+      : `${WN(o.sent)} aviso${o.sent === 1 ? "" : "s"} por reposiciones del Duo en ${WN(o.stores)} de las ${WN(o.total)} tiendas ${o.label} en los últimos ${WN(o.days)} días.`),
+    alertMe: (name: string) => `Poner ${name} en el hilo de 5 segundos`,
+    unknown: "Esta vez no se pudieron leer las cifras de patrón; el listado de arriba está en directo.",
+    allModels: (o: { n: number; days: number; peak: string | null }) => `Los tres iPhone juntos: ${WN(o.n)} reposiciones en ${WN(o.days)} días${o.peak ? `, pico a las ${o.peak}` : ""}.`,
   },
 };

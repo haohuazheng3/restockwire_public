@@ -9,7 +9,8 @@ describe("index scope", () => {
     for (const p of ["/jp", "/jp/", "/jp/apple-stores", "/jp/restock-log", "/jp/when-does-iphone-duo-restock"]) expect(inIndexScope(p), p).toBe(true);
   });
   it("leaves native trees, other countries' place/model/map pages and US facets out", () => {
-    for (const p of ["/ja-jp", "/ja-jp/apple-stores", "/de-at/restock-log", "/jp/apple-stores/tokyo", "/jp/apple-stores/tokyo/ginza", "/jp/in-stock/iphone-duo", "/jp/live-map", "/when-does-iphone-duo-restock/california", "/when-does-iphone-duo-restock/california/los-angeles", "/in-stock/iphone-duo-512gb", "/in-stock/iphone-duo/california"]) expect(inIndexScope(p), p).toBe(false);
+    // 2026-11-08: other countries' region/city restock-hour pages are served but, like the US ones, stay out while the scope is narrow.
+    for (const p of ["/ja-jp", "/ja-jp/apple-stores", "/de-at/restock-log", "/jp/apple-stores/tokyo", "/jp/apple-stores/tokyo/ginza", "/jp/in-stock/iphone-duo", "/jp/live-map", "/when-does-iphone-duo-restock/california", "/when-does-iphone-duo-restock/california/los-angeles", "/uk/when-does-iphone-duo-restock/greater-london", "/ja-jp/when-does-iphone-duo-restock/tokyo/tokyo", "/in-stock/iphone-duo-512gb", "/in-stock/iphone-duo/california"]) expect(inIndexScope(p), p).toBe(false);
   });
 });
 

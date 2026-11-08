@@ -174,9 +174,11 @@ export const content: Dict["content"] = {
     configsInStock: "configurazioni ritirabili",
     storesWithStock: f({ one: "negozio che ce l'ha", other: "negozi che ce l'hanno" }),
     restocks24h: "Rifornimenti, 24 h",
+    /** A tile that counts one model only (its short name first). */
+    scoped: (label: string, model: string) => `${model} · ${label}`,
     restocksHint: (week: string, month: string, days: string) => `${week} in 7 g · ${month} in ${days} g`,
     sellOuts: (days: string) => `Esaurimenti ${days} g`,
-    stays: (duration: string) => `resta ~${duration}`,
+    stays: (duration: string) => (duration === "sotto il minuto" ? `resta ${duration}` : `resta ~${duration}`),
     noPairs: "ancora nessun esaurimento abbinato",
     lastRestock: "Rifornimento più recente",
     noneYet: "finora nessuno",

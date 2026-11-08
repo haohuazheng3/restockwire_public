@@ -15,6 +15,8 @@ const cnt = (n: number, one: string, many: string) => `${n$(n)} ${n === 1 ? one 
 /** Same facts as CHECK_NOTE in lib/plans.ts. */
 const CHECK = "elke 15 s, 5 s met een alert";
 
+/** The WireNow bulletin groups its counts ("3 891"). */
+const WN = (v: number) => v.toLocaleString("nl-NL");
 export const modules: Dict["modules"] = {
   daily: {
     empty: (label: string, days: number) => `Nog niets in beeld ${label}: geen aanvulling of uitverkoop in de afgelopen ${n$(days)} dagen. De eerste tekent de eerste balk.`,
@@ -199,5 +201,45 @@ export const modules: Dict["modules"] = {
     more: (n: number) => `+${n$(n)}`,
     seen: (ago: ReactNode) => <>Beschikbaar {ago}</>,
     loading: "Voorraad wordt geladen",
+  },
+  /** WireNow: het bulletin waarmee regio-, stads-, winkel-, land- en iPhone Duo-pagina's openen. `label` komt met voorzetsel („in Amsterdam", „bij Apple Amsterdam"); alle cijfers gaan over 14 dagen. */
+  wireNow: {
+    eyebrow: (label: string) => `Op de draad · iPhone Duo ${label}`,
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>Laatst vermeld: <b className="text-ink">{o.config}</b>{o.store != null && <> bij {o.store}</>}, {o.when}{o.up ? <> · {o.up}</> : null}.</>,
+    neverYet: (label: string, days: number) => `Geen iPhone Duo-vermelding bevestigd ${label} in de laatste ${WN(days)} dagen.`,
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">Nu vermeld bij {WN(o.k)} van {WN(o.n)} winkels</b> {o.label} (gelezen {o.stamp}): {o.list}.</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">Nu vermeld: {o.k} van {o.total} configuraties</b> bij {o.name} (gelezen {o.stamp}): {o.list}.</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">Niets vermeld om {o.stamp}</b>: geen van de {WN(o.n)} Apple Stores {o.label} toont een iPhone Duo om af te halen.</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">Niets vermeld om {o.stamp}</b>: {o.name} toont geen enkele iPhone Duo-configuratie om af te halen.</>,
+    storeItem: (store: ReactNode, configs: number) => <>{store} ({configs} config.)</>,
+    configItem: (config: string) => config,
+    others: (o: { pro: number; max: number; one: boolean; configs: number }) => (o.one ? `iPhone 18 Pro: ${o.pro} van ${o.configs} configuraties hier; 18 Pro Max: ${o.max}.` : `De iPhone 18 Pro ligt bij ${o.pro} ervan, de 18 Pro Max bij ${o.max}.`),
+    tRestocks: (days: number) => `Duo-aanvullingen, laatste ${WN(days)} dagen`,
+    tGone60: "van de getimede vermeldingen binnen een minuut weg",
+    tLongest: "langste vermelding van deze week",
+    tWindow: (range: string) => `van de aanvullingen viel ${range}`,
+    tToday: "aanvullingen vandaag tot nu toe",
+    tStores: (n: number) => `van ${WN(n)} winkels hadden in de periode een aanvulling`,
+    wireTime: (stamp: string) => `Draadtijd ${stamp}`,
+    reads: (note: string) => `gelezen ${note}`,
+    window: (days: number) => `venster van ${WN(days)} dagen`,
+    method: "een aanvulling telt pas als twee lezingen overeenkomen; de eerste waarneming van een winkel telt nooit",
+    zone: () => "tijd ter plaatse",
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }) =>
+      `${o.range} ${o.zone}: dan komt de iPhone Duo terug ${o.label}. Dat venster nam ${o.pct} van de ${WN(o.n)} aanvullingen die RestockWire ${o.one ? "hier" : `bij ${WN(o.stores)} Apple Stores ${o.label}`} in de laatste ${WN(o.days)} dagen vastlegde. Piekuur ${o.busiest}, ${WN(o.busiestN)} aanvullingen.${o.config ? ` De ${o.config} kwam het vaakst terug (${WN(o.k)} van ${WN(o.n)}).` : ""}${o.median ? ` Mediane vermelding: weg na ${o.median}.` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }) => `${WN(o.n)} iPhone Duo-aanvulling${o.n === 1 ? "" : "en"} ${o.one ? o.label : `bij de ${WN(o.stores)} Apple Stores ${o.label}`} in de laatste ${WN(o.days)} dagen: te weinig voor een gebruikelijk uur. Elke staat hieronder.`,
+    hourByHour: "Elk uur, elke winkel →",
+    lastThree: (n: number, label: string) => (n === 1 ? `De laatste Duo-vermelding ${label}` : `De laatste ${WN(n)} Duo-vermeldingen ${label}`),
+    secs: (n: number) => `${WN(n)} s`,
+    mins: (n: number) => `${WN(n)} min`,
+    upRange: (low: string, high: string) => `vermeld ${low}–${high}`,
+    upAbout: (x: string) => `vermeld ongeveer ${x}`,
+    stillUp: (x: string) => `nog vermeld (${x})`,
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }) => (o.one
+      ? `${WN(o.sent)} melding${o.sent === 1 ? "" : "en"} verstuurd voor Duo-aanvullingen ${o.label} in de afgelopen ${WN(o.days)} dagen.`
+      : `${WN(o.sent)} melding${o.sent === 1 ? "" : "en"} verstuurd voor Duo-aanvullingen bij ${WN(o.stores)} van de ${WN(o.total)} winkels ${o.label} in de afgelopen ${WN(o.days)} dagen.`),
+    alertMe: (name: string) => `Zet ${name} op de 5-secondendraad`,
+    unknown: "De patrooncijfers konden deze keer niet worden gelezen; de vermelding hierboven is live.",
+    allModels: (o: { n: number; days: number; peak: string | null }) => `Alle drie de iPhones samen: ${WN(o.n)} aanvullingen in ${WN(o.days)} dagen${o.peak ? `, piek ${o.peak}` : ""}.`,
   },
 };

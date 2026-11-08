@@ -20,7 +20,7 @@ import { SPEED } from "@/lib/plans";
 import { num, pct as pctIn, price, stamp, list, fitTitleW, hour, unit, secs, weekdays, distance } from "@/lib/i18n/format";
 import { appleStoreLabel, cityLabel, colorLabel, countryLabel, regionLabel } from "@/lib/i18n/places";
 import type { Dict } from "../en";
-import type { RestockTimesMeta, RestockTimesView } from "../en/views";
+import type { RestockTimesMeta, RestockTimesView, RestockTimesPlace } from "../en/views";
 
 const L = "nl" as const;
 const cap = (s: string) => (s ? s[0].toUpperCase() + s.slice(1) : s);
@@ -190,6 +190,10 @@ function priceLabel(product: Product): string {
 
 /* ---------------------------------------------------------------- views */
 
+/** 2026-11-08: a place page (/{cc}/when-does-iphone-duo-restock/{region}[/{city}]) names its region or city where the country page names the country. */
+const rtW = (x: { c: Country; place?: RestockTimesPlace }) => (x.place ? `in ${x.place.name}` : inC(x.c));
+const rtU = (x: { us: boolean; c: Country; place?: RestockTimesPlace }) => (x.place ? (x.place.kind === "region" ? "stad" : "winkel") : rtRegion(x));
+const rtUs = (x: { us: boolean; c: Country; place?: RestockTimesPlace }) => (x.place ? (x.place.kind === "region" ? "steden" : "winkels") : rtRegions(x));
 export const views: Dict["views"] = {
   common: {
     inCountry: (c: Country) => inC(c),
@@ -375,33 +379,33 @@ export const views: Dict["views"] = {
       store: (s: Store) => appleOf(s),
       storeWithPlace: (s: Store) => `${appleOf(s)} (${cityLabel(s.country ?? "us", s.city, L)})`,
     },
-    title: (c: Country) => `Hoe laat vult Apple de iPhone Duo aan ${inC(c)}?`,
+    title: (c: Country, place?: RestockTimesPlace) => `Hoe laat vult Apple de iPhone Duo aan ${place ? `in ${place.name}` : inC(c)}?`,
     metaDescription: (x: RestockTimesMeta) => {
       const { c, t, w, pattern } = x;
-      const region = c.cc === "us" ? "staat" : c.regionNoun ? noun(c) : "winkel";
+      const region = x.place ? (x.place.kind === "region" ? "stad" : "winkel") : c.cc === "us" ? "staat" : c.regionNoun ? noun(c) : "winkel";
       const since = dateLabel(t.since, false);
-      const inStores = oneIn(c) ? `bij de enige Apple Store ${inC(c)}` : `over alle Apple Stores ${inC(c)}`;
+      const inStores = oneIn(c) ? `bij de enige Apple Store ${rtW(x)}` : `over alle Apple Stores ${rtW(x)}`;
       return t.n > 0 && pattern
         ? fitT([
           `iPhone Duo ${inStores} sinds ${since}: ${rtN(t.n)}× terug, ${rtPct(w.share)} daarvan ${between(w.from, w.to)} (tijd ter plaatse)${t.sellout ? `; ${rtPct(t.sellout.within2min)} was binnen 2 minuten op` : ""}. Uitgesplitst naar uur, dag, ${region}, winkel en configuratie.`,
           `iPhone Duo ${inStores} sinds ${since}: ${rtN(t.n)}× terug, ${rtPct(w.share)} daarvan ${between(w.from, w.to)} (tijd ter plaatse). Uitgesplitst naar uur, dag, ${region} en configuratie.`,
-          `Wanneer de iPhone Duo terugkomt ${inC(c)}: ${rtN(t.n)} keer sinds ${since}, naar uur, dag, ${region} en configuratie.`,
+          `Wanneer de iPhone Duo terugkomt ${rtW(x)}: ${rtN(t.n)} keer sinds ${since}, naar uur, dag, ${region} en configuratie.`,
         ], 158)
         : t.n > 0
           ? fitT([
             `Sinds ${since} ${rtN(t.n)}× een bevestigde iPhone Duo-aanvulling ${inStores}, gemeten met checks om de ${SPEED.checkSec} seconden: naar uur ter plaatse, dag, ${region}, winkel en configuratie, plus de duur van elk.`,
-            `Wanneer de iPhone Duo terugkomt ${inC(c)}: ${rtN(t.n)}× bevestigd sinds ${since}, naar uur, dag, ${region} en configuratie.`,
+            `Wanneer de iPhone Duo terugkomt ${rtW(x)}: ${rtN(t.n)}× bevestigd sinds ${since}, naar uur, dag, ${region} en configuratie.`,
           ], 158)
           : `Aanvultijden van de iPhone Duo ${inStores}, uur voor uur, dag voor dag, per winkel en configuratie: RestockWire leest elke winkel elke ${SPEED.checkSec} seconden sinds ${longDate(t.since)}.`;
     },
     h1: (x: RestockTimesView) => x.t.unknown
-      ? `Hoe laat vult Apple de iPhone Duo aan ${inC(x.c)}?`
+      ? `Hoe laat vult Apple de iPhone Duo aan ${rtW(x)}?`
       : x.t.n > 0
-        ? `Hoe laat vult Apple de iPhone Duo aan ${inC(x.c)}? ${x.pattern ? `Meestal ${between(x.w.from, x.w.to)} lokale tijd` : "Onze eigen checks, uur voor uur"}`
-        : `Komt de iPhone Duo terug ${inC(x.c)}? Nog niet gezien, en zo houden we de wacht`,
+        ? `Hoe laat vult Apple de iPhone Duo aan ${rtW(x)}? ${x.pattern ? `Meestal ${between(x.w.from, x.w.to)} lokale tijd` : "Onze eigen checks, uur voor uur"}`
+        : `Komt de iPhone Duo terug ${rtW(x)}? Nog niet gezien, en zo houden we de wacht`,
     intro: (x: RestockTimesView) => {
       const { t, one, tracked, pattern, w } = x;
-      const where = inC(x.c);
+      const where = rtW(x);
       const inStores = one ? "bij de enige Apple Store" : "over alle Apple Stores";
       return t.unknown ? (
         <>Het voorraadlogboek is even niet beschikbaar. De winkels {where} worden nog steeds elke {SPEED.checkSec} seconden gelezen, en bij de volgende keer laden zijn de cijfers terug.</>
@@ -444,7 +448,7 @@ export const views: Dict["views"] = {
     nav: (x: RestockTimesView): Record<string, string> => ({
       "time-of-day": "Uur",
       "day-by-day": "Dagen",
-      where: `Per ${rtRegion(x)}`,
+      where: `Per ${rtU(x)}`,
       configuration: "Configuraties",
       "how-long": "Uitverkoopsnelheid",
       unavailable: "“Niet beschikbaar”",
@@ -452,18 +456,18 @@ export const views: Dict["views"] = {
       method: "Methode",
     }),
     h2: (x: RestockTimesView): Record<string, string> => ({
-      "time-of-day": `Op welk uur komt de iPhone Duo terug ${inC(x.c)}?`,
-      "day-by-day": `Op welke dagen werd de iPhone Duo aangevuld ${inC(x.c)}?`,
-      where: `Waar wordt de iPhone Duo ${inC(x.c)} het vaakst aangevuld?`,
-      configuration: `Welke opslag en kleur van de iPhone Duo komen het vaakst terug ${inC(x.c)}?`,
-      "how-long": `Hoeveel seconden duurt een aanvulling van de iPhone Duo ${inC(x.c)}?`,
+      "time-of-day": `Op welk uur komt de iPhone Duo terug ${rtW(x)}?`,
+      "day-by-day": `Op welke dagen werd de iPhone Duo aangevuld ${rtW(x)}?`,
+      where: `Waar wordt de iPhone Duo ${rtW(x)} het vaakst aangevuld?`,
+      configuration: `Welke opslag en kleur van de iPhone Duo komen het vaakst terug ${rtW(x)}?`,
+      "how-long": `Hoeveel seconden duurt een aanvulling van de iPhone Duo ${rtW(x)}?`,
       unavailable: "Waarom toont apple.com bij elke winkel “momenteel niet beschikbaar”?",
       reddit: "Reddits theorieën over iPhone Duo-aanvullingen, naast het logboek gelegd",
       method: "Wat telt RestockWire als aanvulling?",
     }),
     faq: (x: RestockTimesView): Faq[] => {
       const { t, w, pattern, sell, us, weekend, tracked } = x;
-      const where = inC(x.c);
+      const where = rtW(x);
       const window = between(w.from, w.to);
       return [
         { q: `Wanneer vult Apple de iPhone Duo aan ${where}?`, a: t.n > 0 && pattern
@@ -488,9 +492,9 @@ export const views: Dict["views"] = {
       reports: (tracker: string) => `${tracker}: meldingen van iPhone Duo-aanvullingen uit de lanceringsweek (hun eigen waarnemingen, apart gehouden en nooit meegeteld)`,
     },
     ld: (x: RestockTimesView) => ({
-      datasetName: `iPhone Duo terug voor ophalen: tijdstippen, Apple Stores ${inC(x.c)}`,
-      description: `Elke bevestigde terugkeer van de iPhone Duo voor ophalen in Apple Stores ${inC(x.c)} sinds ${x.t.since}, met winkel, configuratie en tijdstip. Bron: RestockWire, dat elke winkel om de ${SPEED.checkSec} seconden leest. Gegroepeerd naar uur ter plaatse, dag, ${rtRegion(x)}, winkel en configuratie.`,
-      spatial: `Apple Stores ${inC(x.c)}`,
+      datasetName: `iPhone Duo terug voor ophalen: tijdstippen, Apple Stores ${rtW(x)}`,
+      description: `Elke bevestigde terugkeer van de iPhone Duo voor ophalen in Apple Stores ${rtW(x)} sinds ${x.t.since}, met winkel, configuratie en tijdstip. Bron: RestockWire, dat elke winkel om de ${SPEED.checkSec} seconden leest. Gegroepeerd naar uur ter plaatse, dag, ${x.place?.kind === "city" ? "" : `${rtU(x)}, `}winkel en configuratie.`,
+      spatial: `Apple Stores ${rtW(x)}`,
       measured: ["moment van terugkeer (klok van de winkel)", "Apple Store", "iPhone Duo-configuratie (opslag, kleur)", "seconden tot uitverkocht"],
       size: `${n$(x.t.n)} aanvullingen, ${n$(x.t.stores)} winkels`,
     }),
@@ -508,7 +512,7 @@ export const views: Dict["views"] = {
       { text: <>Eén golf van tien aanvullingen is één gebeurtenis, geen gewoonte</>, no: true },
       { text: <>Elke nieuwe dag aan data werkt deze pagina vanzelf bij</>, step: true },
     ],
-    hourCaption: (x: RestockTimesView) => `iPhone Duo ${inC(x.c)}, ${dateLabel(x.t.since, false)} tot vandaag: ${n$(x.t.n)} aanvullingen naar uur ter plaatse`,
+    hourCaption: (x: RestockTimesView) => `iPhone Duo ${rtW(x)}, ${dateLabel(x.t.since, false)} tot vandaag: ${n$(x.t.n)} aanvullingen naar uur ter plaatse`,
     hourHead: ["Uur ter plaatse", "Keer terug", "Deel"],
     morningKeys: (x: RestockTimesView): Point[] => [
       { text: <>De ochtendpiek heeft <b className="text-ink">niets met de openingstijd te maken</b>{x.us ? " (de meeste Apple Stores in de VS gaan om 10:00 open)" : ""}</> },
@@ -516,7 +520,7 @@ export const views: Dict["views"] = {
       { text: <>Kijk je zelf? Neem <b className="text-ink">{rangeLabel(x.w.from, x.w.to)}</b> op doordeweekse ochtenden</>, step: true },
       { text: <>Een <Link href={x.alert}>alert</Link> dekt de <b className="text-ink">overige 22 uur</b>, als niemand anders kijkt</>, step: true },
     ],
-    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>Elke winkelpagina toont de eigen uren in de eigen tijdzone (<Link href={x.storesHref}>{x.us ? "winkels, staat voor staat" : `winkels ${inC(x.c)}`}</Link>), zodat je de winkel ziet die om 8:00 aanvult terwijl de regio om 9:00 piekt</>, step: true }],
+    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>Elke winkelpagina toont de eigen uren in de eigen tijdzone (<Link href={x.storesHref}>{x.us ? "winkels, staat voor staat" : `winkels ${rtW(x)}`}</Link>), zodat je de winkel ziet die om 8:00 aanvult terwijl de regio om 9:00 piekt</>, step: true }],
 
     // ---- day by day
     dayLead: (x: RestockTimesView) => {
@@ -526,7 +530,7 @@ export const views: Dict["views"] = {
       ) : t.n > 0 ? (
         <b>{t.days === tracked ? `Alle ${rtN(t.days)} gevolgde dagen brachten` : `${rtN(t.days)} van de ${rtN(tracked)} dagen sinds ${longDate(t.since)} ${t.days === 1 ? "bracht" : "brachten"}`} minstens één bevestigde aanvulling{t.peakWeekday != null ? `; ${WEEKDAYS_NL[t.peakWeekday]} gaat voorop onder de weekdagen` : ""}.</b>
       ) : (
-        <b>Nul bevestigde aanvullingen {inC(x.c)} sinds {longDate(t.since)}.</b>
+        <b>Nul bevestigde aanvullingen {rtW(x)} sinds {longDate(t.since)}.</b>
       );
     },
     daysTracked: "gevolgde dagen met een aanvulling",
@@ -534,7 +538,7 @@ export const views: Dict["views"] = {
     busiestDayNone: "grootste dag",
     drop: (x: RestockTimesView, drop: { at: string; restocks: number }) => `winkels aangevuld binnen één halfuur, ${zoneStamp(drop.at, x.c)} (${cnt(drop.restocks, "configuratie", "configuraties")}): een landelijke vrijgave`,
     weekend: (x: RestockTimesView) => `viel in een weekend (${cnt(x.weekend, "aanvulling", "aanvullingen")})`,
-    dayCaption: (x: RestockTimesView) => `Aanvullingen van de iPhone Duo per dag ${inC(x.c)}${x.t.reports.length ? "; rijen met “gemeld” komen uit gepubliceerde waarnemingen van andere trackers van voor onze eigen metingen, alleen opgenomen voor de tijdlijn" : ""}`,
+    dayCaption: (x: RestockTimesView) => `Aanvullingen van de iPhone Duo per dag ${rtW(x)}${x.t.reports.length ? "; rijen met “gemeld” komen uit gepubliceerde waarnemingen van andere trackers van voor onze eigen metingen, alleen opgenomen voor de tijdlijn" : ""}`,
     dayHead: { date: "Dag", restocks: "Keer terug", stores: "Winkels", busiest: "Piekuur", source: "Bron" },
     soFar: " · tot nu toe",
     reportedBy: (names: string[]) => <>volgens {names.join(" / ")}</>,
@@ -543,20 +547,20 @@ export const views: Dict["views"] = {
       { text: <><b className="text-ink">{dateLabel(resumed)}</b>: ophalen in de winkel kwam terug{x.us ? " (MacRumors)" : ""}</> },
       x.t.reports.length
         ? { text: <>Rijen met <b className="text-ink">gemeld</b> zijn waarnemingen uit de lanceringsweek van {x.reportNames.join(" en ")}, buiten elke telling gehouden</> }
-        : { text: <>Het logboek van RestockWire voor elke winkel {inC(x.c)} begint op <b className="text-ink">{longDate(x.t.since)}</b></> },
+        : { text: <>Het logboek van RestockWire voor elke winkel {rtW(x)} begint op <b className="text-ink">{longDate(x.t.since)}</b></> },
       ...(x.t.n > 0 && x.t.peakWeekday == null ? [{ text: <>Een drukste weekdag vraagt <b className="text-ink">{WEEKDAY_MIN_SPAN} dagen</b> aan data (we hebben er {rtN(x.tracked)})</>, no: true }] : []),
       { text: <>Let op de kolom <b className="text-ink">winkels</b>: aanvullingen verspreid over meer winkels geven je betere kansen</>, step: true },
     ],
 
     // ---- where
     whereLead: (x: RestockTimesView, hit: { name: string; restocks: number; stores: number; storesTotal: number }[], total: number) => (
-      <b>{hit[0].name}: {cnt(hit[0].restocks, "aanvulling", "aanvullingen")} in {rtN(hit[0].stores)} van de {cnt(hit[0].storesTotal, "winkel", "winkels")} daar sinds {dateLabel(x.t.since, false)}{hit[1] ? <>, gevolgd door {hit[1].name} ({rtN(hit[1].restocks)})</> : null}{hit[2] ? <> en {hit[2].name} ({rtN(hit[2].restocks)})</> : null}; {rtN(hit.length)} van de {rtN(total)} {rtRegions(x)} {hit.length === 1 ? "heeft" : "hebben"} een aanvulling gezien{total - hit.length > 0 ? `, ${rtN(total - hit.length)} nog geen` : ""}.</b>
+      <b>{hit[0].name}: {cnt(hit[0].restocks, "aanvulling", "aanvullingen")} in {rtN(hit[0].stores)} van de {cnt(hit[0].storesTotal, "winkel", "winkels")} daar sinds {dateLabel(x.t.since, false)}{hit[1] ? <>, gevolgd door {hit[1].name} ({rtN(hit[1].restocks)})</> : null}{hit[2] ? <> en {hit[2].name} ({rtN(hit[2].restocks)})</> : null}; {rtN(hit.length)} van de {rtN(total)} {rtUs(x)} {hit.length === 1 ? "heeft" : "hebben"} een aanvulling gezien{total - hit.length > 0 ? `, ${rtN(total - hit.length)} nog geen` : ""}.</b>
     ),
-    whereNone: (x: RestockTimesView) => <b>Nog geen {rtRegion(x)} {inC(x.c)} met een bevestigde aanvulling; de eerste opent de tabel.</b>,
-    regionCaption: (x: RestockTimesView) => `iPhone Duo ${inC(x.c)} naar ${rtRegion(x)}, ${dateLabel(x.t.since, false)} tot vandaag (bevestigd)`,
-    regionHead: (x: RestockTimesView) => [cap(rtRegion(x)), "Keer terug", "Winkels met aanvulling", "Recentste (tijd ter plaatse)"],
+    whereNone: (x: RestockTimesView) => <b>Nog geen {rtU(x)} {rtW(x)} met een bevestigde aanvulling; de eerste opent de tabel.</b>,
+    regionCaption: (x: RestockTimesView) => `iPhone Duo ${rtW(x)} naar ${rtU(x)}, ${dateLabel(x.t.since, false)} tot vandaag (bevestigd)`,
+    regionHead: (x: RestockTimesView) => [cap(rtU(x)), "Keer terug", "Winkels met aanvulling", "Recentste (tijd ter plaatse)"],
     ofN: (a: number, b: number) => <>{rtN(a)} van {rtN(b)}</>,
-    storesCaption: (x: RestockTimesView) => `Winkels met de meeste aanvullingen van de iPhone Duo ${inC(x.c)}, ${dateLabel(x.t.since, false)} tot vandaag`,
+    storesCaption: (x: RestockTimesView) => `Winkels met de meeste aanvullingen van de iPhone Duo ${rtW(x)}, ${dateLabel(x.t.since, false)} tot vandaag`,
     storesHead: ["Winkel", "Aanvullingen", "Dagen", "Gebruikelijk uur", "Laatste (lokale tijd)"],
     swaps: (x: RestockTimesView) => [
       { no: "De nummer één van de lijst najagen, waar die ook ligt", yes: `Twee, drie winkels waar je ${x.pattern ? `rond ${hourLabel(x.w.from)}` : "'s ochtends"} binnen het uur staat`, why: "Een aanvulling die je niet haalt, telt niet. Ook de drukste winkel staat het grootste deel van de dag op niet beschikbaar." },
@@ -573,8 +577,8 @@ export const views: Dict["views"] = {
     restocksOf: (a: string) => `aanvullingen ${a}`,
     byStorage: "per opslag",
     byColour: "per kleur",
-    configNone: (x: RestockTimesView) => <b>Nog geen configuratie {inC(x.c)} met een bevestigde aanvulling; alle acht staan er al, zodat de eerste aanvulling meteen een rij heeft.</b>,
-    configCaption: (x: RestockTimesView) => `Bevestigde aanvullingen van de iPhone Duo per configuratie ${inC(x.c)}, ${dateLabel(x.t.since, false)} tot vandaag`,
+    configNone: (x: RestockTimesView) => <b>Nog geen configuratie {rtW(x)} met een bevestigde aanvulling; alle acht staan er al, zodat de eerste aanvulling meteen een rij heeft.</b>,
+    configCaption: (x: RestockTimesView) => `Bevestigde aanvullingen van de iPhone Duo per configuratie ${rtW(x)}, ${dateLabel(x.t.since, false)} tot vandaag`,
     configHead: ["Configuratie", "Keer terug", "Deel", "Recentste (tijd ter plaatse)"],
     configKeys: (x: RestockTimesView): Point[] => [
       { text: <>De configuratie kiezen telt <b className="text-ink">zwaarder dan de winkel kiezen</b></> },
@@ -586,31 +590,31 @@ export const views: Dict["views"] = {
     ],
 
     // ---- how long
-    howLongLead: (x: RestockTimesView, sell: SelloutFacts) => <b>{sell.medianSec} seconden: de mediane levensduur van de {rtN(sell.n)} uitverkochte aanvullingen {inC(x.c)}; {rtPct(sell.within2min)} was binnen 2 minuten weg en {rtPct(sell.within20min)} binnen 20.</b>,
+    howLongLead: (x: RestockTimesView, sell: SelloutFacts) => <b>{sell.medianSec} seconden: de mediane levensduur van de {rtN(sell.n)} uitverkochte aanvullingen {rtW(x)}; {rtPct(sell.within2min)} was binnen 2 minuten weg en {rtPct(sell.within20min)} binnen 20.</b>,
     secUnit: "s",
     medianListing: "mediaan, van beschikbaar tot weg",
     within2: "weg binnen 2 minuten",
     within20: "weg binnen 20 minuten",
     fastest: "snelste uitverkoop gemeten",
-    howLongNone: (x: RestockTimesView) => <b>{x.t.n > 0 ? "Te" : "Nog te"} weinig uitverkochte aanvullingen {inC(x.c)} om te meten; deze cijfers beginnen bij tien, en de pagina voor de VS heeft de volledige set.</b>,
+    howLongNone: (x: RestockTimesView) => <b>{x.t.n > 0 ? "Te" : "Nog te"} weinig uitverkochte aanvullingen {rtW(x)} om te meten; deze cijfers beginnen bij tien, en de pagina voor de VS heeft de volledige set.</b>,
     howLongKeys: (x: RestockTimesView): Point[] => [
       { text: <>Twee minuten is een venster voor een <b className="text-ink">alert</b>, niet voor verversen op apple.com</> },
       { text: <>Elk ander getal op deze pagina volgt uit dit getal</> },
-      { text: <>Elke aanvulling en hoeveel seconden die duurde, per configuratie en {rtRegion(x)}: <Link href="/how-fast-does-iphone-duo-sell-out">Hoe snel is een iPhone Duo-aanvulling uitverkocht?</Link></>, step: true },
+      { text: <>Elke aanvulling en hoeveel seconden die duurde, per configuratie en {rtU(x)}: <Link href="/how-fast-does-iphone-duo-sell-out">Hoe snel is een iPhone Duo-aanvulling uitverkocht?</Link></>, step: true },
     ],
     measured: "Elk getal loopt van de check die de configuratie voor het eerst beschikbaar zag tot de check die hem weg zag. Het is dus een bovengrens: de echte levensduur is korter.",
 
     // ---- unavailable
-    unavailableLead: (x: RestockTimesView) => <b>Een aanvulling is een flits, geen toestand: {x.one ? "één winkel" : `${rtN(x.stores)} winkels`} × {rtN(x.configs)} configuraties geeft {rtN(x.pairs)} mogelijke combinaties {inC(x.c)}, en op dit moment {x.duoNow === 1 ? "heeft 1 winkel" : `hebben ${rtN(x.duoNow)} winkels`} überhaupt een iPhone Duo.</b>,
+    unavailableLead: (x: RestockTimesView) => <b>Een aanvulling is een flits, geen toestand: {x.one ? "één winkel" : `${rtN(x.stores)} winkels`} × {rtN(x.configs)} configuraties geeft {rtN(x.pairs)} mogelijke combinaties {rtW(x)}, en op dit moment {x.duoNow === 1 ? "heeft 1 winkel" : `hebben ${rtN(x.duoNow)} winkels`} überhaupt een iPhone Duo.</b>,
     pairs: "mogelijke combinaties van winkel × configuratie",
     listingNow: "met nu een iPhone Duo om op te halen",
     goneIn2: "van de aanvullingen binnen twee minuten voorbij",
     last24: "bevestigde aanvullingen, afgelopen 24 uur",
     unavailableKeys: (x: RestockTimesView, today: number): Point[] => [
       x.recent.restocks > 0
-        ? { text: <>In 24 uur <b className="text-ink">{n$(x.recent.restocks)}× bevestigd terug</b>, verspreid over {cnt(x.recent.stores, "winkel", "winkels")} {inC(x.c)}</> }
+        ? { text: <>In 24 uur <b className="text-ink">{n$(x.recent.restocks)}× bevestigd terug</b>, verspreid over {cnt(x.recent.stores, "winkel", "winkels")} {rtW(x)}</> }
         : today > 0
-          ? { text: <>Vandaag {inC(x.c)}: <b className="text-ink">{n$(today)}× bevestigd terug</b></> }
+          ? { text: <>Vandaag {rtW(x)}: <b className="text-ink">{n$(today)}× bevestigd terug</b></> }
           : { text: <>De dagtabel hierboven toont de aanvullingen die wel plaatsvonden</> },
       { text: <>Elke aanvulling stond <b className="text-ink">een minuut of twee</b> op apple.com</> },
       { text: <>“Overal niet beschikbaar” op dag vier of dag veertien betekent <b className="text-ink">niet</b> dat Apple gestopt is</>, no: true },
@@ -618,7 +622,7 @@ export const views: Dict["views"] = {
     unavailableLinks: { explained: "“Momenteel niet beschikbaar voor ophalen”, uitgelegd", howToGet: "Een iPhone Duo krijgen, stap voor stap" },
 
     // ---- reddit
-    redditLead: (x: RestockTimesView) => <b>Veel advies op <a href="https://www.reddit.com/r/applestore/" target="_blank" rel="noopener nofollow">r/applestore</a> en <a href="https://www.reddit.com/r/iphone/" target="_blank" rel="noopener nofollow">r/iphone</a> is eerlijk, gebaseerd op één winkel en de volgende dag al achterhaald; hieronder de vier claims die het vaakst terugkomen, getoetst aan {rtN(x.t.n)} bevestigde aanvullingen {inC(x.c)}.</b>,
+    redditLead: (x: RestockTimesView) => <b>Veel advies op <a href="https://www.reddit.com/r/applestore/" target="_blank" rel="noopener nofollow">r/applestore</a> en <a href="https://www.reddit.com/r/iphone/" target="_blank" rel="noopener nofollow">r/iphone</a> is eerlijk, gebaseerd op één winkel en de volgende dag al achterhaald; hieronder de vier claims die het vaakst terugkomen, getoetst aan {rtN(x.t.n)} bevestigde aanvullingen {rtW(x)}.</b>,
     redditCaption: "Veelgehoorde Reddit-claims over iPhone Duo-aanvullingen, getoetst aan de bevestigde aanvullingen van RestockWire",
     redditHead: ["Claim", "Wat het logboek laat zien"],
     claims: (x: RestockTimesView): { claim: string; answer: ReactNode }[] => {
@@ -638,7 +642,7 @@ export const views: Dict["views"] = {
     // ---- method
     methodLead: <b>Een aanvulling is een configuratie die op apple.com beschikbaar komt om op te halen in een winkel die hem niet aanbood, bevestigd door twee checks met hetzelfde antwoord.</b>,
     methodKeys: (x: RestockTimesView): Point[] => [
-      { text: <>Winkels met een alert: elke <b className="text-ink">{SPEED.fastSec} seconden</b>; {x.one ? "de Apple Store" : "elke Apple Store"} {inC(x.c)}: elke <b className="text-ink">{SPEED.checkSec} seconden</b></> },
+      { text: <>Winkels met een alert: elke <b className="text-ink">{SPEED.fastSec} seconden</b>; {x.one ? "de Apple Store" : "elke Apple Store"} {rtW(x)}: elke <b className="text-ink">{SPEED.checkSec} seconden</b></> },
       // OTHER_TRACKERS ("8 seconds to 15 minutes") in Dutch.
       { text: <>Gepubliceerde intervallen van andere trackers: <b className="text-ink">8 seconden tot 15 minuten</b>; we vergelijken alleen wat zij publiceren</> },
       { text: <>Een eerste “beschikbaar” wordt <b className="text-ink">ongeveer een seconde later</b> opnieuw gecheckt voordat het telt</> },
@@ -649,7 +653,7 @@ export const views: Dict["views"] = {
       { text: <>Deze tabellen worden ongeveer elke vijf minuten ververst; <Link href={x.logHref}>het voorraadlogboek</Link> is live</>, step: true },
     ],
     quote: "Citeer deze pagina: neem elk getal over met een link terug. RestockWire is onafhankelijk van Apple en leest dezelfde beschikbaarheid voor ophalen die iedereen op apple.com ziet, alleen veel vaker.",
-    alertIn: (x: RestockTimesView) => <>iPhone Duo-alerts aanzetten{x.one ? "" : ` ${inC(x.c)}`}</>,
+    alertIn: (x: RestockTimesView) => <>iPhone Duo-alerts aanzetten{x.one ? "" : ` ${rtW(x)}`}</>,
 
     // ---- related, FAQ, sources
     related: "Meer vragen over de iPhone Duo",
@@ -663,6 +667,13 @@ export const views: Dict["views"] = {
       unavailable: "“Niet beschikbaar”, uitgelegd",
     },
     otherCountries: ((us: boolean): string => (us ? "Zelfde vraag, ander land" : "Andere landen")) as RT["otherCountries"],
+    /** Place pages (a region or a city of this country), and the rows on the country page that lead to them. */
+    place: {
+      byCity: "Stadspagina's",
+      storesLive: (x: RestockTimesView) => `Apple Stores ${rtW(x)}: live voorraad`,
+      countryPage: (c: Country) => `Aanvultijden van de iPhone Duo ${inC(c)}, alle winkels`,
+      sourcesWhere: (x: RestockTimesView) => `alle ${x.stores} Apple Stores ${rtW(x)}`,
+    },
     faqTitle: "Veelgestelde vragen",
   },
 };

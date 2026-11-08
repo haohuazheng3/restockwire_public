@@ -11,6 +11,8 @@ const restocks = (x: number) => plural(x, "Restock", "Restocks");
 const ausverkaeufe = (x: number) => plural(x, "Ausverkauf", "Ausverkäufe");
 const tage = (x: number) => (x === 1 ? "einem Tag" : `${n(x)} Tagen`);
 
+/** The WireNow bulletin groups its counts ("3 891"). */
+const WN = (v: number) => v.toLocaleString("de-DE");
 export const modules: Dict["modules"] = {
   daily: {
     empty: (label: string, days: number) => `${label[0].toUpperCase()}${label.slice(1)} gibt es noch nichts zu zeichnen: kein Restock und kein Ausverkauf in den letzten ${days} Tagen. Der erste zeichnet den ersten Balken.`,
@@ -195,5 +197,45 @@ export const modules: Dict["modules"] = {
     more: (k: number) => `+${n(k)}`,
     seen: (ago: ReactNode) => <>Gelistet {ago}</>,
     loading: "Bestand wird geladen",
+  },
+  /** WireNow: die Meldung, mit der Regions-, Stadt-, Store-, Länder- und Duo-Modellseiten öffnen. `label` kommt mit Präposition („in Bayern“, „bei Apple Rosenstraße“); alle Zahlen sind die letzten 14 Tage. */
+  wireNow: {
+    eyebrow: (label: string) => `Auf dem Draht · iPhone Duo ${label}`,
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>Zuletzt gelistet: <b className="text-ink">{o.config}</b>{o.store != null && <> bei {o.store}</>}, {o.when}{o.up ? <> · {o.up}</> : null}.</>,
+    neverYet: (label: string, days: number) => `In den letzten ${WN(days)} Tagen wurde ${label} kein iPhone Duo gelistet.`,
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">Gerade gelistet bei {WN(o.k)} von {WN(o.n)} Stores</b> {o.label} (Stand {o.stamp}): {o.list}.</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">Gerade gelistet: {o.k} von {o.total} Konfigurationen</b> bei {o.name} (Stand {o.stamp}): {o.list}.</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">Nichts gelistet, Stand {o.stamp}</b>: keiner der {WN(o.n)} Apple Stores {o.label} zeigt ein iPhone Duo zur Abholung.</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">Nichts gelistet, Stand {o.stamp}</b>: {o.name} zeigt keine iPhone-Duo-Konfiguration zur Abholung.</>,
+    storeItem: (store: ReactNode, configs: number) => <>{store} ({configs} Konfig.)</>,
+    configItem: (config: string) => config,
+    others: (o: { pro: number; max: number; one: boolean; configs: number }) => (o.one ? `iPhone 18 Pro: ${o.pro} von ${o.configs} Konfigurationen hier; 18 Pro Max: ${o.max}.` : `Das iPhone 18 Pro gibt es bei ${o.pro} davon, das 18 Pro Max bei ${o.max}.`),
+    tRestocks: (days: number) => `Duo-Restocks, letzte ${WN(days)} Tage`,
+    tGone60: "der gemessenen Listungen binnen einer Minute weg",
+    tLongest: "längste Listung dieser Woche",
+    tWindow: (range: string) => `der Restocks fielen ${range}`,
+    tToday: "Restocks heute bisher",
+    tStores: (n: number) => `von ${WN(n)} Stores hatten im Zeitraum einen Restock`,
+    wireTime: (stamp: string) => `Drahtzeit ${stamp}`,
+    reads: (note: string) => `Abfrage ${note}`,
+    window: (days: number) => `${WN(days)}-Tage-Fenster`,
+    method: "ein Restock zählt erst, wenn zwei Abfragen übereinstimmen; die erste Sichtung eines Stores zählt nie",
+    zone: () => "Ortszeit des Stores",
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }) =>
+      `${o.range} ${o.zone}: dann kommt das iPhone Duo ${o.label} zurück. In diesem Fenster lagen ${o.pct} der ${WN(o.n)} Restocks, die RestockWire ${o.one ? "hier" : `bei ${WN(o.stores)} Apple Stores ${o.label}`} in den letzten ${WN(o.days)} Tagen festgehalten hat. Spitzenstunde ${o.busiest} mit ${WN(o.busiestN)} Restocks.${o.config ? ` Am häufigsten kam ${o.config} (${WN(o.k)} von ${WN(o.n)}).` : ""}${o.median ? ` Median-Listung: nach ${o.median} weg.` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }) => `${WN(o.n)} iPhone-Duo-Restock${o.n === 1 ? "" : "s"} ${o.one ? o.label : `bei den ${WN(o.stores)} Apple Stores ${o.label}`} in den letzten ${WN(o.days)} Tagen: zu wenige für eine übliche Stunde. Jeder einzelne steht unten.`,
+    hourByHour: "Jede Stunde, jeder Store →",
+    lastThree: (n: number, label: string) => (n === 1 ? `Die letzte Duo-Listung ${label}` : `Die letzten ${WN(n)} Duo-Listungen ${label}`),
+    secs: (n: number) => `${WN(n)} s`,
+    mins: (n: number) => `${WN(n)} Min.`,
+    upRange: (low: string, high: string) => `gelistet ${low}–${high}`,
+    upAbout: (x: string) => `gelistet etwa ${x}`,
+    stillUp: (x: string) => `noch gelistet (${x})`,
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }) => (o.one
+      ? `In den letzten ${WN(o.days)} Tagen gingen ${WN(o.sent)} Benachrichtigungen für Duo-Restocks ${o.label} hinaus.`
+      : `In den letzten ${WN(o.days)} Tagen gingen ${WN(o.sent)} Benachrichtigungen für Duo-Restocks bei ${WN(o.stores)} der ${WN(o.total)} Stores ${o.label} hinaus.`),
+    alertMe: (name: string) => `${name} auf den 5-Sekunden-Draht legen`,
+    unknown: "Die Musterzahlen ließen sich diesmal nicht lesen; die Listung oben ist live.",
+    allModels: (o: { n: number; days: number; peak: string | null }) => `Alle drei iPhones zusammen: ${WN(o.n)} Restocks in ${WN(o.days)} Tagen${o.peak ? `, Spitze ${o.peak}` : ""}.`,
   },
 };

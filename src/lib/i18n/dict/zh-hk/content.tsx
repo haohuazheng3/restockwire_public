@@ -191,9 +191,11 @@ export const content: Dict["content"] = {
     configsInStock: "款上架",
     storesWithStock: f({ other: "間分店上架" }),
     restocks24h: "補貨，24 小時",
+    /** A tile that counts one model only (its short name first). */
+    scoped: (label: string, model: string) => `${model}・${label}`,
     restocksHint: (week: string, month: string, days: string) => `近 7 日：${week} 次 · 近 ${days} 日：${month} 次`,
     sellOuts: (days: string) => `售罄 ${days} 日`,
-    stays: (duration: string) => `約撐 ${duration}`,
+    stays: (duration: string) => (duration === "一分鐘以內" ? `撐 ${duration}` : `約撐 ${duration}`),
     noPairs: "未有可配對的售罄",
     lastRestock: "最新補貨",
     noneYet: "至今未有",

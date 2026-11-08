@@ -185,9 +185,11 @@ export const content: Dict["content"] = {
     configsInStock: "configuraties beschikbaar",
     storesWithStock: f({ one: "winkel waar hij klaarligt", other: "winkels waar hij klaarligt" }),
     restocks24h: "Aanvullingen, 24 u",
+    /** A tile that counts one model only (its short name first). */
+    scoped: (label: string, model: string) => `${model} · ${label}`,
     restocksHint: (week: string, month: string, days: string) => `7 d: ${week} · ${days} d: ${month}`,
     sellOuts: (days: string) => `Uitverkocht ${days} d`,
-    stays: (duration: string) => `blijft ~${duration}`,
+    stays: (duration: string) => (duration === "korter dan een minuut" ? `blijft ${duration}` : `blijft ~${duration}`),
     noPairs: "nog geen uitverkoop gekoppeld",
     lastRestock: "Nieuwste aanvulling",
     noneYet: "nog geen",

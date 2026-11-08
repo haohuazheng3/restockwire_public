@@ -12,6 +12,8 @@ import type { ReactNode } from "react";
 import { CHECK_NOTE } from "@/lib/plans";
 
 const s = (n: number) => (n === 1 ? "" : "s");
+/** Thousands grouped ("3,891"): the WireNow bulletin is written to be quoted, so its counts read as prose. */
+const nn = (n: number) => n.toLocaleString("en-US");
 
 export const modules = {
   /** DailyBars: 30 days of restocks (bars) and sell-outs (stacked under them). */
@@ -250,5 +252,67 @@ export const modules = {
     more: (n: number) => `+${n}`,
     seen: (ago: ReactNode) => <>Listed {ago}</>,
     loading: "Loading stock",
+  },
+  /**
+   * WireNow: the bulletin a place page opens with (region, city, store, country home, store index, the Duo model
+   * pages). Its order is the wire's: the newest listing first, then what is listed at this moment, four 14-day
+   * figures, the dated method line, one quotable paragraph, the last three listings with how long each stayed up.
+   * `label` is the place phrase ("in Michigan", "in the UK", "at Apple Somerset"); `name` the bare place or store
+   * name. Every count is the 14-day window (STATS_DAYS); nothing here says "since launch".
+   */
+  wireNow: {
+    eyebrow: (label: string) => `The iPhone Duo wire ${label}`,
+    /** The wire line: the newest Duo listing. `up`: "up 5–7 min" / "still up (12 min)" / null when unknown. */
+    lastUp: (o: { config: string; store: ReactNode | null; when: string; up: string | null }) => <>Last listed: <b className="text-ink">{o.config}</b>{o.store != null && <> at {o.store}</>}, {o.when}{o.up ? <> · {o.up}</> : null}.</>,
+    neverYet: (label: string, days: number) => `No iPhone Duo listing confirmed ${label} in the last ${days} days.`,
+    /** This moment. `stamp` is the newest read ("Nov 8, 4:22 AM EST"); `list` the stores (storeItem), joined. */
+    listed: (o: { stamp: string; k: number; n: number; label: string; list: ReactNode }) => <><b className="text-ink">Listed at this moment at {nn(o.k)} of {nn(o.n)} stores</b> {o.label} (read {o.stamp}): {o.list}.</>,
+    listedOne: (o: { stamp: string; k: number; total: number; name: string; list: ReactNode }) => <><b className="text-ink">Listed at this moment: {o.k} of {o.total} configurations</b> at {o.name} (read {o.stamp}): {o.list}.</>,
+    nothing: (o: { stamp: string; n: number; label: string }) => <><b className="text-ink">Nothing up at {o.stamp}</b>: 0 of {nn(o.n)} stores {o.label} have an iPhone Duo up for pickup.</>,
+    nothingOne: (o: { stamp: string; name: string }) => <><b className="text-ink">Nothing up at {o.stamp}</b>: {o.name} has no iPhone Duo configuration up for pickup.</>,
+    /** One listed store: its link and how many configurations. */
+    storeItem: (store: ReactNode, configs: number) => <>{store} ({configs} config{s(configs)})</>,
+    /** One listed configuration on a store page. */
+    configItem: (config: string) => config,
+    /** The other two models in one clause. Place: stores with any configuration; store: configurations here. */
+    others: (o: { pro: number; max: number; one: boolean; configs: number }) => (o.one ? `iPhone 18 Pro: ${o.pro} of ${o.configs} configurations here; 18 Pro Max: ${o.max}.` : `iPhone 18 Pro at ${o.pro} of them, 18 Pro Max at ${o.max}.`),
+    /* Tiles (14-day window) */
+    tRestocks: (days: number) => `Duo restocks logged, ${days} days`,
+    tGone60: "of timed listings gone inside a minute",
+    tLongest: "longest listing this week",
+    tWindow: (range: string) => `of restocks landed ${range}`,
+    tToday: "restocks so far today",
+    tStores: (n: number) => `of ${nn(n)} stores restocked in the window`,
+    /* The dated method line. `note` is CHECK_NOTE ("every 15 s, 5 s with an alert"). */
+    wireTime: (stamp: string) => `Wire time ${stamp}`,
+    reads: (note: string) => `reads ${note}`,
+    window: (days: number) => `${days}-day window`,
+    method: "one restock = two agreeing reads; a store's first sighting never counts",
+    /** "Eastern time" for a US zone the sentences can name, else "store local time". */
+    zone: (tz: string | null): string => {
+      const w: Record<string, string> = { "America/New_York": "Eastern", "America/Detroit": "Eastern", "America/Kentucky/Louisville": "Eastern", "America/Indiana/Indianapolis": "Eastern", "America/Chicago": "Central", "America/Denver": "Mountain", "America/Boise": "Mountain", "America/Phoenix": "Arizona", "America/Los_Angeles": "Pacific", "America/Anchorage": "Alaska", "Pacific/Honolulu": "Hawaii", "America/Puerto_Rico": "Atlantic" };
+      return tz && w[tz] ? `${w[tz]} time` : "store local time";
+    },
+    /** The quotable paragraph. `range` "9–11 AM", `pct` "58%", `busiest` "9–10 AM", `median` "about 75 seconds", `config` "512GB Star White". */
+    summary: (o: { range: string; zone: string; pct: string; n: number; stores: number; label: string; days: number; busiest: string; busiestN: number; config: string | null; k: number; median: string | null; one: boolean }) =>
+      `${o.range.replace("–", " to ")} ${o.zone} is when the iPhone Duo comes back ${o.label}: that window took ${o.pct} of the ${nn(o.n)} restock${s(o.n)} RestockWire logged ${o.one ? "here" : `across ${nn(o.stores)} stores ${o.label}`} over the last ${o.days} days. Peak hour ${o.busiest}, ${nn(o.busiestN)} restock${s(o.busiestN)}.${o.config ? ` The ${o.config} led the log (${nn(o.k)} of ${nn(o.n)}).` : ""}${o.median ? ` Median listing: gone in ${o.median}.` : ""}`,
+    tooFew: (o: { n: number; label: string; days: number; one: boolean; stores: number }) => `${nn(o.n)} iPhone Duo restock${s(o.n)} logged ${o.one ? o.label : `across ${nn(o.stores)} stores ${o.label}`} in the last ${o.days} days: too few to call a usual hour. Each one is listed below.`,
+    hourByHour: "All hours, all stores →",
+    lastThree: (n: number, label: string) => (n === 1 ? `The last Duo listing ${label}` : `The last ${n} Duo listings ${label}`),
+    /** Lifetimes: "up 5–7 min", "up about 2 min", "still up (12 min)". */
+    secs: (n: number) => `${n} s`,
+    mins: (n: number) => `${n} min`,
+    upRange: (low: string, high: string) => `up ${low}–${high}`,
+    upAbout: (x: string) => `up about ${x}`,
+    stillUp: (x: string) => `still up (${x})`,
+    /** Alerts pushed (counts only). */
+    alerts: (o: { sent: number; stores: number; total: number; days: number; label: string; one: boolean }) => (o.one
+      ? `${nn(o.sent)} alert${s(o.sent)} went out for Duo restocks ${o.label} in the past ${o.days} days.`
+      : `${nn(o.sent)} alert${s(o.sent)} went out for Duo restocks in the past ${o.days} days, covering ${nn(o.stores)} of ${nn(o.total)} stores ${o.label}.`),
+    /** The link out: `name` is the bare place or store name. */
+    alertMe: (name: string) => `Watch ${name} on the 5-second wire`,
+    unknown: "The pattern figures could not be read this time; the listing above is live.",
+    /** Under the Duo-only clock: the three models in one line ("All three iPhones together: 456 restocks in 14 days, peak 4 PM"). */
+    allModels: (o: { n: number; days: number; peak: string | null }) => `All three iPhones together: ${nn(o.n)} restock${s(o.n)} in ${o.days} days${o.peak ? `, peak ${o.peak}` : ""}.`,
   },
 };

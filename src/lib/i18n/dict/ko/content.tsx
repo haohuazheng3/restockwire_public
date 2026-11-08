@@ -185,9 +185,11 @@ export const content: Dict["content"] = {
     configsInStock: "픽업 가능 구성",
     storesWithStock: f({ other: "픽업 가능 매장" }),
     restocks24h: "재입고 · 24시간",
+    /** A tile that counts one model only (its short name first). */
+    scoped: (label: string, model: string) => `${model} · ${label}`,
     restocksHint: (week: string, month: string, days: string) => `7일 ${week} · ${days}일 ${month}`,
     sellOuts: (days: string) => `품절 · ${days}일`,
-    stays: (duration: string) => `~${duration} 유지`,
+    stays: (duration: string) => (duration === "1분 안쪽" ? `${duration} 유지` : `~${duration} 유지`),
     noPairs: "아직 짝지은 품절 없음",
     lastRestock: "최신 재입고",
     noneYet: "아직 0건",

@@ -19,7 +19,7 @@ import { PATTERN_MIN, PATTERN_MIN_DAYS, WEEKDAY_MIN_SPAN, localStamp } from "@/l
 import { SPEED } from "@/lib/plans";
 import { distance, price } from "@/lib/i18n/format";
 import { cityLabel, colorLabel, regionLabel } from "@/lib/i18n/places";
-import type { RestockTimesMeta, RestockTimesView } from "../en/views";
+import type { RestockTimesMeta, RestockTimesView, RestockTimesPlace } from "../en/views";
 import { HK_TITLE, L, WEEK, apple, city, cityNoun, cn, cnOf, dayFromEn, fitW, hr, hrFromEn, longYmd, n, rn, rng, shop, storeHead, taxNoteZh, ymd, zhCfg, zhPlace, zoneStampZh } from "./common";
 
 const lw = (items: string[], max = 6) => listWords(items, max, L);
@@ -117,6 +117,9 @@ function priceLabel(product: Product): string {
 
 /* ---------------------------------------------------------------- views */
 
+/** 2026-11-08: a place page (/{cc}/when-does-iphone-duo-restock/{region}[/{city}]) names its region or city where the country page names the country. */
+const rtW = (x: { c: Country; place?: RestockTimesPlace }) => (x.place ? x.place.name : cnOf(x.c));
+const rtU = (x: { us: boolean; c: Country; place?: RestockTimesPlace }) => (x.place ? (x.place.kind === "region" ? "城市" : "分店") : regionWordOf(x));
 export const views: Dict["views"] = {
   common: {
     inCountry: (c: Country) => cnOf(c),
@@ -297,14 +300,14 @@ export const views: Dict["views"] = {
       store: (s: Store) => apple(s),
       storeWithPlace: (s: Store) => { const a = apple(s); const c = city(s); return a.includes(c) ? a : `${a} · ${c}`; },
     },
-    title: (c: Country) => `Apple 幾點在${cnOf(c)}補貨 iPhone Duo？`,
+    title: (c: Country, place?: RestockTimesPlace) => `Apple 幾點在${place?.name ?? cnOf(c)}補貨 iPhone Duo？`,
     metaDescription: (x: RestockTimesMeta) => {
       const { c, t, w, pattern } = x;
-      const rw = c.cc === "us" ? "州" : c.regionNoun ? rn(c) : "分店";
+      const rw = x.place ? (x.place.kind === "region" ? "城市" : "分店") : c.cc === "us" ? "州" : c.regionNoun ? rn(c) : "分店";
       /** "按鐘點、日子、分店及款式" from the parts that apply. */
       const by = (...parts: (string | null)[]) => { const p = parts.filter((x): x is string => Boolean(x)); return `按${p.slice(0, -1).join("、")}及${p[p.length - 1]}`; };
       const since = ymd(t.since, false);
-      const w2 = cnOf(c);
+      const w2 = rtW(x);
       return t.n > 0 && pattern
         ? fitW([
           `自${since}起，${w2} Apple Store 補貨 iPhone Duo ${n(t.n)} 次：${pct(w.share)} 落在當地時間${rng(w.from, w.to)}${t.sellout ? `，${pct(t.sellout.within2min)} 在 2 分鐘內售罄` : ""}。${by("鐘點", "日子", rw === "分店" ? null : rw, "分店", "款式")}列表。`,
@@ -319,13 +322,13 @@ export const views: Dict["views"] = {
           : `${w2} Apple Store 的 iPhone Duo 補貨時間，逐小時、逐日、按分店及款式統計；RestockWire 自${longYmd(t.since)}起每 ${SPEED.checkSec} 秒讀取每間分店一次。`;
     },
     h1: (x: RestockTimesView) => x.t.unknown
-      ? `Apple 幾點在${cnOf(x.c)}補貨 iPhone Duo？`
+      ? `Apple 幾點在${rtW(x)}補貨 iPhone Duo？`
       : x.t.n > 0
-        ? `Apple 幾點在${cnOf(x.c)}補貨 iPhone Duo？${x.pattern ? `最常在當地時間${rng(x.w.from, x.w.to)}` : "我們自己的檢查，逐小時列出"}`
-        : `Apple 有在${cnOf(x.c)}補貨 iPhone Duo 嗎？暫時未有，以下是我們留意的數據`,
+        ? `Apple 幾點在${rtW(x)}補貨 iPhone Duo？${x.pattern ? `最常在當地時間${rng(x.w.from, x.w.to)}` : "我們自己的檢查，逐小時列出"}`
+        : `Apple 有在${rtW(x)}補貨 iPhone Duo 嗎？暫時未有，以下是我們留意的數據`,
     intro: (x: RestockTimesView) => {
       const { t, one, tracked, pattern, w } = x;
-      const where = cnOf(x.c);
+      const where = rtW(x);
       const who = one ? `${where}的 Apple Store` : `${where}各間 Apple Store`;
       return t.unknown ? (
         <>補貨記錄暫時未能讀取。{where}的分店仍然每 {SPEED.checkSec} 秒讀取一次，本頁下次載入時數字便會回來。</>
@@ -368,7 +371,7 @@ export const views: Dict["views"] = {
     nav: (x: RestockTimesView): Record<string, string> => ({
       "time-of-day": "幾點",
       "day-by-day": "逐日",
-      where: `逐個${regionWordOf(x)}`,
+      where: `逐個${rtU(x)}`,
       configuration: "配置",
       "how-long": "售罄速度",
       unavailable: "「沒有貨」",
@@ -376,18 +379,18 @@ export const views: Dict["views"] = {
       method: "方法",
     }),
     h2: (x: RestockTimesView): Record<string, string> => ({
-      "time-of-day": `${cnOf(x.c)}的 iPhone Duo 幾點回來？`,
-      "day-by-day": `${cnOf(x.c)}的 iPhone Duo 哪幾日補過貨？`,
-      where: `${cnOf(x.c)}哪裏最常補 iPhone Duo？`,
-      configuration: `${cnOf(x.c)}哪款 iPhone Duo 容量及顏色補貨最多？`,
-      "how-long": `${cnOf(x.c)}一次 iPhone Duo 補貨能維持幾多秒？`,
+      "time-of-day": `${rtW(x)}的 iPhone Duo 幾點回來？`,
+      "day-by-day": `${rtW(x)}的 iPhone Duo 哪幾日補過貨？`,
+      where: `${rtW(x)}哪裏最常補 iPhone Duo？`,
+      configuration: `${rtW(x)}哪款 iPhone Duo 容量及顏色補貨最多？`,
+      "how-long": `${rtW(x)}一次 iPhone Duo 補貨能維持幾多秒？`,
       unavailable: "為何 apple.com 每間分店都顯示「暫時未能提供」？",
       reddit: "Reddit 上的 iPhone Duo 補貨理論，用記錄來驗證",
       method: "RestockWire 怎樣才算一次補貨？",
     }),
     faq: (x: RestockTimesView): Faq[] => {
       const { t, w, pattern, sell, us, weekend, tracked } = x;
-      const where = cnOf(x.c);
+      const where = rtW(x);
       const window = rng(w.from, w.to);
       return [
         { q: `${where}的 iPhone Duo 一般在一日裏哪個時段補貨？`, a: t.n > 0 && pattern
@@ -412,9 +415,9 @@ export const views: Dict["views"] = {
       reports: (tracker: string) => `${tracker}：發售週的 iPhone Duo 補貨報告（對方自己的觀察，分開列出，從不計入）`,
     },
     ld: (x: RestockTimesView) => ({
-      datasetName: `${cnOf(x.c)} Apple Store 的 iPhone Duo 店舖取貨補貨時間`,
-      description: `自 ${x.t.since} 起${cnOf(x.c)} Apple Store 已確認的 iPhone Duo 店舖取貨補貨（分店、款式、時間），來自 RestockWire 每 ${SPEED.checkSec} 秒讀取每間分店一次；按當地鐘點、日子、${regionWordOf(x)}、分店及款式分組。`,
-      spatial: `${cnOf(x.c)} Apple Store`,
+      datasetName: `${rtW(x)} Apple Store 的 iPhone Duo 店舖取貨補貨時間`,
+      description: `自 ${x.t.since} 起${rtW(x)} Apple Store 已確認的 iPhone Duo 店舖取貨補貨（分店、款式、時間），來自 RestockWire 每 ${SPEED.checkSec} 秒讀取每間分店一次；按當地鐘點、日子、${x.place?.kind === "city" ? "" : `${rtU(x)}、`}分店及款式分組。`,
+      spatial: `${rtW(x)} Apple Store`,
       measured: ["補貨時刻（以分店當地時間計）", "分店（Apple Store）", "iPhone Duo 容量、顏色", "上架至售罄的秒數"],
       size: `補貨 ${n(x.t.n)} 次，涉及 ${n(x.t.stores)} 間分店`,
     }),
@@ -431,7 +434,7 @@ export const views: Dict["views"] = {
       { text: <>同一刻連補十款，只算一次事件，不算規律</>, no: true },
       { text: <>數據逐日累積，本頁自動重算</>, step: true },
     ],
-    hourCaption: (x: RestockTimesView) => `逐個鐘點：${cnOf(x.c)} iPhone Duo 補貨 ${n(x.t.n)} 次（分店當地時間，${ymd(x.t.since, false)}起）`,
+    hourCaption: (x: RestockTimesView) => `逐個鐘點：${rtW(x)} iPhone Duo 補貨 ${n(x.t.n)} 次（分店當地時間，${ymd(x.t.since, false)}起）`,
     hourHead: ["鐘點（當地）", "次數", "比例"],
     morningKeys: (x: RestockTimesView): Point[] => [
       { text: <>早上的高峰<b className="text-ink">與開門時間無關</b>{x.us ? "（美國大部分 Apple Store 上午 10 點開門）" : ""}</> },
@@ -439,7 +442,7 @@ export const views: Dict["views"] = {
       { text: <>手動查？平日早上守住 <b className="text-ink">{rng(x.w.from, x.w.to)}</b></>, step: true },
       { text: <><Link href={x.alert}>提醒</Link>負責<b className="text-ink">其餘 22 小時</b>，那段時間沒有人在看</>, step: true },
     ],
-    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>每間分店頁都按自己的時區畫出自己的鐘點（<Link href={x.storesHref}>{x.us ? "按州份查看 Apple Store" : `${cnOf(x.c)}的分店`}</Link>），所以同區 9 點才是高峰時，你可以找出 8 點已補貨的那一間</>, step: true }],
+    storeChartKeys: (x: RestockTimesView): Point[] => [{ text: <>每間分店頁都按自己的時區畫出自己的鐘點（<Link href={x.storesHref}>{x.us ? "按州份查看 Apple Store" : `${rtW(x)}的分店`}</Link>），所以同區 9 點才是高峰時，你可以找出 8 點已補貨的那一間</>, step: true }],
 
     dayLead: (x: RestockTimesView) => {
       const { t, tracked, one } = x;
@@ -448,7 +451,7 @@ export const views: Dict["views"] = {
       ) : t.n > 0 ? (
         <b>{t.days === tracked ? `追蹤的 ${n(t.days)} 日全部` : `自${longYmd(t.since)}起 ${n(tracked)} 日之中有 ${n(t.days)} 日`}至少有一次確認補貨{t.peakWeekday != null ? `；星期之中以${WEEK[t.peakWeekday]}最多` : ""}。</b>
       ) : (
-        <b>自{longYmd(t.since)}起，{cnOf(x.c)}已確認的補貨是零。</b>
+        <b>自{longYmd(t.since)}起，{rtW(x)}已確認的補貨是零。</b>
       );
     },
     daysTracked: "追蹤日子中有補貨的日子",
@@ -456,7 +459,7 @@ export const views: Dict["views"] = {
     busiestDayNone: "最多的一日",
     drop: (x: RestockTimesView, drop: { at: string; restocks: number }) => `間分店在同一個半小時內補貨，${zoneStampZh(drop.at, x.c.cc)}（${n(drop.restocks)} 款）：一次${x.c.cc === "hk" ? "全港" : "全國"}性的釋出`,
     weekend: (x: RestockTimesView) => `落在週末（${n(x.weekend)} 次補貨）`,
-    dayCaption: (x: RestockTimesView) => `逐日：${cnOf(x.c)} iPhone Duo 補貨${x.t.reports.length ? "。「報告」行是外部追蹤網站在我們開始追蹤前的觀察，只用來補齊時間線" : ""}`,
+    dayCaption: (x: RestockTimesView) => `逐日：${rtW(x)} iPhone Duo 補貨${x.t.reports.length ? "。「報告」行是外部追蹤網站在我們開始追蹤前的觀察，只用來補齊時間線" : ""}`,
     dayHead: { date: "日子", restocks: "次數", stores: "店數", busiest: "最旺鐘點", source: "出處" },
     soFar: " · 未完",
     reportedBy: (names: string[]) => <>據 {names.join(" / ")}</>,
@@ -465,19 +468,19 @@ export const views: Dict["views"] = {
       { text: <><b className="text-ink">{ymd(resumed)}</b>：店舖取貨恢復{x.us ? "（MacRumors）" : ""}</> },
       x.t.reports.length
         ? { text: <><b className="text-ink">報告</b>行是 {x.reportNames.join(" 及 ")} 在發售週的觀察，所有計數都不包括</> }
-        : { text: <>RestockWire 對{cnOf(x.c)}每間分店的記錄由 <b className="text-ink">{longYmd(x.t.since)}</b> 開始</> },
+        : { text: <>RestockWire 對{rtW(x)}每間分店的記錄由 <b className="text-ink">{longYmd(x.t.since)}</b> 開始</> },
       ...(x.t.n > 0 && x.t.peakWeekday == null ? [{ text: <>要指出補貨最多的星期，需要 <b className="text-ink">{WEEKDAY_MIN_SPAN} 日</b>數據（我們目前有 {n(x.tracked)} 日）</>, no: true }] : []),
       { text: <>留意<b className="text-ink">分店</b>一欄：補貨分散到越多分店，你的機會越好</>, step: true },
     ],
 
     whereLead: (x: RestockTimesView, hit: { name: string; restocks: number; stores: number; storesTotal: number }[], total: number) => (
-      <b>{hit[0].name}：自{ymd(x.t.since, false)}起，{n(hit[0].storesTotal)} 間分店中 {n(hit[0].stores)} 間補貨 {n(hit[0].restocks)} 次{hit[1] ? <>，其次是{hit[1].name}（{n(hit[1].restocks)}）</> : null}{hit[2] ? <>及{hit[2].name}（{n(hit[2].restocks)}）</> : null}；{n(total)} 個{regionWordOf(x)}中有 {n(hit.length)} 個出現過補貨{total - hit.length > 0 ? `，${n(total - hit.length)} 個仍未有` : ""}。</b>
+      <b>{hit[0].name}：自{ymd(x.t.since, false)}起，{n(hit[0].storesTotal)} 間分店中 {n(hit[0].stores)} 間補貨 {n(hit[0].restocks)} 次{hit[1] ? <>，其次是{hit[1].name}（{n(hit[1].restocks)}）</> : null}{hit[2] ? <>及{hit[2].name}（{n(hit[2].restocks)}）</> : null}；{n(total)} 個{rtU(x)}中有 {n(hit.length)} 個出現過補貨{total - hit.length > 0 ? `，${n(total - hit.length)} 個仍未有` : ""}。</b>
     ),
-    whereNone: (x: RestockTimesView) => <b>{cnOf(x.c)}暫時未有任何{regionWordOf(x)}錄得確認補貨；第一次補貨出現，表格便會開始。</b>,
-    regionCaption: (x: RestockTimesView) => `${cnOf(x.c)}按${regionWordOf(x)}的 iPhone Duo 補貨（已確認），${ymd(x.t.since, false)}至今日`,
-    regionHead: (x: RestockTimesView) => [regionWordOf(x), "補貨", "有補貨的分店", "最新補貨（當地時間）"],
+    whereNone: (x: RestockTimesView) => <b>{rtW(x)}暫時未有任何{rtU(x)}錄得確認補貨；第一次補貨出現，表格便會開始。</b>,
+    regionCaption: (x: RestockTimesView) => `${rtW(x)}按${rtU(x)}的 iPhone Duo 補貨（已確認），${ymd(x.t.since, false)}至今日`,
+    regionHead: (x: RestockTimesView) => [rtU(x), "補貨", "有補貨的分店", "最新補貨（當地時間）"],
     ofN: (a: number, b: number) => <>{n(a)}/{n(b)} 間</>,
-    storesCaption: (x: RestockTimesView) => `分店排行：${cnOf(x.c)} iPhone Duo 補貨次數（${ymd(x.t.since, false)}起）`,
+    storesCaption: (x: RestockTimesView) => `分店排行：${rtW(x)} iPhone Duo 補貨次數（${ymd(x.t.since, false)}起）`,
     storesHead: ["分店", "補貨", "日數", "慣常鐘點", "最新（當地時間）"],
     swaps: (x: RestockTimesView) => [
       { no: "追着榜首的分店跑，無論多遠", yes: `${x.pattern ? hr(x.w.from) : "早上"}前後一小時內去得到的兩三間分店`, why: "去不到的補貨對你毫無用處；即使最忙的分店，一日裏也只有幾分鐘不是顯示沒有貨。" },
@@ -493,8 +496,8 @@ export const views: Dict["views"] = {
     restocksOf: (a: string) => `${a}：補貨次數`,
     byStorage: "逐個容量",
     byColour: "逐隻顏色",
-    configNone: (x: RestockTimesView) => <b>{cnOf(x.c)}{yet(x)}未有任何款式錄得確認補貨；八款配置全部先列出，第一次補貨便有自己的一行。</b>,
-    configCaption: (x: RestockTimesView) => `${cnOf(x.c)}按款式的 iPhone Duo 補貨（已確認），${ymd(x.t.since, false)}至今日`,
+    configNone: (x: RestockTimesView) => <b>{rtW(x)}{yet(x)}未有任何款式錄得確認補貨；八款配置全部先列出，第一次補貨便有自己的一行。</b>,
+    configCaption: (x: RestockTimesView) => `${rtW(x)}按款式的 iPhone Duo 補貨（已確認），${ymd(x.t.since, false)}至今日`,
     configHead: ["款式", "補貨", "佔比", "最新補貨（當地時間）"],
     configKeys: (x: RestockTimesView): Point[] => [
       { text: <>機會大小，<b className="text-ink">配置決定得比分店多</b></> },
@@ -505,37 +508,37 @@ export const views: Dict["views"] = {
       { text: <>價錢及即時現貨：<Link href="/iphone-duo-most-restocked-stores">哪款 iPhone Duo 補貨最多？</Link></>, step: true },
     ],
 
-    howLongLead: (x: RestockTimesView, sell: SelloutFacts) => <b>{n(sell.medianSec)} 秒：{cnOf(x.c)} {n(sell.n)} 次售罄補貨的中位壽命；{pct(sell.within2min)} 在 2 分鐘內售罄，{pct(sell.within20min)} 在 20 分鐘內。</b>,
+    howLongLead: (x: RestockTimesView, sell: SelloutFacts) => <b>{n(sell.medianSec)} 秒：{rtW(x)} {n(sell.n)} 次售罄補貨的中位壽命；{pct(sell.within2min)} 在 2 分鐘內售罄，{pct(sell.within20min)} 在 20 分鐘內。</b>,
     secUnit: "秒",
     medianListing: "中位上架時間（出現至消失）",
     within2: "兩分鐘內清貨",
     within20: "二十分鐘內清貨",
     fastest: "最快一次清貨",
-    howLongNone: (x: RestockTimesView) => <b>{cnOf(x.c)}售罄的補貨{yet(x)}太少，未能量度；這些數字要有十次才開始，美國版頁面有完整數據。</b>,
+    howLongNone: (x: RestockTimesView) => <b>{rtW(x)}售罄的補貨{yet(x)}太少，未能量度；這些數字要有十次才開始，美國版頁面有完整數據。</b>,
     howLongKeys: (x: RestockTimesView): Point[] => [
       { text: <>兩分鐘是留給<b className="text-ink">提醒</b>的時間，不是留給你在 apple.com 按重新整理</> },
       { text: <>本頁其他每個數字，都由這個數字推算出來</> },
-      { text: <>每次補貨及其維持的秒數，按款式及{regionWordOf(x)}：<Link href="/how-fast-does-iphone-duo-sell-out">iPhone Duo 補貨幾快售罄？</Link></>, step: true },
+      { text: <>每次補貨及其維持的秒數，按款式及{rtU(x)}：<Link href="/how-fast-does-iphone-duo-sell-out">iPhone Duo 補貨幾快售罄？</Link></>, step: true },
     ],
     measured: "每個數字由首次看到該款上架的那次檢查，計到看到它消失的那次檢查，所以是上限：真實壽命更短。",
 
-    unavailableLead: (x: RestockTimesView) => <b>補貨只是一閃而過，不是一種狀態：{x.one ? "一間分店" : `${n(x.stores)} 間分店`} × {n(x.configs)} 款，{cnOf(x.c)}共有 {n(x.pairs)} 個可能的上架組合，而此刻只有 {n(x.duoNow)} 間分店上架任何一款 iPhone Duo。</b>,
+    unavailableLead: (x: RestockTimesView) => <b>補貨只是一閃而過，不是一種狀態：{x.one ? "一間分店" : `${n(x.stores)} 間分店`} × {n(x.configs)} 款，{rtW(x)}共有 {n(x.pairs)} 個可能的上架組合，而此刻只有 {n(x.duoNow)} 間分店上架任何一款 iPhone Duo。</b>,
     pairs: "可能的「分店 × 款式」上架組合",
     listingNow: "此刻上架 iPhone Duo 取貨",
     goneIn2: "的補貨在兩分鐘內結束",
     last24: "24 小時內確認補貨",
     unavailableKeys: (x: RestockTimesView, today: number): Point[] => [
       x.recent.restocks > 0
-        ? { text: <>過去 24 小時：{cnOf(x.c)} {n(x.recent.stores)} 間分店<b className="text-ink">確認補貨 {n(x.recent.restocks)} 次</b></> }
+        ? { text: <>過去 24 小時：{rtW(x)} {n(x.recent.stores)} 間分店<b className="text-ink">確認補貨 {n(x.recent.restocks)} 次</b></> }
         : today > 0
-          ? { text: <>今日：{cnOf(x.c)}<b className="text-ink">確認補貨 {n(today)} 次</b></> }
+          ? { text: <>今日：{rtW(x)}<b className="text-ink">確認補貨 {n(today)} 次</b></> }
           : { text: <>確實發生過的補貨，見上方逐日表</> },
       { text: <>每次在 apple.com 停留<b className="text-ink">一至兩分鐘</b>便消失</> },
       { text: <>發售第四日或第十四日看到「到處都沒有貨」，<b className="text-ink">不代表</b> Apple 已經停止</>, no: true },
     ],
     unavailableLinks: { explained: "「暫時未能提供取貨」說明", howToGet: "一步步買到 iPhone Duo" },
 
-    redditLead: (x: RestockTimesView) => <b><a href="https://www.reddit.com/r/applestore/" target="_blank" rel="noopener nofollow">r/applestore</a> 和 <a href="https://www.reddit.com/r/iphone/" target="_blank" rel="noopener nofollow">r/iphone</a> 上的建議大多很真誠，但只根據一間分店，而且翌日便過時；以下是最常出現的四種說法，用{cnOf(x.c)} {n(x.t.n)} 次已確認補貨來驗證。</b>,
+    redditLead: (x: RestockTimesView) => <b><a href="https://www.reddit.com/r/applestore/" target="_blank" rel="noopener nofollow">r/applestore</a> 和 <a href="https://www.reddit.com/r/iphone/" target="_blank" rel="noopener nofollow">r/iphone</a> 上的建議大多很真誠，但只根據一間分店，而且翌日便過時；以下是最常出現的四種說法，用{rtW(x)} {n(x.t.n)} 次已確認補貨來驗證。</b>,
     redditCaption: "Reddit 上常見的 iPhone Duo 補貨說法，以 RestockWire 已確認的補貨驗證",
     redditHead: ["說法", "記錄怎樣說"],
     claims: (x: RestockTimesView): { claim: string; answer: ReactNode }[] => {
@@ -554,7 +557,7 @@ export const views: Dict["views"] = {
 
     methodLead: <b>一次補貨 = 某款配置在 apple.com 出現於一間原本沒有上架的分店、可供店舖取貨，並經兩次相符的檢查確認。</b>,
     methodKeys: (x: RestockTimesView): Point[] => [
-      { text: <>有提醒的分店：每 <b className="text-ink">{SPEED.fastSec} 秒</b>；{x.one ? `${cnOf(x.c)}的 Apple Store` : `${cnOf(x.c)}每一間 Apple Store`}：每 <b className="text-ink">{SPEED.checkSec} 秒</b></> },
+      { text: <>有提醒的分店：每 <b className="text-ink">{SPEED.fastSec} 秒</b>；{x.one ? `${rtW(x)}的 Apple Store` : `${rtW(x)}每一間 Apple Store`}：每 <b className="text-ink">{SPEED.checkSec} 秒</b></> },
       { text: <>其他追蹤網站公布的間隔：<b className="text-ink">8 秒至 15 分鐘</b>；我們只比較對方公布的數字</> },
       { text: <>新出現的「有貨」：<b className="text-ink">約一秒後</b>重讀，一致才入帳</> },
       { text: <>貨消失：等<b className="text-ink">下一輪</b>讀數確認</> },
@@ -564,7 +567,7 @@ export const views: Dict["views"] = {
       { text: <>這些表格約每五分鐘更新；<Link href={x.logHref}>補貨記錄</Link>是即時的</>, step: true },
     ],
     quote: "引用本頁：這裏任何數字都歡迎引用，請附上連結。RestockWire 獨立於 Apple，讀取的是任何人在 apple.com 都看得到的取貨供應狀況，只是讀得頻密得多。",
-    alertIn: (x: RestockTimesView) => <>{x.one ? "" : `${cnOf(x.c)} `}接收 iPhone Duo 提醒</>,
+    alertIn: (x: RestockTimesView) => <>{x.one ? "" : `${rtW(x)} `}接收 iPhone Duo 提醒</>,
 
     related: "更多 iPhone Duo 問題",
     sameData: "建基於同一份記錄",
@@ -577,6 +580,13 @@ export const views: Dict["views"] = {
       unavailable: "「沒有貨」說明",
     },
     otherCountries: ((us: boolean): string => (us ? "其他國家的本頁" : "更多國家／地區")) as Dict["views"]["restockTimes"]["otherCountries"],
+    /** Place pages (a region or a city of this country), and the rows on the country page that lead to them. */
+    place: {
+      byCity: "城市頁面",
+      storesLive: (x: RestockTimesView) => `${rtW(x)} Apple Store：即時庫存`,
+      countryPage: (c: Country) => `${cnOf(c)} iPhone Duo 補貨時間，全部分店`,
+      sourcesWhere: (x: RestockTimesView) => `${rtW(x)}全部 ${x.stores} 間 Apple Store`,
+    },
     faqTitle: "讀者常問",
   },
 };
