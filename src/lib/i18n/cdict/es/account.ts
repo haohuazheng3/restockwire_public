@@ -50,13 +50,9 @@ export const account: CDict["account"] = {
     signIn: "Iniciar sesión",
     installApp: "Añadir la app",
     turnOn: "Activar notificaciones",
-    previewHere: "Ver un ejemplo",
-    previewNow: "ahora mismo",
-    previewShown: "Un ejemplo dibujado en esta página. Las alertas reales llegan en segundos a la pantalla de bloqueo con la app cerrada.",
     turnOff: "Desactivar",
     setupGuide: "Pasos de configuración",
     miniSteps: ["En Safari, toca Compartir", "Elige Añadir a pantalla de inicio", "Abre la app y permite las notificaciones"],
-    preview: { title: "iPhone Duo 1TB Blanco estelar", body: "Apple Puerta del Sol · Madrid — Disponible hoy. Resérvalo en apple.com." },
     test: {
       gone: "El servicio de notificaciones indica que la suscripción de este dispositivo ha caducado. Desactiva y vuelve a activar las notificaciones desde ese dispositivo.",
       none: "La prueba no ha llegado a ningún dispositivo{error}. Desactiva y vuelve a activar las notificaciones.",

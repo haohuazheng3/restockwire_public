@@ -49,13 +49,9 @@ export const account: CDict["account"] = {
     signIn: "로그인",
     installApp: "앱 추가",
     turnOn: "푸시 켜기",
-    previewHere: "샘플 보기",
-    previewNow: "방금",
-    previewShown: "이 페이지에 그린 샘플이에요. 실제 알림은 앱을 닫아 두면 몇 초 만에 잠금 화면에 떠요.",
     turnOff: "푸시 끄기",
     setupGuide: "설정 단계",
     miniSteps: ["Safari에서 공유 탭", "홈 화면에 추가 선택", "앱을 열고 알림 허용"],
-    preview: { title: "iPhone Duo 256GB 나이트 스카이", body: "Apple 가로수길 · 서울 — 오늘 픽업 가능. apple.com을 열어 예약하세요." },
     test: {
       gone: "푸시 서비스에 따르면 이 기기의 구독이 만료됐어요. 해당 기기에서 알림을 껐다가 다시 켜 주세요.",
       none: "테스트가 어떤 기기에도 닿지 않았어요{error}. 알림을 껐다가 다시 켜 주세요.",

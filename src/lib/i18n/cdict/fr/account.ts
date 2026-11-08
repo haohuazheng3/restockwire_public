@@ -49,13 +49,9 @@ export const account: CDict["account"] = {
     signIn: "Se connecter",
     installApp: "Ajouter l’app",
     turnOn: "Activer les notifications",
-    previewHere: "Afficher un exemple",
-    previewNow: "à l’instant",
-    previewShown: "Un exemple, dessiné sur cette page. Les vraies alertes arrivent en quelques secondes sur l’écran verrouillé quand l’app est fermée.",
     turnOff: "Désactiver",
     setupGuide: "Étapes de configuration",
     miniSteps: ["Safari → bouton Partager", "« Sur l’écran d’accueil »", "Lancer l’icône, accepter les notifications"],
-    preview: { title: "iPhone Duo 256GB Ciel nocturne", body: "Apple Champs-Élysées · Paris — En retrait maintenant, réservation sur apple.com." },
     test: {
       gone: "Abonnement de cet appareil expiré, selon le service de notifications. Correctif : couper puis rallumer les notifications sur l’appareil.",
       none: "Essai non reçu, sur aucun appareil{error}. Coupez puis rallumez les notifications.",

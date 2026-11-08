@@ -49,13 +49,9 @@ export const account: CDict["account"] = {
     signIn: "Anmelden",
     installApp: "App hinzufügen",
     turnOn: "Mitteilungen einschalten",
-    previewHere: "Beispiel zeigen",
-    previewNow: "gerade eben",
-    previewShown: "Ein Beispiel, auf dieser Seite gezeichnet. Echte Alarme landen in Sekunden auf dem Sperrbildschirm, wenn die App geschlossen ist.",
     turnOff: "Ausschalten",
     setupGuide: "Einrichtung",
     miniSteps: ["Safari: „Teilen“ antippen", "Im Menü: „Zum Home-Bildschirm“", "App starten, Mitteilungen erlauben"],
-    preview: { title: "iPhone Duo 256GB Nachthimmel", body: "Apple Kurfürstendamm · Berlin – Heute verfügbar. Jetzt auf apple.com sichern." },
     test: {
       gone: "Der Push-Dienst kennt dieses Gerät nicht mehr. Mitteilungen hier einmal aus- und wieder einschalten.",
       none: "Der Test hat kein Gerät erreicht{error}. Schalten Sie Mitteilungen aus und wieder ein.",

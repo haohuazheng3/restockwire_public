@@ -52,13 +52,9 @@ export const account: CDict["account"] = {
     signIn: "登入",
     installApp: "加入 App",
     turnOn: "開啟通知",
-    previewHere: "顯示範例",
-    previewNow: "剛剛",
-    previewShown: "這是畫在頁面上的範例。真正的通知在 App 關閉時，幾秒內就會出現在鎖定畫面。",
     turnOff: "關閉",
     setupGuide: "設定步驟",
     miniSteps: ["在 Safari 點「分享」", "選擇「加入主畫面」", "打開 App 並允許通知"],
-    preview: { title: "iPhone Duo 256GB 夜空色", body: "Apple 信義 A13（台北）現在就能取貨 · 點按到 apple.com 下單預訂" },
     test: {
       gone: "推播服務回報這台裝置的訂閱已過期。請從那台裝置關閉通知再重新開啟。",
       none: "測試沒有送達任何裝置{error}。把通知關掉、再開一次就好。",

@@ -52,13 +52,9 @@ export const account: CDict["account"] = {
     signIn: "Inloggen",
     installApp: "App toevoegen",
     turnOn: "Zet meldingen aan",
-    previewHere: "Toon een voorbeeld",
-    previewNow: "zojuist",
-    previewShown: "Een voorbeeld, op deze pagina getekend. Echte alerts verschijnen binnen seconden op je toegangsscherm als de app dicht is.",
     turnOff: "Uitzetten",
     setupGuide: "Stappen om in te stellen",
     miniSteps: ["Safari: knop Deel", "Daarna: Zet op beginscherm", "App openen, meldingen toestaan"],
-    preview: { title: "iPhone Duo 512GB Sterrenwit", body: "Apple Amsterdam · Amsterdam — Vandaag beschikbaar. Reserveer hem op apple.com." },
     test: {
       gone: "De pushdienst meldt dat het abonnement van dit apparaat is verlopen. Zet meldingen op dat apparaat uit en weer aan.",
       none: "De test heeft geen enkel apparaat bereikt{error}. Zet meldingen uit en weer aan.",

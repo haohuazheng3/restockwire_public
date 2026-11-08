@@ -53,13 +53,9 @@ export const account: CDict["account"] = {
     signIn: "Logga in",
     installApp: "Lägg till appen",
     turnOn: "Aktivera notiser",
-    previewHere: "Visa ett exempel",
-    previewNow: "nyss",
-    previewShown: "Ett exempel, ritat på den här sidan. Riktiga aviseringar hamnar på låsskärmen inom sekunder när appen är stängd.",
     turnOff: "Stäng av",
     setupGuide: "Steg för steg",
     miniSteps: ["Safari: knappen Dela", "Sedan: Lägg till på hemskärmen", "Starta appen, svara Tillåt"],
-    preview: { title: "iPhone Duo 1TB stjärnvit", body: "Apple Mall of Scandinavia · Solna – Tillgänglig idag. Reservera på apple.com." },
     test: {
       gone: "Notistjänsten säger att prenumerationen för den här enheten har gått ut. Stäng av notiserna och slå på dem igen från den enheten.",
       none: "Testet nådde ingen enhet{error}. Stäng av notiserna och slå på dem igen.",

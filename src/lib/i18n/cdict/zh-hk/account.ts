@@ -49,13 +49,9 @@ export const account: CDict["account"] = {
     signIn: "登入",
     installApp: "加入 App",
     turnOn: "開啟通知",
-    previewHere: "顯示範例",
-    previewNow: "剛剛",
-    previewShown: "這是畫在頁面上的範例。真正的提醒在 App 關閉時，幾秒內便會出現在鎖定畫面。",
     turnOff: "關閉",
     setupGuide: "設定步驟",
     miniSteps: ["在 Safari 按「分享」", "選擇「加至主畫面」", "打開 App 並允許通知"],
-    preview: { title: "iPhone Duo 1TB 星光白色", body: "Apple ifc mall · 香港中環——今日可提取。到 apple.com 預訂。" },
     test: {
       gone: "推送服務表示這部裝置的訂閱已過期。請在該裝置關閉通知再重新開啟。",
       none: "測試未有送達任何裝置{error}。請關閉通知再重新開啟。",

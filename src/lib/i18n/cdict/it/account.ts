@@ -49,13 +49,9 @@ export const account: CDict["account"] = {
     signIn: "Accedi",
     installApp: "Aggiungi l'app",
     turnOn: "Accendi le notifiche",
-    previewHere: "Mostra un esempio",
-    previewNow: "adesso",
-    previewShown: "Un esempio, disegnato su questa pagina. Gli avvisi veri arrivano in pochi secondi sulla schermata di blocco quando l’app è chiusa.",
     turnOff: "Disattiva",
     setupGuide: "Passaggi di configurazione",
     miniSteps: ["Safari → Condividi", "«Aggiungi alla schermata Home»", "Apri l'icona e consenti le notifiche"],
-    preview: { title: "iPhone Duo 256GB Cielo notturno", body: "Apple Via del Corso · Roma — Disponibile oggi. Apri apple.com per prenotarlo." },
     test: {
       gone: "L'iscrizione push di questo dispositivo è scaduta. Spegni e riaccendi le notifiche direttamente da lì.",
       none: "La prova non ha raggiunto nessun dispositivo{error}. Disattiva e riattiva le notifiche.",

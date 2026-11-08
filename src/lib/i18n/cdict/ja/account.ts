@@ -49,13 +49,9 @@ export const account: CDict["account"] = {
     signIn: "ログイン",
     installApp: "アプリを追加",
     turnOn: "通知をオンにする",
-    previewHere: "サンプルを表示",
-    previewNow: "たった今",
-    previewShown: "このページ上のサンプル表示です。実際の通知は、アプリを閉じていれば数秒でロック画面に届きます。",
     turnOff: "オフにする",
     setupGuide: "設定の手順",
     miniSteps: ["Safariで共有をタップ", "「ホーム画面に追加」を選ぶ", "アプリを開いて通知を許可"],
-    preview: { title: "iPhone Duo 256GB ナイトスカイ", body: "Apple 銀座 · 東京 — 本日受け取り可能。apple.comを開いて予約してください。" },
     test: {
       gone: "プッシュサービスによると、この端末の登録は期限切れです。その端末で通知をオフにしてから、もう一度オンにしてください。",
       none: "テスト通知はどの端末にも届きませんでした{error}。通知をオフにしてから、もう一度オンにしてください。",
