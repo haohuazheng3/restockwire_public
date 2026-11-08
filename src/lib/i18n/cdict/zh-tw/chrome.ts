@@ -47,6 +47,7 @@ export const chrome: CDict["chrome"] = {
     dontTrack: "關閉數據分析",
   },
   alertBar: { cta: "取得通知" },
+  refresh: { busy: "重新整理中…", done: "已是最新" },
   time: { today: "今天 {time}", yesterday: "昨天 {time}" },
   error: {
     title: "這個頁面載入失敗",

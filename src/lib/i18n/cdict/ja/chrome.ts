@@ -47,6 +47,7 @@ export const chrome: CDict["chrome"] = {
     dontTrack: "アクセス解析をオフにする",
   },
   alertBar: { cta: "通知を受け取る" },
+  refresh: { busy: "更新しています…", done: "最新です" },
   time: { today: "本日 {time}", yesterday: "きのう {time}" },
   error: {
     title: "このページを読み込めませんでした",

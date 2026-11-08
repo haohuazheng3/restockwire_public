@@ -48,6 +48,7 @@ export const chrome: CDict["chrome"] = {
     dontTrack: "أوقف التحليلات",
   },
   alertBar: { cta: "فعّل التنبيهات" },
+  refresh: { busy: "جارٍ التحديث…", done: "محدَّث" },
   time: { today: "اليوم {time}", yesterday: "أمس {time}" },
   error: {
     title: "تعذّر تحميل هذه الصفحة",

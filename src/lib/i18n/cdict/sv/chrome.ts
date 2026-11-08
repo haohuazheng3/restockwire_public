@@ -47,6 +47,7 @@ export const chrome: CDict["chrome"] = {
     dontTrack: "Stäng av statistiken",
   },
   alertBar: { cta: "Få notiser" },
+  refresh: { busy: "Uppdaterar…", done: "Aktuellt" },
   time: { today: "Idag {time}", yesterday: "Igår {time}" },
   error: {
     title: "Sidan gick inte att ladda",

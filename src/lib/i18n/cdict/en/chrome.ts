@@ -46,6 +46,7 @@ export const chrome = {
     dontTrack: "Turn analytics off",
   },
   alertBar: { cta: "Get alerts" },
+  refresh: { busy: "Refreshing…", done: "Up to date" },
   time: { today: "Today {time}", yesterday: "Yesterday {time}" },
   error: {
     title: "This page failed to load",

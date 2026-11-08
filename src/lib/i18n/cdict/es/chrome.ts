@@ -47,6 +47,7 @@ export const chrome: CDict["chrome"] = {
     dontTrack: "Desactivar la analítica",
   },
   alertBar: { cta: "Recibe alertas" },
+  refresh: { busy: "Actualizando…", done: "Al día" },
   time: { today: "hoy, {time}", yesterday: "ayer, {time}" },
   error: {
     title: "Esta página no se ha podido cargar",

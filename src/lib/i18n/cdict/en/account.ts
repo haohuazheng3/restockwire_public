@@ -57,6 +57,8 @@ export const account = {
     installApp: "Add the app",
     turnOn: "Turn on notifications",
     previewHere: "Show a sample",
+    previewNow: "now",
+    previewShown: "A sample, drawn on this page. Real alerts land on your lock screen in seconds while the app is closed.",
     turnOff: "Turn off",
     setupGuide: "Setup steps",
     /** iPhone in Safari: the three steps under the card (iOS's own words for Share / Add to Home Screen). */
@@ -68,6 +70,9 @@ export const account = {
       gone: "The push service reports this device's subscription has expired. Switch notifications off and back on from that device.",
       none: "The test reached no device{error}. Switch notifications off and back on.",
       noneError: " ({error})",
+      soon: "Test push goes out in {s} seconds. Close this app or lock the phone now: iPhone hides banners while the app is on screen.",
+      iosHint: "Nothing popped up? iPhone hides banners while this app is on screen. Pull down from the top edge: the test is in Notification Center.",
+      away: "Test push sent while the app was in the background. Missed the banner? Pull down from the top edge and check Notification Center.",
       sent: "Test push sent at {when} to {where}. Expect it within seconds; the banner shows the device name and the time.{failed}",
       one: "your {device}",
       many: "{n} devices ({list})",

@@ -47,6 +47,7 @@ export const chrome: CDict["chrome"] = {
     dontTrack: "Analytics uitzetten",
   },
   alertBar: { cta: "Alerts instellen" },
+  refresh: { busy: "Verversen…", done: "Bijgewerkt" },
   time: { today: "Vandaag {time}", yesterday: "Gisteren {time}" },
   error: {
     title: "Deze pagina kon niet laden",

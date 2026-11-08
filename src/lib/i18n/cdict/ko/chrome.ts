@@ -47,6 +47,7 @@ export const chrome: CDict["chrome"] = {
     dontTrack: "분석 끄기",
   },
   alertBar: { cta: "재입고 알림 설정" },
+  refresh: { busy: "새로고침 중…", done: "최신 상태예요" },
   time: { today: "오늘 {time}", yesterday: "어제 {time}" },
   error: {
     title: "이 페이지를 불러오지 못했어요",
