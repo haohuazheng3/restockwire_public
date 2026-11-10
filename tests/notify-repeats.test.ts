@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-import { MAX_ALERTS_PER_HOUR, SAME_BATCH_GAP_MS, batchStart, underHourlyCap } from "@/lib/stock/notify";
+import { MAX_ALERTS_PER_HOUR, SAME_BATCH_GAP_MS, batchAlreadyAlerted, batchStart, underHourlyCap } from "@/lib/stock/notify";
 import { decide } from "@/lib/stock/ingest";
 
 /**
@@ -87,3 +87,44 @@ describe("one batch, one alert", () => {
   });
 });
 
+/**
+ * 2026-11-10: the fast lane's own event and the relay's mirrored event for the same listing arrive seconds apart (or
+ * with the same `at`); every member got two pushes for one restock (R047 16:35:23 + 16:35:29, R230 15:00:19 twice).
+ */
+describe("two copies of one listing alert once", () => {
+  const t = (s: number) => new Date(Date.UTC(2026, 10, 10, 15, 0, 0) + s * 1000);
+
+  it("a restock right after another with no sell-out between is the same batch", () => {
+    const ev = [
+      { kind: "restock", at: t(0), seenUntil: null }, // fast lane, alerted at t(1)
+      { kind: "restock", at: t(6), seenUntil: null }, // relay copy
+    ];
+    expect(batchStart(ev, t(6))).toEqual(t(0));
+    expect(batchAlreadyAlerted(batchStart(ev, t(6)), [t(1)])).toBe(true);
+  });
+  it("two copies with the same time: the alert sent after it covers the second", () => {
+    expect(batchAlreadyAlerted(batchStart([{ kind: "restock", at: t(0), seenUntil: null }], t(0)), [t(2)])).toBe(true);
+  });
+  it("duplicated listing, a short dip, back again: still the first listing's batch", () => {
+    const ev = [
+      { kind: "restock", at: t(0), seenUntil: null },
+      { kind: "restock", at: t(2), seenUntil: null },
+      { kind: "soldout", at: t(40), seenUntil: t(35) },
+      { kind: "soldout", at: t(40), seenUntil: t(35) },
+      { kind: "restock", at: t(90), seenUntil: null },
+    ];
+    expect(batchStart(ev, t(90))).toEqual(t(0));
+    expect(batchAlreadyAlerted(batchStart(ev, t(90)), [t(1)])).toBe(true);
+  });
+  it("a new batch after a long gap still alerts, and an alert from an older batch does not hold it", () => {
+    const ev = [
+      { kind: "restock", at: t(0), seenUntil: null },
+      { kind: "restock", at: t(2), seenUntil: null },
+      { kind: "soldout", at: t(60), seenUntil: t(55) },
+      { kind: "restock", at: t(600), seenUntil: null },
+    ];
+    expect(batchStart(ev, t(600))).toEqual(t(600));
+    expect(batchAlreadyAlerted(batchStart(ev, t(600)), [t(1)])).toBe(false);
+    expect(batchAlreadyAlerted(undefined, [t(1)])).toBe(false);
+  });
+});

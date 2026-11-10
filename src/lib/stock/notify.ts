@@ -52,13 +52,29 @@ export function batchStart(events: PairEvent[], restockAt: Date, gapMs = SAME_BA
   const ms = (v: Date | string) => new Date(v).getTime();
   const before = events.filter((e) => ms(e.at) < restockAt.getTime()).sort((a, b) => ms(b.at) - ms(a.at));
   let start = restockAt.getTime();
-  for (let i = 0; i + 1 < before.length; i += 2) {
-    const out = before[i], prev = before[i + 1];
-    if (out.kind !== "soldout" || prev.kind !== "restock") break;
-    if (start - ms(out.seenUntil ?? out.at) >= gapMs) break;
-    start = ms(prev.at);
+  // This site records a restock twice: its own fast lane writes one (ids from 5e9) and the relay mirrors the
+  // cluster's event for the same listing a few seconds apart (2026-11-10: 11 such pairs in 6 h, every member alerted
+  // twice). A restock with no sell-out between it and the next one is the same listing, so it moves the start back;
+  // a sell-out only continues the walk while the dip was shorter than `gapMs`. Repeated sell-outs are harmless.
+  for (const e of before) {
+    if (e.kind === "restock") {
+      start = ms(e.at);
+      continue;
+    }
+    if (e.kind !== "soldout") break;
+    if (start - ms(e.seenUntil ?? e.at) >= gapMs) break;
   }
   return new Date(start);
+}
+
+/**
+ * Pure: was this batch already alerted to the rule? Any alert it was sent at or after the batch start says so —
+ * inclusive, because the two copies of one listing can carry the same `at` (the fast lane and the cluster saw it in
+ * the same response), and an alert sent after a restock for the same store × part can only be for that listing or a
+ * later one (an older listing is not worth a fresh alert either).
+ */
+export function batchAlreadyAlerted(start: Date | undefined, sentAt: Date[]): boolean {
+  return !!start && sentAt.some((t) => t.getTime() >= start.getTime());
 }
 
 export interface NotifyStats {
@@ -174,9 +190,10 @@ export async function notifyRestocks(transitions: Transition[], eventIds: number
         stats.skipped++;
         continue;
       }
-      // Same batch as one this rule was already alerted for (it dipped off the shelf for under 2 minutes): no new alert.
+      // Same batch as one this rule was already alerted for (a second copy of the listing, or it dipped off the shelf
+      // for under 2 minutes): no new alert.
       const start = startOf.get(`${store.storeNumber}|${item.partNumber}|${x.eventId}`);
-      if (start && start.getTime() < new Date(x.t.at).getTime() && (sentAt.get(`${w.id}|${store.storeNumber}|${item.partNumber}`) ?? []).some((t) => t.getTime() >= start.getTime())) {
+      if (batchAlreadyAlerted(start, sentAt.get(`${w.id}|${store.storeNumber}|${item.partNumber}`) ?? [])) {
         stats.skipped++;
         continue;
       }
