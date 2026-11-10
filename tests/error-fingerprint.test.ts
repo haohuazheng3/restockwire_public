@@ -20,6 +20,11 @@ describe("errorFingerprintText", () => {
 
 describe("isBrowserNoise — what the client error route drops (2026-11-08: a Brave Wallet opened 5 groups at one checkout)", () => {
   const reporterFrame = "a@https://restockwire.com/_next/static/chunks/2wtvdew2nc79w.js:1:2548";
+  it("Firefox for iOS's own injected scripts (__firefox__) are the browser's", () => {
+    expect(isBrowserNoise("ReferenceError", "Can't find variable: __firefox__", "global code@https://restockwire.com/sg:1:12")).toBe(true);
+    expect(isBrowserNoise("TypeError", "undefined is not an object (evaluating 'window.__firefox__.reader')", "global code@https://restockwire.com/sg:1:19")).toBe(true);
+    expect(isBrowserNoise("TypeError", "undefined is not an object (evaluating 'window.stores.map')", "x@https://restockwire.com/_next/static/chunks/a.js:1:2")).toBe(false);
+  });
   it("drops cross-origin Script error even though the reporter's own frame is attached", () => {
     expect(isBrowserNoise("Error", "Script error.", reporterFrame)).toBe(true);
     expect(isBrowserNoise("Error", "Script error", "")).toBe(true);

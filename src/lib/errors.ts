@@ -61,6 +61,9 @@ export function isBrowserNoise(name: string, message: string, stack: string): bo
   if (/^Script error\.?$/i.test(m)) return true;
   // Nothing on this site is called ethereum/solana/…: any report naming them is a wallet extension talking to itself.
   if (/\b(ethereum|solana|phantom|keplr|tronWeb|BinanceChain|MetaMask|coinbaseWallet)\b/i.test(m)) return true;
+  // Firefox for iOS injects its own scripts (window.__firefox__.reader, .refresh_youtube_quality_…) into every page;
+  // when they run before the browser set the object up they throw from "global code" (2026-11-10: 3 groups at once).
+  if (/__firefox__/.test(m)) return true;
   const ownFrame = stack.split("\n").some((l) => /restockwire\.com|\/_next\//.test(l) && !/global code@/.test(l));
   if (!ownFrame && /^TypeError$/i.test(name) && /^(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?|The network connection was lost\.?|cancelled|The request timed out\.?)$/i.test(m)) return true;
   return false;
