@@ -12,6 +12,7 @@ export const alerts: CDict["alerts"] = {
     title: "設定通知",
     lead: "先選手機，再選你到得了的門市。你選的每一支手機，都會在你選的每一家門市被追蹤。",
   },
+  steps: { of: "第 {n} 步，共 {total} 步", next: "下一步", back: "上一步", finish: "開啟通知" },
 
   editor: {
     listSep: "、",

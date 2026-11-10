@@ -7,6 +7,7 @@ export const alerts: CDict["alerts"] = {
     title: "通知を設定する",
     lead: "まずiPhoneを選び、次に行ける範囲の店舗を選びます。選んだiPhoneを、選んだすべての店舗で見張ります。",
   },
+  steps: { of: "ステップ {n}/{total}", next: "次へ", back: "戻る", finish: "通知をオン" },
 
   editor: {
     listSep: "、",

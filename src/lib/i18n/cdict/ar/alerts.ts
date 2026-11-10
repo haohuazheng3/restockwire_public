@@ -12,6 +12,7 @@ export const alerts: CDict["alerts"] = {
     title: "أنشئ تنبيهات",
     lead: "اختر هواتفك، ثم المتاجر التي في متناولك. نراقب كل هاتف في كل متجر تختاره.",
   },
+  steps: { of: "الخطوة {n} من {total}", next: "التالي", back: "رجوع", finish: "التفعيل" },
 
   editor: {
     listSep: "، ",

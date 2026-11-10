@@ -15,6 +15,8 @@ export const alerts = {
     title: "Set up alerts",
     lead: "Choose your phones, then the stores within reach. Each phone gets watched at each store you pick.",
   },
+  /** The lightbox's steps (phones → stores → turn on): the progress line and the buttons. */
+  steps: { of: "Step {n} of {total}", next: "Next", back: "Back", finish: "Turn on" },
 
   /** The editor: phones × stores, the sum line, turning alerts on (AlertEditor). */
   editor: {

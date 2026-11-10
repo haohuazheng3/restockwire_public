@@ -10,6 +10,7 @@ export const alerts: CDict["alerts"] = {
     title: "Imposta gli avvisi",
     lead: "Scegli i tuoi iPhone, poi i negozi a portata di mano. Ogni iPhone viene tenuto d'occhio in ogni negozio che scegli.",
   },
+  steps: { of: "Passo {n} di {total}", next: "Avanti", back: "Indietro", finish: "Attiva" },
 
   editor: {
     listSep: ", ",

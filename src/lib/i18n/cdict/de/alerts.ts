@@ -10,6 +10,7 @@ export const alerts: CDict["alerts"] = {
     title: "Alarme einrichten",
     lead: "Wählen Sie Ihre iPhones, dann die Stores in Reichweite. Jedes iPhone wird in jedem gewählten Store beobachtet.",
   },
+  steps: { of: "Schritt {n} von {total}", next: "Weiter", back: "Zurück", finish: "Aktivieren" },
 
   editor: {
     listSep: ", ",
