@@ -29,7 +29,7 @@ export const account: Dict["account"] = {
     none: "Noch keiner zugestellt",
     empty: "Bisher ist kein Alarm verschickt worden.",
     channel: { push: "Mitteilung", email: "E-Mail" } as Record<string, string>,
-    status: { sent: "gesendet", failed: "fehlgeschlagen", skipped: "übersprungen" } as Record<string, string>,
+    status: { sent: "gesendet", delivered: "zugestellt", failed: "fehlgeschlagen", skipped: "übersprungen" } as Record<string, string>,
   },
 
   fast: {
@@ -50,6 +50,8 @@ export const account: Dict["account"] = {
   },
 
   restock: {
+    /** "Restock by restock" on the dashboard: each restock against the member's alerts (lib/alertMarks.ts). */
+    mark: { delivered: "Alarm zugestellt", sent: "Alarm gesendet", other: "Nicht in deinen Alarmen", before: "Vor deinem Alarm" },
     title: "Restock-Stunden Ihrer Stores",
     anyIphone: "iPhone",
     and: " und ",

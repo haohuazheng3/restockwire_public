@@ -34,7 +34,7 @@ export const account: Dict["account"] = {
     none: "まだ届けていません",
     empty: "まだ通知は送られていません。",
     channel: { push: "プッシュ", email: "Eメール" },
-    status: { sent: "送信完了", failed: "送信失敗", skipped: "送信せず" },
+    status: { sent: "送信完了", delivered: "到着済み", failed: "送信失敗", skipped: "送信せず" },
   },
 
   fast: {
@@ -55,6 +55,8 @@ export const account: Dict["account"] = {
   },
 
   restock: {
+    /** "Restock by restock" on the dashboard: each restock against the member's alerts (lib/alertMarks.ts). */
+    mark: { delivered: "通知が到着", sent: "通知を送信", other: "通知の対象外", before: "通知の設定前" },
     title: "あなたの店舗が再入荷する時間帯",
     anyIphone: "iPhone",
     and: "、",

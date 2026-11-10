@@ -38,7 +38,7 @@ export const account: Dict["account"] = {
     none: "لم يصل أي تنبيه بعد",
     empty: "لم يخرج أي تنبيه حتى الآن.",
     channel: { push: "إشعار فوري", email: "بريد" },
-    status: { sent: "وصل", failed: "لم يصل", skipped: "لم يُرسل" },
+    status: { sent: "وصل", delivered: "وصل", failed: "لم يصل", skipped: "لم يُرسل" },
   },
 
   fast: {
@@ -59,6 +59,8 @@ export const account: Dict["account"] = {
   },
 
   restock: {
+    /** "Restock by restock" on the dashboard: each restock against the member's alerts (lib/alertMarks.ts). */
+    mark: { delivered: "وصل التنبيه", sent: "أُرسل التنبيه", other: "ليس ضمن تنبيهاتك", before: "قبل تنبيهك" },
     title: "ساعات عودة التوفر في متاجرك",
     anyIphone: "iPhone",
     and: " و",

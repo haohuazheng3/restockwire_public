@@ -27,7 +27,7 @@ export const account: Dict["account"] = {
     none: "暫時未送達任何提醒",
     empty: "暫時未發出任何提醒。",
     channel: { push: "推送", email: "電郵" } as Record<string, string>,
-    status: { sent: "已送出", failed: "送不到", skipped: "跳過" } as Record<string, string>,
+    status: { sent: "已送出", delivered: "已送達", failed: "送不到", skipped: "跳過" } as Record<string, string>,
   },
 
   fast: {
@@ -48,6 +48,8 @@ export const account: Dict["account"] = {
   },
 
   restock: {
+    /** "Restock by restock" on the dashboard: each restock against the member's alerts (lib/alertMarks.ts). */
+    mark: { delivered: "提醒已送達", sent: "已發出提醒", other: "不在你的提醒內", before: "設定提醒之前" },
     title: "你的分店慣常幾點補貨",
     anyIphone: "iPhone",
     and: "、",
