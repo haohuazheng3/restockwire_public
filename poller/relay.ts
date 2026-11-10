@@ -38,7 +38,7 @@ function local() {
   return (db() as unknown as { $client: { query: (text: string, params?: unknown[]) => Promise<{ rows: Record<string, unknown>[] }> } }).$client;
 }
 import { readState, writeState } from "../src/lib/stock/sweep";
-import { notifyRestocks } from "../src/lib/stock/notify";
+import { drainNotifications, notifyRestocks } from "../src/lib/stock/notify";
 import type { Transition } from "../src/lib/stock/ingest";
 import { loadFastTargets } from "../src/lib/stock/fastlane";
 import { errorMessage, recordError } from "../src/lib/errors";
@@ -283,10 +283,19 @@ async function main(): Promise<void> {
   loop("heartbeat", STATE_EVERY_MS, heartbeat);
   if (process.env.FAST_TARGETS_EXPORT === "1") loop("fast-targets", FAST_EXPORT_EVERY_MS, exportFastTargets);
 
+  // Stop only after the alerts being sent have gone out (PickupChecker 11-10: a restart mid-send lost three alerts).
+  let stopping = false;
   for (const sig of ["SIGTERM", "SIGINT"] as const) {
     process.on(sig, () => {
-      logOps("poller", "info", `relay stopping (${sig})`, { host: HOST }).finally(() => process.exit(0));
-      setTimeout(() => process.exit(0), 3000).unref();
+      if (stopping) return;
+      stopping = true;
+      setTimeout(() => process.exit(0), 20_000).unref();
+      void (async () => {
+        await logOps("poller", "info", `relay stopping (${sig})`, { host: HOST }).catch(() => undefined);
+        const left = await drainNotifications(15_000);
+        if (left) await logOps("poller", "warn", `relay stopped with ${left} alert send(s) still running`, { host: HOST }).catch(() => undefined);
+        process.exit(0);
+      })();
     });
   }
   setInterval(() => {

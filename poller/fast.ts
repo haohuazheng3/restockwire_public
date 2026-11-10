@@ -23,6 +23,7 @@ import { writeState } from "../src/lib/stock/sweep";
 import type { FetchLike } from "../src/lib/apple/client";
 import { errorMessage, recordError } from "../src/lib/errors";
 import { logOps } from "../src/lib/ops";
+import { drainNotifications } from "../src/lib/stock/notify";
 import { prefixFromInterfaces, randomAddressIn } from "./ipv6";
 
 const HOST = process.env.HOST_LABEL || os.hostname();
@@ -69,7 +70,16 @@ async function main(): Promise<void> {
   const egress = new Ipv6Egress(p);
   console.log(`[rw-fast] start host=${HOST} scope=${SCOPE} cadence=${CADENCE_SEC}s concurrency=${CONCURRENCY} prefix=${p}`);
   await logOps("poller", "info", "restockwire fast lane started", { host: HOST, scope: SCOPE, cadenceSec: CADENCE_SEC, prefix: p });
-  for (const sig of ["SIGTERM", "SIGINT"] as const) process.on(sig, () => process.exit(0));
+  // Stop only after the alerts being sent have gone out (PickupChecker 11-10: a restart mid-send lost three alerts).
+  let stopping = false;
+  for (const sig of ["SIGTERM", "SIGINT"] as const) {
+    process.on(sig, () => {
+      if (stopping) return;
+      stopping = true;
+      setTimeout(() => process.exit(0), 20_000).unref();
+      void drainNotifications(15_000).finally(() => process.exit(0));
+    });
+  }
 
   let targets = new Map<string, string[]>(), targetsAt = 0, backoffUntil = 0, lastErrorLog = 0, lastBeat = 0;
   for (;;) {

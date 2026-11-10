@@ -91,7 +91,36 @@ export function ruleMatches(w: { model: string; storages: string[]; colors: stri
   return w.storages[0] === storage && w.colors[0] === color && w.storeNumbers[0] === storeNumber;
 }
 
-export async function notifyRestocks(transitions: Transition[], eventIds: number[], now = new Date()): Promise<NotifyStats> {
+/**
+ * Alerts being sent right now. The relay and the fast lane drain this on SIGTERM before they exit: on PickupChecker an
+ * autoupdate restart 3.5 s after a confirmed restock (11-10 19:35 UTC) killed the send and three paying members got
+ * nothing. systemd waits up to 90 s for a stop, so a few seconds of drain is free.
+ */
+const inFlight = new Set<Promise<unknown>>();
+
+/** Track a send until it settles (exported for the test). */
+export function trackInFlight<T>(p: Promise<T>): Promise<T> {
+  inFlight.add(p);
+  p.finally(() => inFlight.delete(p)).catch(() => undefined);
+  return p;
+}
+
+/** Wait until no alert is being sent (seen empty after at least `settleMs`) or `timeoutMs` passes; returns sends still running. */
+export async function drainNotifications(timeoutMs = 15_000, settleMs = 1_000): Promise<number> {
+  const started = Date.now();
+  for (;;) {
+    const elapsed = Date.now() - started;
+    if (inFlight.size === 0 && elapsed >= settleMs) return 0;
+    if (elapsed >= timeoutMs) return inFlight.size;
+    await Promise.race([Promise.allSettled([...inFlight]), new Promise((r) => setTimeout(r, 200))]);
+  }
+}
+
+export function notifyRestocks(transitions: Transition[], eventIds: number[], now = new Date()): Promise<NotifyStats> {
+  return trackInFlight(sendRestockAlerts(transitions, eventIds, now));
+}
+
+async function sendRestockAlerts(transitions: Transition[], eventIds: number[], now: Date): Promise<NotifyStats> {
   const stats: NotifyStats = { matched: 0, sent: 0, failed: 0, skipped: 0 };
   const restocks = transitions
     .map((t, i) => ({ t, eventId: eventIds[i] }))
