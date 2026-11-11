@@ -119,7 +119,7 @@ export const account: Dict["account"] = {
     perks: [`你的分店每 ${SPEED.fastSec} 秒檢查，全部 269 間每 ${SPEED.checkSec} 秒`, `確認補貨約 ${SPEED.alertSec} 秒後送到你的手機`] as string[],
     cancel: "想停就停",
     get: (plan: string) => `揀 ${plan}`,
-    billing: "經 Stripe 收費 · 信用卡或 Link · 轉換方案按比例計算",
+    billing: "經 Stripe 收費 · 信用卡或 Link · 升級按餘下日數收費，降級於續期時生效",
     refund: "改變主意？只要仍未有補貨提醒送到你手上，[7 日內可全額退款](/refunds)",
   },
 };

@@ -123,7 +123,7 @@ export const account: Dict["account"] = {
     perks: [`Checks om de ${SPEED.fastSec} seconden op je winkels, om de ${SPEED.checkSec} seconden op alle 269`, `Een bevestigde aanvulling in zo'n ${SPEED.alertSec} s op je telefoon`],
     cancel: "Altijd opzegbaar",
     get: (plan: string) => `Kies ${plan}`,
-    billing: "Gefactureerd via Stripe · kaart of Link · abonnementswijzigingen naar rato verrekend",
+    billing: "Gefactureerd via Stripe · kaart of Link · upgraden naar rato, downgraden vanaf de verlenging",
     refund: "Bedacht? [Je krijgt binnen 7 dagen je geld volledig terug](/refunds), zolang er nog geen voorraadalert bij je is aangekomen",
   },
 };

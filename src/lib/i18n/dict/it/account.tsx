@@ -119,7 +119,7 @@ export const account: Dict["account"] = {
     perks: ["Controlli ogni 5 secondi sui tuoi negozi, ogni 15 secondi su tutti gli altri", "Un rifornimento confermato sul tuo telefono in circa 3 s"],
     cancel: "Disdetta in qualsiasi momento",
     get: (plan: string) => `Scegli ${plan}`,
-    billing: "Fatturazione tramite Stripe · carta o Link · i cambi di piano sono calcolati pro rata",
+    billing: "Fatturazione tramite Stripe · carta o Link · salire di piano costa i giorni rimasti, scendere vale dal rinnovo",
     refund: "Hai cambiato idea? [Il rimborso completo è disponibile entro 7 giorni](/refunds) purché non ti abbia raggiunto nessun avviso di rifornimento",
   },
 };

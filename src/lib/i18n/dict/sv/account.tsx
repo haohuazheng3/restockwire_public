@@ -120,7 +120,7 @@ export const account: Dict["account"] = {
     perks: [`Dina butiker: var ${SPEED.fastSec}:e sekund. Alla 269: var ${SPEED.checkSec}:e`, `Bekräftad påfyllning når telefonen på cirka ${SPEED.alertSec} s`],
     cancel: "Uppsägning när som helst",
     get: (plan: string) => `Ta ${plan}`,
-    billing: "Stripe sköter betalningen · kort eller Link · planbyte räknas per dag",
+    billing: "Stripe sköter betalningen · kort eller Link · uppgradering räknas per dag, nedgradering gäller från förnyelsen",
     refund: "Ångrar du dig? [Pengarna tillbaka inom 7 dagar](/refunds), om ingen påfyllningsnotis har skickats till dig efter betalningen",
   },
 };

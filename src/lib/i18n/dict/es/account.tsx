@@ -124,7 +124,7 @@ export const account: Dict["account"] = {
     ],
     cancel: "Cancela cuando quieras",
     get: (plan: string) => `Elegir ${plan}`,
-    billing: "Cobros vía Stripe (tarjeta o Link) · al cambiar de plan pagas solo la diferencia",
+    billing: "Cobros vía Stripe (tarjeta o Link) · al subir de plan pagas solo los días que quedan; al bajar, cambia en la renovación",
     refund: "¿Has cambiado de idea? [Puedes pedir el reembolso completo en los primeros 7 días](/refunds) siempre que no te haya llegado ninguna alerta de reposición",
   },
 };

@@ -118,7 +118,7 @@ export const account: Dict["account"] = {
     perks: ["你挑的門市走 5 秒快線，其餘 269 家 15 秒一輪", "補貨確認後約 3 秒推播到手機"],
     cancel: "隨時可取消",
     get: (plan: string) => `選擇 ${plan}`,
-    billing: "透過 Stripe 計費 · 信用卡或 Link · 變更方案按比例計算",
+    billing: "透過 Stripe 計費 · 信用卡或 Link · 升級按剩餘天數計費，降級於續訂時生效",
     refund: "改變主意了？只要還沒有任何補貨通知送到你手上，[7 天內可全額退款](/refunds)",
   },
 };

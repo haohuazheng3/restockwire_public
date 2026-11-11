@@ -129,7 +129,7 @@ export const account: Dict["account"] = {
     ],
     cancel: "いつでも解約",
     get: (plan: string) => `${plan}を選ぶ`,
-    billing: "Stripeで決済 · カードまたはLink · プラン変更は日割り",
+    billing: "Stripeで決済 · カードまたはLink · 上位プランは日割り、下位プランは次回更新から",
     refund: "気が変わったら：入荷通知がまだ届いていなければ、[7日以内なら全額返金](/refunds)できます",
   },
 };

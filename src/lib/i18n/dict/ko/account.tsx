@@ -121,7 +121,7 @@ export const account: Dict["account"] = {
     perks: [`내 매장은 ${SPEED.fastSec}초 간격, 모든 매장은 ${SPEED.checkSec}초 간격으로 확인`, `재입고가 확정되면 약 ${SPEED.alertSec}초 뒤 휴대폰으로`],
     cancel: "해지는 아무 때나",
     get: (plan: string) => `${plan} 선택`,
-    billing: "Stripe로 결제 · 카드 또는 Link · 요금제 변경은 일할 계산",
+    billing: "Stripe로 결제 · 카드 또는 Link · 상위 요금제는 일할 계산, 하위 요금제는 갱신일부터",
     refund: "마음이 바뀌셨나요? 재입고 알림을 한 번도 받지 않았다면 [7일 이내 전액 환불](/refunds)을 받을 수 있어요",
   },
 };

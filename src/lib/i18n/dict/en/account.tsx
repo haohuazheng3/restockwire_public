@@ -142,7 +142,7 @@ export const account = {
     perks: [...SPEED_PERKS] as string[],
     cancel: "No contract · cancel when you like",
     get: (plan: string) => `Choose ${plan}`,
-    billing: "Billed through Stripe · card or Link · plan changes are prorated",
+    billing: "Billed through Stripe · card or Link · moving up bills the days left, moving down starts at renewal",
     /** The refund policy line, as published (no other refund wording anywhere). */
     refund: "Changed your mind? [A full refund is available within 7 days](/refunds) as long as no restock alert has reached you",
   },

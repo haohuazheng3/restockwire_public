@@ -126,7 +126,7 @@ export const account: Dict["account"] = {
     ],
     cancel: "Sans engagement, arrêt quand vous voulez",
     get: (plan) => `Choisir ${plan}`,
-    billing: "Facturé via Stripe · carte ou Link · changements de formule au prorata",
+    billing: "Facturé via Stripe · carte ou Link · formule supérieure facturée au prorata, formule inférieure au renouvellement",
     refund: "[Remboursement intégral sous 7 jours](/refunds) après un paiement, si aucune vraie alerte de remise en stock n’a suivi (les tests ne comptent pas)",
   },
 };

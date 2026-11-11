@@ -121,7 +121,7 @@ export const account: Dict["account"] = {
     perks: [`${SPEED.fastSec}-Sekunden-Takt für Ihre Stores, ${SPEED.checkSec}-Sekunden-Takt für alle anderen`, `Bestätigter Restock in etwa ${SPEED.alertSec} Sek. auf Ihrem Handy`] as string[],
     cancel: "Jederzeit kündbar",
     get: (plan: string) => `${plan} wählen`,
-    billing: "Zahlung via Stripe (Karte oder Link) · Tarifwechsel tagesgenau verrechnet",
+    billing: "Zahlung via Stripe (Karte oder Link) · Upgrade tagesgenau berechnet, Downgrade ab der nächsten Verlängerung",
     refund: "Doch nichts für Sie? [Innerhalb von 7 Tagen gibt es das Geld voll zurück](/refunds), solange Sie keinen Restock-Alarm erhalten haben",
   },
 };
