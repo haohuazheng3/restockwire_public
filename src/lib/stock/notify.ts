@@ -77,6 +77,34 @@ export function batchAlreadyAlerted(start: Date | undefined, sentAt: Date[]): bo
   return !!start && sentAt.some((t) => t.getTime() >= start.getTime());
 }
 
+/**
+ * Pure: which of the hits this process may send, given the alerts already recorded (sent, or claimed by another process
+ * a moment ago). Runs under the per store × part advisory lock in `claimHits`, so the answer cannot go stale before the
+ * winners' rows are written. One hit per (watch, store, part) at most: two copies of one listing in the same call are
+ * one alert.
+ */
+export function pickUnalerted<H extends { watchId: string; store: string; part: string; eventId: number }>(
+  hits: H[],
+  recorded: { watchId: string; storeNumber: string; partNumber: string; eventId: number | null; createdAt: Date }[],
+  startOf: (h: H) => Date | undefined,
+): H[] {
+  const sentAt = new Map<string, Date[]>();
+  const alerted = new Set<string>();
+  for (const r of recorded) {
+    const k = `${r.watchId}|${r.storeNumber}|${r.partNumber}`;
+    sentAt.set(k, [...(sentAt.get(k) ?? []), new Date(r.createdAt)]);
+    if (r.eventId != null) alerted.add(`${r.watchId}|${r.eventId}`);
+  }
+  const taken = new Set<string>();
+  return hits.filter((h) => {
+    const k = `${h.watchId}|${h.store}|${h.part}`;
+    if (taken.has(k) || alerted.has(`${h.watchId}|${h.eventId}`)) return false;
+    if (batchAlreadyAlerted(startOf(h), sentAt.get(k) ?? [])) return false;
+    taken.add(k);
+    return true;
+  });
+}
+
 export interface NotifyStats {
   matched: number;
   sent: number;
@@ -245,11 +273,56 @@ async function sendRestockAlerts(transitions: Transition[], eventIds: number[], 
     const item = itemFor(h.t.partNumber, store.country)!;
     return { item, store, quote: h.t.quote };
   };
+  // Claim before sending (2026-11-12). This site has two writers for one listing — its own fast lane (linode-2/3) and
+  // the relay's copy of the cluster's event (linode-4) — and both call this within a second of each other. Each read
+  // the other's alerts before the other had recorded them (rows were written after the push went out), so a member got
+  // the same restock twice (11-11 15:11:20.655/.735, 11-12 14:31:12.126/.308). Now, under a transaction-scoped
+  // advisory lock per store × part, the alerts are re-read and this process's rows are written first (status "sent",
+  // fixed up after the send); the other process waits a few milliseconds, sees them, and skips.
+  const hitKey = (h: Hit) => `${h.watch.id}|${h.eventId}`;
+  const allHits = [...perUser.values()].flatMap((g) => g.hits);
+  const won = new Set<string>();
+  if (allHits.length) {
+    const lockPairs = [...new Set(allHits.map((h) => `${h.t.storeNumber}|${h.t.partNumber}`))].sort();
+    const winners = await d.transaction(async (tx) => {
+      // Sorted, so two processes locking overlapping pairs never deadlock.
+      for (const p of lockPairs) await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`notify|${p}`}, 0))`);
+      const recorded = await tx
+        .select({ watchId: schema.notifications.watchId, storeNumber: schema.notifications.storeNumber, partNumber: schema.notifications.partNumber, eventId: schema.notifications.eventId, createdAt: schema.notifications.createdAt })
+        .from(schema.notifications)
+        .where(and(
+          inArray(schema.notifications.watchId, [...new Set(allHits.map((h) => h.watch.id))]),
+          eq(schema.notifications.status, "sent"),
+          sql`${schema.notifications.createdAt} > ${new Date(now.getTime() - BATCH_LOOKBACK_MS)}`,
+        ));
+      const picked = pickUnalerted(
+        allHits.map((h) => ({ h, watchId: h.watch.id, store: h.t.storeNumber, part: h.t.partNumber, eventId: h.eventId })),
+        recorded,
+        (x) => startOf.get(`${x.store}|${x.part}|${x.eventId}`),
+      ).map((x) => x.h);
+      if (picked.length) {
+        await tx.insert(schema.notifications).values(picked.map((h) => ({
+          watchId: h.watch.id, userId: h.watch.userId, eventId: h.eventId, storeNumber: h.t.storeNumber, partNumber: h.t.partNumber,
+          channel: (pushByUser.get(h.watch.userId) ?? []).length ? "push" : "email", status: "sent", createdAt: now,
+        }))).onConflictDoNothing();
+      }
+      return picked;
+    });
+    for (const h of winners) won.add(hitKey(h));
+    for (const [uid, g] of perUser) {
+      const kept = g.hits.filter((h) => won.has(hitKey(h)));
+      stats.skipped += g.hits.length - kept.length;
+      if (kept.length) g.hits = kept;
+      else perUser.delete(uid);
+    }
+  }
+  // The claimed rows get the outcome: provider id and latency, the channel that actually carried it, or "failed".
   const record = (hits: Hit[], channel: "push" | "email", status: "sent" | "failed", extra: { providerId?: string | null; latencyMs?: number; error?: string }) =>
-    d.insert(schema.notifications).values(hits.map((h) => ({
-      watchId: h.watch.id, userId: h.watch.userId, eventId: h.eventId ?? null, storeNumber: h.t.storeNumber, partNumber: h.t.partNumber,
-      channel, status, providerId: extra.providerId ?? null, latencyMs: extra.latencyMs ?? null, error: extra.error, createdAt: now,
-    }))).onConflictDoNothing();
+    Promise.all(hits.map((h) =>
+      d.update(schema.notifications)
+        .set({ channel, status, providerId: extra.providerId ?? null, latencyMs: extra.latencyMs ?? null, error: extra.error })
+        .where(and(eq(schema.notifications.watchId, h.watch.id), eq(schema.notifications.eventId, h.eventId))),
+    ));
 
   // Every member is served concurrently: one slow push service never serialises the others.
   await Promise.all([...perUser.values()].map(async (g) => {

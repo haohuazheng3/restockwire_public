@@ -128,3 +128,39 @@ describe("two copies of one listing alert once", () => {
     expect(batchAlreadyAlerted(undefined, [t(1)])).toBe(false);
   });
 });
+
+/**
+ * 2026-11-12: the fast lane (linode-2/3) and the relay (linode-4) each alert their own copy of one listing within a
+ * second; the second sender must see the first one's claim and skip (11-12 14:31:12.126/.308, one member, two pushes).
+ */
+describe("claim under the per store × part lock", () => {
+  const at = (s: number) => new Date(Date.UTC(2026, 10, 12, 14, 31, 0) + s * 1000);
+  const hit = (eventId: number, watchId = "w1") => ({ watchId, store: "R041", part: "MK1H4LL/A", eventId });
+  const start = () => at(9);
+
+  it("the relay copy is skipped once the fast lane's claim is recorded", async () => {
+    const { pickUnalerted } = await import("@/lib/stock/notify");
+    const fastClaim = [{ watchId: "w1", storeNumber: "R041", partNumber: "MK1H4LL/A", eventId: 5001000065, createdAt: at(12) }];
+    expect(pickUnalerted([hit(100111666)], fastClaim, start)).toEqual([]);
+  });
+  it("another member, or another configuration, is still alerted", async () => {
+    const { pickUnalerted } = await import("@/lib/stock/notify");
+    const fastClaim = [{ watchId: "w1", storeNumber: "R041", partNumber: "MK1H4LL/A", eventId: 5001000065, createdAt: at(12) }];
+    expect(pickUnalerted([hit(100111666, "w2")], fastClaim, start)).toHaveLength(1);
+    expect(pickUnalerted([{ ...hit(100111666), part: "MK1E4LL/A" }], fastClaim, start)).toHaveLength(1);
+  });
+  it("two copies in one call are one alert, and a first alert goes out", async () => {
+    const { pickUnalerted } = await import("@/lib/stock/notify");
+    expect(pickUnalerted([hit(5001000065), hit(100111666)], [], start)).toEqual([hit(5001000065)]);
+  });
+  it("an alert for an older batch does not hold back a new one", async () => {
+    const { pickUnalerted } = await import("@/lib/stock/notify");
+    const old = [{ watchId: "w1", storeNumber: "R041", partNumber: "MK1H4LL/A", eventId: 1, createdAt: at(-600) }];
+    expect(pickUnalerted([hit(2)], old, start)).toHaveLength(1);
+  });
+  it("notify.ts claims under an advisory lock before it sends", () => {
+    const src = readFileSync("src/lib/stock/notify.ts", "utf8");
+    expect(src).toMatch(/pg_advisory_xact_lock/);
+    expect(src.indexOf("pg_advisory_xact_lock")).toBeLessThan(src.indexOf("sendPushToRows(devices"));
+  });
+});
