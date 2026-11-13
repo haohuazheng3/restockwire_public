@@ -153,12 +153,14 @@ export function isFailoverError(e: unknown): boolean {
 }
 
 /**
- * The server is out of connection slots (53300: max_connections, or only the slots reserved for the poller role
- * are left). It passes in seconds as other instances' idle connections close, so it is waited out, not failed.
+ * The server is out of connection slots (53300: max_connections, a role's own CONNECTION LIMIT — RestockWire's site
+ * and fast lane share role restockwire (20) — or only the slots reserved for the poller role are left). When every
+ * probe was refused this way the pool throws "no database answers: … too many connections for role …", which
+ * matches too, so the wait covers a refused probe as well as a refused query. It passes in seconds as other instances' idle connections close, so it is waited out, not failed.
  */
 export function isBusyError(e: unknown): boolean {
   const err = e as { code?: string; message?: string };
-  return err?.code === "53300" || /too many clients|remaining connection slots are reserved/i.test(err?.message ?? "");
+  return err?.code === "53300" || /too many clients|too many connections for role|remaining connection slots are reserved/i.test(err?.message ?? "");
 }
 
 /** Waits before each retry of a query refused for want of a slot: about 3.5 s in all, then the error stands. */

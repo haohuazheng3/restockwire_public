@@ -55,6 +55,10 @@ export function errorFingerprintText(message: string): string {
  *  • wallet / extension globals (window.ethereum, solana, phantom…) that an injected script failed to set up.
  *  • a bare network loss with no frame of our own: Safari's "Load failed", Chrome's "Failed to fetch", Firefox's
  *    "NetworkError…" — the connection dropped or the page was left mid-request. With a frame of ours it is kept.
+ *  • React's DOM calls failing with "NotFoundError: Failed to execute 'insertBefore'/'removeChild' on 'Node': … not
+ *    a child of this node" — a page translator (Chrome / Google Translate) or an extension rewrote the text nodes
+ *    React owns. The frames are ours (React in /_next/) but the cause is the browser: 2026-11-13 one Japanese
+ *    visitor on /jp opened four groups (19 hits) within an hour and the probe mailed the owner.
  */
 export function isBrowserNoise(name: string, message: string, stack: string): boolean {
   const m = message.trim();
@@ -64,6 +68,7 @@ export function isBrowserNoise(name: string, message: string, stack: string): bo
   // Firefox for iOS injects its own scripts (window.__firefox__.reader, .refresh_youtube_quality_…) into every page;
   // when they run before the browser set the object up they throw from "global code" (2026-11-10: 3 groups at once).
   if (/__firefox__/.test(m)) return true;
+  if (/NotFoundError/i.test(name + " " + m) && /(insertBefore|removeChild)' on 'Node'.*not a child of this node/i.test(m)) return true;
   const ownFrame = stack.split("\n").some((l) => /restockwire\.com|\/_next\//.test(l) && !/global code@/.test(l));
   if (!ownFrame && /^TypeError$/i.test(name) && /^(Load failed|Failed to fetch|NetworkError when attempting to fetch resource\.?|The network connection was lost\.?|cancelled|The request timed out\.?)$/i.test(m)) return true;
   return false;

@@ -34,6 +34,7 @@ describe("out of connection slots (53300) is waited out", () => {
   it("recognises the refusal, and only it", () => {
     expect(isBusyError(busy)).toBe(true);
     expect(isBusyError(new Error("sorry, too many clients already"))).toBe(true);
+    expect(isBusyError(new Error('no database answers: primary too many connections for role "restockwire"; standby too many connections for role "restockwire"'))).toBe(true);
     expect(isBusyError({ code: "23505", message: "duplicate key" })).toBe(false);
   });
 

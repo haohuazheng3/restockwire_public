@@ -38,6 +38,12 @@ describe("isBrowserNoise — what the client error route drops (2026-11-08: a Br
     expect(isBrowserNoise("TypeError", "Failed to fetch", "")).toBe(true);
     expect(isBrowserNoise("TypeError", "Load failed", "fetchLive@https://restockwire.com/_next/static/chunks/app/page.js:1:200")).toBe(false);
   });
+  it("drops React DOM errors caused by a page translator rewriting the text (2026-11-13, /jp)", () => {
+    const react = "ui@https://restockwire.com/_next/static/chunks/0f1.js:1:9000";
+    expect(isBrowserNoise("NotFoundError", "Failed to execute 'insertBefore' on 'Node': The node before which the new node is to be inserted is not a child of this node.", react)).toBe(true);
+    expect(isBrowserNoise("Error", "NotFoundError: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.", react)).toBe(true);
+    expect(isBrowserNoise("NotFoundError", "The object can not be found here.", react)).toBe(false);
+  });
   it("keeps real errors in our code", () => {
     expect(isBrowserNoise("TypeError", "Cannot read properties of undefined (reading 'map')", "x@https://restockwire.com/_next/static/chunks/app/stores/page.js:1:900")).toBe(false);
     expect(isBrowserNoise("Error", "Minified React error #418", reporterFrame)).toBe(false);
