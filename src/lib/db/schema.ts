@@ -20,6 +20,7 @@ import {
   primaryKey,
   date,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 const ts = (name: string) => timestamp(name, { withTimezone: true, mode: "date" });
 
@@ -278,7 +279,9 @@ export const pollLog = pgTable(
     /** null = a US request; else the lower-case site code of the country asked ("uk"). Migration 0009. */
     country: text("country"),
   },
-  (t) => [index("poll_log_at_idx").on(t.at), index("poll_log_ok_idx").on(t.ok, t.at)],
+  // poll_log_ok_idx (ok, at) was dropped on 2026-11-16 (migration 0019): 163 MB on the 1 GB database host shared by
+  // three sites, scanned 46 times. Failure queries (admin filter, ops review) use the partial index below instead.
+  (t) => [index("poll_log_at_idx").on(t.at), index("poll_log_failed_at_idx").on(t.at).where(sql`not ${t.ok}`)],
 );
 
 /** One row per sweep (a full pass over all anchors × batches). */
