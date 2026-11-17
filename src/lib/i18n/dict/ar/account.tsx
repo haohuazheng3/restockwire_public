@@ -24,6 +24,16 @@ export const account: Dict["account"] = {
   title: "لوحة التنبيهات",
   units: { s: "ث", min: "د", taps: "نقرات" },
 
+  source: {
+    title: "كيف عرفت RestockWire؟",
+    lead: "نقرة واحدة وتنتهي.",
+    friend: "صديق أو أحد أفراد العائلة",
+    other: "غير ذلك",
+    otherAsk: "أين؟ مثلاً منتدى أو موقع أخبار",
+    send: "إرسال",
+    close: "إغلاق",
+  },
+
   plan: {
     title: "اشتراكك الحالي",
     none: "لا توجد باقة على هذا الحساب، لذا التنبيهات متوقفة",

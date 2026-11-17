@@ -17,6 +17,16 @@ export const account: Dict["account"] = {
   title: "Mijn alerts",
   units: { s: "s", min: "min", taps: "tikken" },
 
+  source: {
+    title: "Hoe heb je RestockWire leren kennen?",
+    lead: "Eén tik en je bent klaar.",
+    friend: "Vrienden of familie",
+    other: "Anders",
+    otherAsk: "Waar? Bijv. een forum of nieuwssite",
+    send: "Versturen",
+    close: "Sluiten",
+  },
+
   plan: {
     title: "Abonnement",
     none: "Geen abonnement op dit account, dus alerts staan op pauze",

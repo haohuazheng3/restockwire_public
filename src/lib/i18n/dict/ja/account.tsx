@@ -20,6 +20,16 @@ export const account: Dict["account"] = {
   title: "通知の管理",
   units: { s: "秒", min: "分", taps: "回" },
 
+  source: {
+    title: "RestockWire をどこで知りましたか？",
+    lead: "タップひとつで完了です。",
+    friend: "友人・家族",
+    other: "その他",
+    otherAsk: "どこで知りましたか（例：掲示板、ニュースサイト）",
+    send: "送信",
+    close: "閉じる",
+  },
+
   plan: {
     title: "ご利用プラン",
     none: "このアカウントにはプランがないため、通知は停止中です",

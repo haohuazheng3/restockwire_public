@@ -17,6 +17,16 @@ export const account: Dict["account"] = {
   title: "Mes alertes",
   units: { s: "s", min: "min", taps: "touchers" },
 
+  source: {
+    title: "Comment avez-vous connu RestockWire ?",
+    lead: "Un seul geste et c'est fini.",
+    friend: "Ami ou famille",
+    other: "Autre",
+    otherAsk: "Où ? Par ex. un forum ou un site d'actu",
+    send: "Envoyer",
+    close: "Fermer",
+  },
+
   plan: {
     title: "Formule",
     none: "Aucune formule sur ce compte : les alertes sont en pause",

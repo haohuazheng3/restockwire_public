@@ -12,6 +12,16 @@ export const account: Dict["account"] = {
   title: "Il tuo pannello avvisi",
   units: { s: "s", min: "min", taps: "tocchi" },
 
+  source: {
+    title: "Come hai conosciuto RestockWire?",
+    lead: "Basta un tocco.",
+    friend: "Amici o famiglia",
+    other: "Altro",
+    otherAsk: "Dove? Es. un forum o un sito di notizie",
+    send: "Invia",
+    close: "Chiudi",
+  },
+
   plan: {
     title: "Piano",
     none: "Nessun piano su questo account: gli avvisi sono in pausa",
