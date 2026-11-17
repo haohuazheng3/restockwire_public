@@ -144,6 +144,18 @@ export async function drainNotifications(timeoutMs = 15_000, settleMs = 1_000): 
   }
 }
 
+/**
+ * Only rules that point at one of these stores (`store_numbers ?| array[…]`). A rule is one store × one configuration
+ * (`ruleMatches` requires the store to be equal), so this drops nothing that could match.
+ *
+ * Why (2026-11-17, same fix as PickupChecker 404ffcf): loading every active rule of the model once per restocked
+ * response ran PickupChecker's intl poller out of heap during Apple's mass listing flips; this site runs the same path
+ * in its relay and fast lane, so it only asks for the restocked stores too.
+ */
+export function storeFilter(storeNumbers: string[]) {
+  return sql`${schema.watches.storeNumbers} ?| array[${sql.join(storeNumbers.map((s) => sql`${s}`), sql`, `)}]::text[]`;
+}
+
 export function notifyRestocks(transitions: Transition[], eventIds: number[], now = new Date()): Promise<NotifyStats> {
   return trackInFlight(sendRestockAlerts(transitions, eventIds, now));
 }
@@ -163,7 +175,7 @@ async function sendRestockAlerts(transitions: Transition[], eventIds: number[], 
     .select({ watch: schema.watches, email: schema.users.email, locale: schema.users.locale })
     .from(schema.watches)
     .innerJoin(schema.users, eq(schema.users.id, schema.watches.userId))
-    .where(and(eq(schema.watches.active, true), eq(schema.watches.paused, false), inArray(schema.watches.model, models)));
+    .where(and(eq(schema.watches.active, true), eq(schema.watches.paused, false), inArray(schema.watches.model, models), storeFilter([...new Set(restocks.map((x) => x.t.storeNumber))])));
 
   // Plan coverage: the oldest `limit` active rules of each user send (no plan = 0, plus = 10, pro = 20).
   const userIds = [...new Set(candidates.map((c) => c.watch.userId))];
