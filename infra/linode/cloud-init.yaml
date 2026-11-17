@@ -167,7 +167,10 @@ write_files:
         chown -R poller:poller "$APP"
         systemctl restart restockwire-poller
       }
-      HOST=$(sed -n 's/^HOST_LABEL=//p' /opt/restockwire/poller.env | head -1)
+      # systemd strips the quotes around HOST_LABEL="…" for the poller; sed does not (PickupChecker 11-17: the gate
+      # asked for host '"linode-3"', counted 0 on every host and restarted each poller three times per release).
+      HOST=$(sed -n 's/^HOST_LABEL=//p' /opt/restockwire/poller.env | head -1 | sed 's/^"\(.*\)"$/\1/')
+      HOST=${HOST:-$(hostname)}
       # Healthy = this host finished two rounds of its duty (a full US sweep covering ≥ 250 stores, or an
       # other-country round covering ≥ 150), or it reported itself alive with no duty at all (a standby, or a
       # primary whose US runs on the worker).
