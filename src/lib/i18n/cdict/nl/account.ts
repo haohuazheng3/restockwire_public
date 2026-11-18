@@ -39,6 +39,8 @@ export const account: CDict["account"] = {
       readyDevice: "Tot dit apparaat aanstaat, komen alerts per e-mail. Tik op **Zet meldingen aan** en ze staan hier binnen seconden.",
       readyBrowser: "Tot deze browser aanstaat, komen alerts per e-mail. Tik op **Zet meldingen aan** en ze staan hier binnen seconden.",
       on: "Een aanvulling staat hier binnen seconden, of de app nu open of dicht is.",
+      onComputer: "Op een computer verschijnen ze alleen als hij wakker is – voeg je telefoon ook toe.",
+      onEmail: "E-mailalerts staan op pauze zolang een apparaat meldingen aan heeft.",
     },
     elsewhere: {
       needsInstall: "Je {label} krijgt je alerts. Op de iPhone kan alleen de app op het beginscherm ze tonen, Safari niet.",

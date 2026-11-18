@@ -37,6 +37,8 @@ export const account: CDict["account"] = {
       readyDevice: "Las alertas te llegan por correo hasta que actives este dispositivo. Toca **Activar notificaciones** y te llegarán aquí en segundos.",
       readyBrowser: "Las alertas te llegan por correo hasta que actives este navegador. Toca **Activar notificaciones** y te llegarán aquí en segundos.",
       on: "Una reposición llega aquí en segundos, con la app abierta o cerrada.",
+      onComputer: "En un ordenador solo aparecen si está activo: añade también tu móvil.",
+      onEmail: "Las alertas por correo se pausan mientras algún dispositivo las tenga activadas.",
     },
     elsewhere: {
       needsInstall: "Tus alertas llegan a {label}. En el iPhone solo puede mostrarlas la app de la pantalla de inicio, no Safari.",

@@ -36,6 +36,8 @@ export const account: CDict["account"] = {
       readyDevice: "Finché questo dispositivo non è attivo, gli avvisi ti arrivano per email. Tocca **Accendi le notifiche** e arriveranno qui in pochi secondi.",
       readyBrowser: "Finché questo browser non è attivo, gli avvisi ti arrivano per email. Tocca **Accendi le notifiche** e arriveranno qui in pochi secondi.",
       on: "Notifiche accese: ogni rifornimento ti raggiunge qui in pochi secondi, app aperta o no.",
+      onComputer: "Su un computer compaiono solo quando è attivo: aggiungi anche il telefono.",
+      onEmail: "Gli avvisi via email si fermano finché un dispositivo ha le notifiche accese.",
     },
     elsewhere: {
       needsInstall: "I tuoi avvisi arrivano su: {label}. Su iPhone può mostrarli solo l'app nella schermata Home, non Safari.",

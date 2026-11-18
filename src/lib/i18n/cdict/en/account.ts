@@ -42,6 +42,9 @@ export const account = {
       readyDevice: "Alerts reach you by email until this device is on. Tap **Turn on notifications** and they land here within seconds.",
       readyBrowser: "Alerts reach you by email until this browser is on. Tap **Turn on notifications** and they land here within seconds.",
       on: "A restock lands here within seconds, app open or closed.",
+      /** Added after "on": a computer only shows pushes while awake; email pauses while any device has them on (a member read the silence as broken, 2026-11-18). */
+      onComputer: "On a computer they only appear while it's awake — add your phone too.",
+      onEmail: "Email alerts pause while any device has these on.",
     },
     /** Another device on the account already gets the alerts; {label} is a device name ("iPhone app", "2 devices"). */
     elsewhere: {

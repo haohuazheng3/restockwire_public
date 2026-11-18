@@ -36,6 +36,8 @@ export const account: CDict["account"] = {
       readyDevice: "이 기기를 켜기 전까지 알림은 이메일로 와요. **알림 켜기**를 누르면 몇 초 안에 여기로 와요.",
       readyBrowser: "이 브라우저를 켜기 전까지 알림은 이메일로 와요. **알림 켜기**를 누르면 몇 초 안에 여기로 와요.",
       on: "앱이 열려 있든 닫혀 있든, 재입고는 몇 초 안에 여기로 와요.",
+      onComputer: "컴퓨터에서는 잠자기 상태가 아닐 때만 보여요. 휴대폰도 추가해 두세요.",
+      onEmail: "기기 하나라도 켜져 있으면 이메일 알림은 잠시 멈춰요.",
     },
     elsewhere: {
       needsInstall: "알림은 {label}(으)로 받고 있어요. iPhone에서는 Safari가 아니라 홈 화면 앱만 알림을 띄울 수 있어요.",

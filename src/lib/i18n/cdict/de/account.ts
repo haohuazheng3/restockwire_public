@@ -36,6 +36,8 @@ export const account: CDict["account"] = {
       readyDevice: "Bis dieses Gerät eingeschaltet ist, kommen Alarme per E-Mail. Tippen Sie auf **Mitteilungen einschalten**, und sie landen binnen Sekunden hier.",
       readyBrowser: "Bis dieser Browser eingeschaltet ist, kommen Alarme per E-Mail. Tippen Sie auf **Mitteilungen einschalten**, und sie landen binnen Sekunden hier.",
       on: "Ein Restock landet binnen Sekunden hier, ob die App offen ist oder nicht.",
+      onComputer: "Auf einem Computer erscheinen sie nur, solange er wach ist – richten Sie zusätzlich Ihr Handy ein.",
+      onEmail: "Solange ein Gerät eingeschaltet ist, pausieren E-Mail-Alarme.",
     },
     elsewhere: {
       needsInstall: "Ihre Alarme gehen an: {label}. Auf dem iPhone kann nur die Home-Bildschirm-App sie anzeigen, nicht Safari.",
