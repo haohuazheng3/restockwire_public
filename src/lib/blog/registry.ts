@@ -89,7 +89,7 @@ export function longDate(ymd: string): string {
 
 /**
  * Indexability (the SEO plan): /blog is worth indexing from the first post; a category hub from its first post;
- * an article always. Empty hubs answer noindex, follow and stay out of the sitemap.
+ * an article always. Empty hubs stay out of the sitemap (they are not noindex: every page is indexable since 2026-11-18).
  */
 export function blogIndexable(posts: readonly BlogPost[] = POSTS): boolean {
   return posts.length > 0;

@@ -3,10 +3,9 @@ import type { MetadataRoute } from "next";
 import { MODELS, STORES, statesWithStores, citiesWithStores, storePath, cityPath, hasStatePage, storesOf, placeTarget, mapPath, restocksPath } from "@/lib/apple/catalog";
 import { INTL_CODES, prefixOf, type CountryCode } from "@/lib/apple/countries";
 import { latestEventPerStore } from "@/lib/stock/queries";
-import { PRODUCTS, US, productPath, isIndexedProductPage } from "@/lib/seo/products";
+import { PRODUCTS, US, productPath } from "@/lib/seo/products";
 import { NATIVE_LOCALES, pathInLocale } from "@/lib/i18n/locales";
 import { blogSitemapEntries } from "@/lib/blog/sitemap";
-import { inIndexScope } from "@/lib/seo/indexScope";
 import { GUIDE_SLUGS, comparePairs, hasRankingPage, reportWeeks } from "@/lib/content/insight";
 import { ALL_CODES } from "@/lib/apple/countries";
 
@@ -48,16 +47,11 @@ export function countryEntries(cc: Exclude<CountryCode, "us">, base: string, now
  */
 export const QUESTION_PAGES = ["/when-does-iphone-duo-restock", "/how-fast-does-iphone-duo-sell-out", "/iphone-duo-restock-alerts", "/iphone-duo-in-stock-near-me", "/how-to-buy-an-iphone-duo-in-store", "/iphone-duo-most-restocked-stores", "/apple-store-pickup-explained", "/iphone-duo-restock-checkout-guide", "/is-iphone-duo-back-in-stock", "/iphone-duo-availability-checker", "/where-to-buy-iphone-duo-today"] as const;
 
-/** /sitemap.xml: Google's index scope (lib/seo/indexScope.ts). */
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  return (await allSitemapEntries()).filter((e) => inIndexScope(new URL(e.url).pathname));
-}
-
 /**
- * Every listable page but the product pages beyond the national model pages: the in-scope ones go to /sitemap.xml,
- * the rest to /sitemap-wide.xml for Bing and the answer engines (lib/seo/widePages.ts).
+ * /sitemap.xml: every listable page but the product pages beyond the national ones, which /sitemap-wide.xml lists
+ * (lib/seo/widePages.ts). Every page is indexable since 2026-11-18 (owner: "全部开放并提交").
  */
-export async function allSitemapEntries(): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://restockwire.com";
   const now = new Date();
   const [latest, ...intlLatest] = await Promise.all([latestEventPerStore(), ...INTL_CODES.map((cc) => latestEventPerStore(cc))]);
@@ -81,11 +75,8 @@ export async function allSitemapEntries(): Promise<MetadataRoute.Sitemap> {
   const cities = citiesWithStores().filter((c) => c.stores.length > 1).map((c) => ({ url: `${base}${cityPath(c.state, c.name)}`, lastModified: latestOf(c.stores.map((x) => x.storeNumber)), changeFrequency: "hourly" as const, priority: 0.85 }));
   const stores = STORES.map((s) => ({ url: `${base}${storePath(s)}`, lastModified: latestOf([s.storeNumber]), changeFrequency: "hourly" as const, priority: 0.8 }));
 
-  // Product pages: only the national page of each model, storage size and color, minus the storage sizes whose
-  // keyword has no opening (NOT_INDEXED_PRODUCTS). Every place-level product page and every exact configuration
-  // stays out of the index (noindex, follow): the /apple-stores page of a place already answers "iPhone Duo in
-  // <place>", and one indexed page per place keeps the site free of near-duplicates.
-  const products: MetadataRoute.Sitemap = PRODUCTS.filter((p) => (p.kind === "storage" || p.kind === "color") && isIndexedProductPage(p, US)).map((p) => ({ url: `${base}${productPath(p, US)}`, lastModified: now, changeFrequency: "hourly" as const, priority: 0.5 }));
+  // Product pages here: the national page of each model, storage size and color; every other one is in /sitemap-wide.xml.
+  const products: MetadataRoute.Sitemap = PRODUCTS.filter((p) => p.kind === "storage" || p.kind === "color").map((p) => ({ url: `${base}${productPath(p, US)}`, lastModified: now, changeFrequency: "hourly" as const, priority: 0.5 }));
   const countries = INTL_CODES.flatMap((cc) => countryEntries(cc, base, now, latestOf));
   // Each country's pages in its own languages (docs/i18n.md §6): the same set under /{lang}-{cc}.
   const natives = NATIVE_LOCALES.flatMap((loc) => countryEntries(loc.cc as Exclude<CountryCode, "us">, base, now, latestOf).map((e) => ({ ...e, url: `${base}${pathInLocale(e.url.slice(base.length), loc)}` })));

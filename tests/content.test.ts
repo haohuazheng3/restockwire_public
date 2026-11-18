@@ -14,7 +14,6 @@ import { placePhotos } from "@/content/place-photos";
 import { SALES_TAX } from "@/content/sales-tax";
 import { publicRouteCheck } from "@/lib/seo/routes";
 import { hubFaq } from "@/lib/seo/placeCopy";
-import { NOT_INDEXED_PRODUCTS, PRODUCTS, US, isIndexedProductPage, productBySlug } from "@/lib/seo/products";
 
 /**
  * A site path that renders a page directly: the proxy neither redirects nor 404s it, and every segment
@@ -168,16 +167,6 @@ describe("location pages", () => {
   });
   it("has a 2026 sales-tax rate for every state with an Apple Store", () => {
     for (const st of statesWithStores()) expect(SALES_TAX[st.name], st.name).toBeDefined();
-  });
-});
-
-describe("product index scope", () => {
-  it("indexes national product pages except the storage sizes with no opening", () => {
-    for (const slug of NOT_INDEXED_PRODUCTS) expect(productBySlug(slug)?.kind, slug).toBe("storage");
-    expect(isIndexedProductPage(productBySlug("iphone-duo")!, US)).toBe(true);
-    expect(isIndexedProductPage(productBySlug("iphone-18-pro-max-burgundy")!, US)).toBe(true);
-    expect(isIndexedProductPage(productBySlug("iphone-duo-512gb")!, US)).toBe(false);
-    expect(PRODUCTS.filter((p) => (p.kind === "storage" || p.kind === "color") && isIndexedProductPage(p, US))).toHaveLength(14);
   });
 });
 

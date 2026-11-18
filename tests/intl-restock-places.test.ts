@@ -11,7 +11,6 @@ import { COUNTRIES, INTL_CODES, type Country, type CountryCode } from "@/lib/app
 import { emptyRestockTimes, restockTimesPath, type RestockTimes } from "@/lib/content/restockTimes";
 import { RESTOCK_TIMES_SLUG, intlRestockTimesPath, restockPlacePages, restockPlaceTarget } from "@/lib/content/restockPlaces";
 import { publicRouteCheck } from "@/lib/seo/routes";
-import { inIndexScope } from "@/lib/seo/indexScope";
 import { dict } from "@/lib/i18n/dict";
 import { LANGS, type Lang } from "@/lib/i18n/locales";
 import { cityLabel, countryLabel, regionLabel } from "@/lib/i18n/places";
@@ -44,8 +43,6 @@ describe("which places get a restock-hour page (the store-tree rule: one page pe
       for (const p of [...pages.regions, ...pages.cities]) {
         expect(publicRouteCheck(p.path), p.path).toBeNull();
         expect(p.storesPath).toBe(p.path.replace(`/${SLUG}/`, "/apple-stores/"));
-        // Served, linked, out of the index while the scope is narrow (owner, 2026-11-06).
-        expect(inIndexScope(p.path), p.path).toBe(false);
       }
     }
   });

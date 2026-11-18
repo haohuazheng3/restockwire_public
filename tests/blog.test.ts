@@ -55,15 +55,13 @@ describe("blog registry", () => {
 });
 
 describe("indexability and sitemap", () => {
-  it("an empty blog is noindex for Google and adds nothing to the sitemap", () => {
+  it("an empty blog adds nothing to the sitemap (its pages are indexable, 2026-11-18)", () => {
     expect(blogSitemapEntries("https://restockwire.com", [])).toEqual([]);
     expect(blogIndexable([])).toBe(false);
     for (const c of CATEGORY_SLUGS) expect(categoryIndexable(c, [])).toBe(false);
     if (POSTS.length === 0) {
-      // Google only since 2026-11-18: Bing and the answer engines may index every page.
-      const googleOnly = { index: true, follow: true, googleBot: { index: false, follow: true } };
-      expect(homeMeta().robots).toEqual(googleOnly);
-      for (const c of CATEGORIES) expect(categoryMeta(c).robots).toEqual(googleOnly);
+      expect(homeMeta().robots).toBeUndefined();
+      for (const c of CATEGORIES) expect(categoryMeta(c).robots).toBeUndefined();
     }
   });
   it("with posts: /blog, non-empty categories and every post, with real lastModified", () => {

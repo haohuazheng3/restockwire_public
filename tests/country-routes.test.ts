@@ -1,10 +1,10 @@
+import { PRODUCTS } from "@/lib/seo/products";
 import { NATIVE_LOCALES } from "@/lib/i18n/locales";
 import { describe, expect, it } from "vitest";
 import { publicRouteCheck } from "@/lib/seo/routes";
 import { storesOf, storePath, placeTarget, statesWithStores, citiesWithStores, hasStatePage } from "@/lib/apple/catalog";
 import { INTL_CODES } from "@/lib/apple/countries";
 import sitemap, { countryEntries } from "@/app/sitemap";
-import { inIndexScope } from "@/lib/seo/indexScope";
 import { switchHref, type SwitchCountry } from "@/components/site/CountrySwitcher";
 import { hreflangFor } from "@/components/pages/shared";
 import { liveKey, parseLiveKey } from "@/lib/liveScope";
@@ -112,11 +112,10 @@ describe("sitemap: every indexable country page, once, and nothing else", () => 
       for (const s of storesOf(cc)) expect(per[cc]).toContain(`${base}${storePath(s)}`);
     }
   });
-  it("has no duplicates and lists exactly the index scope (lib/seo/indexScope.ts)", async () => {
+  it("has no duplicates and lists every page, native versions included (index scope lifted 2026-11-18)", async () => {
     const every = (await sitemap()).map((e) => e.url);
     expect(new Set(every).size).toBe(every.length);
-    for (const url of every) expect(inIndexScope(new URL(url).pathname), url).toBe(true);
-    // RestockWire's own families (components/pages/insight) are indexed everywhere; the rest keeps the narrow scope.
+    for (const url of every) { const u = new URL(url); expect(publicRouteCheck(u.pathname, u.search), url).toBeNull(); }
     const OWN = /\/(apple-pickup-status|restock-reports|fastest-selling-apple-stores|compare-apple-stores|restock-alerts-on-apple-watch|restock-alerts-in-focus-mode|restock-alerts-on-android)(\/|$)/;
     const ownUrls = every.filter((u) => OWN.test(new URL(u).pathname));
     for (const l of NATIVE_LOCALES) expect(ownUrls, l.id).toContain(`${base}/${l.id}/apple-pickup-status`);
@@ -126,21 +125,12 @@ describe("sitemap: every indexable country page, once, and nothing else", () => 
     const all = every.filter((u) => !OWN.test(new URL(u).pathname));
     const prefixes = [...INTL_CODES, ...NATIVE_LOCALES.map((l) => l.id)];
     const us = all.filter((u) => !prefixes.some((p) => u === `${base}/${p}` || u.startsWith(`${base}/${p}/`)));
-    // US: 12 static pages, 11 question pages, 3 model pages, 32 states, 26 cities, 269 stores.
-    expect(us).toHaveLength(359); // Includes five Stock Signal guides.
-    for (const p of ["/when-does-iphone-duo-restock", "/how-fast-does-iphone-duo-sell-out", "/iphone-duo-restock-alerts", "/iphone-duo-in-stock-near-me", "/how-to-buy-an-iphone-duo-in-store", "/iphone-duo-most-restocked-stores", "/apple-store-pickup-explained", "/iphone-duo-restock-checkout-guide", "/is-iphone-duo-back-in-stock", "/iphone-duo-availability-checker", "/where-to-buy-iphone-duo-today", "/in-stock/iphone-duo"]) expect(us).toContain(`${base}${p}`);
-    expect(us).not.toContain(`${base}/when-does-iphone-duo-restock/california`);
-    expect(us.filter((u) => u.includes("/in-stock/"))).toHaveLength(3);
-    // Other countries: home, restock log and restock times each, plus the store index where it is a page of its own.
-    for (const cc of INTL_CODES) {
-      const mine = all.filter((u) => u === `${base}/${cc}` || u.startsWith(`${base}/${cc}/`));
-      for (const p of ["", "/restock-log", "/when-does-iphone-duo-restock"]) expect(mine, cc).toContain(`${base}/${cc}${p}`);
-      expect(mine.length, cc).toBeLessThanOrEqual(4);
-      for (const url of mine) { const u = new URL(url); expect(publicRouteCheck(u.pathname, u.search), url).toBeNull(); }
-    }
-    // No native-language page while the scope is narrow.
-    expect(all.filter((u) => NATIVE_LOCALES.some((l) => u === `${base}/${l.id}` || u.startsWith(`${base}/${l.id}/`)))).toHaveLength(0);
-    expect(all.length).toBeLessThan(450);
+    for (const p of ["/when-does-iphone-duo-restock", "/when-does-iphone-duo-restock/california", "/in-stock/iphone-duo", "/in-stock/iphone-duo-512gb", "/in-stock/iphone-18-pro-max-burgundy"]) expect(us).toContain(`${base}${p}`);
+    // US product pages here: the three models and every storage and color page (the rest: /sitemap-wide.xml).
+    expect(us.filter((u) => u.includes("/in-stock/"))).toHaveLength(3 + PRODUCTS.filter((p) => p.kind === "storage" || p.kind === "color").length);
+    // Every other country: all of its country pages, in English and in each native version.
+    for (const cc of INTL_CODES) for (const url of per[cc]) expect(all, url).toContain(url);
+    for (const l of NATIVE_LOCALES) expect(all, l.id).toContain(`${base}/${l.id}`);
   });
 });
 

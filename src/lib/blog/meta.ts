@@ -4,12 +4,9 @@
  */
 import type { Metadata } from "next";
 import { BLOG_HOME } from "@/content/blog";
-import { GOOGLE_NOINDEX } from "@/lib/seo/indexScope";
-import { blogIndexable, blogPath, categoryIndexable, categoryPath, postPath, TITLE_SUFFIX } from "./registry";
+import { blogPath, categoryPath, postPath, TITLE_SUFFIX } from "./registry";
 import type { BlogCategory, BlogPost } from "./types";
 
-/** Empty hubs: kept out of Google only (2026-11-18, every page open to Bing and the answer engines). */
-const NOINDEX: Metadata["robots"] = GOOGLE_NOINDEX;
 
 export function homeMeta(): Metadata {
   return {
@@ -17,7 +14,6 @@ export function homeMeta(): Metadata {
     description: BLOG_HOME.description,
     alternates: { canonical: blogPath() },
     openGraph: { type: "website", siteName: "RestockWire", title: BLOG_HOME.title, description: BLOG_HOME.description, url: blogPath() },
-    ...(blogIndexable() ? {} : { robots: NOINDEX }),
   };
 }
 
@@ -29,7 +25,6 @@ export function categoryMeta(cat: BlogCategory, page = 1): Metadata {
     description: cat.description,
     alternates: { canonical: path },
     openGraph: { type: "website", siteName: "RestockWire", title, description: cat.description, url: path },
-    ...(categoryIndexable(cat.slug) ? {} : { robots: NOINDEX }),
   };
 }
 

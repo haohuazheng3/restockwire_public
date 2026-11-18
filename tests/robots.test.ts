@@ -48,20 +48,20 @@ describe("robots.txt once the site is indexable", () => {
     }
   });
 
-  it("keeps Google (\"*\") out of place-level product pages, filtered views and private areas", () => {
+  it("keeps every crawler out of filtered views and private areas only (2026-11-18)", () => {
+    expect(robots().rules).toHaveLength(2); // "*" (Googlebot) and the named group, with the same rules
     const g = group("*");
-    expect(robots().rules).toHaveLength(2); // "*" and the named group: Googlebot has no group of its own
-    for (const u of ["/in-stock/iphone-duo/california", "/in-stock/iphone-duo/new-york/new-york/fifthavenue", "/in-stock/iphone-18-pro-256gb-black/new-york/new-york/fifthavenue", "/live-map?state=CA&model=duo", "/restock-log?model=all&state=california", "/admin", "/account", "/api/search-index", "/checkout/success",
-      "/uk/in-stock/iphone-duo/greater-london", "/ca/in-stock/iphone-duo-256gb/ontario/toronto/eatoncentre", "/jp/live-map?model=duo", "/de/restock-log?model=all", "/at/in-stock/iphone-duo/vienna/vienna/kaerntnerstrasse"]) {
+    for (const u of ["/live-map?state=CA&model=duo", "/restock-log?model=all&state=california", "/admin", "/account", "/api/search-index", "/checkout/success", "/jp/live-map?model=duo", "/de/restock-log?model=all"]) {
       expect(allowed(g, u), u).toBe(false);
     }
+    expect(robots().sitemap).toEqual(["https://restockwire.com/sitemap.xml", "https://restockwire.com/sitemap-wide.xml"]);
   });
 
-  it("lets Bing and every named AI crawler fetch every product page, at every level (owner 2026-11-18)", () => {
+  it("lets Google, Bing and every named AI crawler fetch every product page, at every level (owner 2026-11-18)", () => {
     const stock = ["/in-stock/iphone-duo/california", "/in-stock/iphone-duo/new-york/new-york/fifthavenue", "/in-stock/iphone-18-pro-256gb-black/new-york/new-york/fifthavenue",
       "/uk/in-stock/iphone-duo/greater-london", "/ca/in-stock/iphone-duo-256gb/ontario/toronto/eatoncentre", "/at/in-stock/iphone-duo/vienna/vienna/kaerntnerstrasse", "/ja-jp/in-stock/iphone-duo-1tb/tokyo/tokyo"];
     const closed = ["/live-map?state=CA&model=duo", "/restock-log?model=all&state=california", "/jp/live-map?model=duo", "/de/restock-log?model=all", "/admin", "/account", "/api/search-index", "/checkout/success"];
-    for (const ua of NAMED_AGENTS) {
+    for (const ua of ["*", ...NAMED_AGENTS]) {
       const g = group(ua);
       expect(stock.filter((u) => !allowed(g, u)), ua).toEqual([]);
       expect(closed.filter((u) => allowed(g, u)), ua).toEqual([]);

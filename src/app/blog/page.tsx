@@ -1,6 +1,6 @@
 /**
- * /blog: the four categories, the three newest posts across them, and a short intro. Indexable from the first
- * post (lib/blog/meta.ts); until then, noindex, follow and the one-line empty state.
+ * /blog: the four categories, the three newest posts across them, and a short intro; the one-line empty state
+ * until the first post. Indexable (every page is since 2026-11-18); in the sitemap from the first post.
  */
 import type { Metadata } from "next";
 import { PendingLink as Link } from "@/components/ui/PendingLink";

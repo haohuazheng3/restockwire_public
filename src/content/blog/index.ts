@@ -4,8 +4,8 @@
  * Adding a post: write it as its own module under src/content/blog/posts/<slug>.ts exporting a BlogPost (a
  * Markdown-ish body string, see lib/blog/markdown.ts, or a JSX render function with its word count), import it
  * here and add it to POSTS. tests/blog.test.ts checks slugs, categories, dates, titles (≤ 60 characters),
- * descriptions (140–160) and cover alt texts. A category with no posts is noindex and absent from the sitemap;
- * /blog itself is indexable from the first post.
+ * descriptions (140–160) and cover alt texts. A category with no posts is absent from the sitemap; /blog itself is
+ * listed from the first post (every page is indexable since 2026-11-18).
  */
 import type { BlogCategory, BlogPost } from "@/lib/blog/types";
 

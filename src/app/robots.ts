@@ -5,18 +5,15 @@ import { NATIVE_LOCALES } from "@/lib/i18n/locales";
 /** Search and AI answer engines are welcome everywhere public; private areas stay out for everyone. */
 const PRIVATE = ["/admin", "/account", "/api/", "/checkout/"];
 /**
- * Filtered views that are never meant for Google's index: every place-level product page (noindex for Google) and
- * the map / restock-log filters (canonical to /live-map and /restock-log). Location pages link to about 13,500 of
- * them, so Google crawling them would waste a young site's crawl budget on pages it discards; Google's advice for
- * faceted URLs you don't need indexed is to block crawling in robots.txt. National product pages
- * (/in-stock/{product}) and every /apple-stores page stay open. Every other country repeats the three under its prefix.
+ * Filtered views, never pages of their own: the map and restock-log filters (canonical to /live-map and /restock-log).
+ * Every other public page is open to every crawler since 2026-11-18 (owner: "所有页面都对 ai 爬虫开放", then for Google
+ * too: "全部开放并提交"); before that "*" (Googlebot) was also kept out of every place-level product page (/in-stock/*\/).
+ * Every other country repeats the two under its prefix.
  */
-export const FACETS = ["/in-stock/*/", "/live-map?", "/restock-log?", ...[...INTL_CODES, ...NATIVE_LOCALES.map((l) => l.id)].flatMap((p) => [`/${p}/in-stock/*/`, `/${p}/live-map?`, `/${p}/restock-log?`])];
-/** The map and restock-log filters alone: the only views closed to Bing and the answer engines. */
-export const FILTERS = FACETS.filter((f) => !f.includes("/in-stock/"));
+export const FILTERS = ["/live-map?", "/restock-log?", ...[...INTL_CODES, ...NATIVE_LOCALES.map((l) => l.id)].flatMap((p) => [`/${p}/live-map?`, `/${p}/restock-log?`])];
 /**
- * Bing and the answer-engine / AI crawlers: every public page, product pages at every level included (owner
- * 2026-11-18: "所有页面都对 ai 爬虫开放", "第二个网站也全部放开"). One group for all of them; Google keeps "*".
+ * Search, answer-engine and AI crawlers named on purpose, with exactly the rules of "*" (a named group replaces "*"
+ * for that agent, so the rules are repeated, once, for all of them).
  */
 export const NAMED_AGENTS = [
   "Bingbot",
@@ -33,12 +30,11 @@ export default function robots(): MetadataRoute.Robots {
   if (!indexable) return { rules: [{ userAgent: "*", disallow: "/" }] };
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: [...PRIVATE, ...FACETS] },
+      { userAgent: "*", allow: "/", disallow: [...PRIVATE, ...FILTERS] },
       { userAgent: NAMED_AGENTS, allow: "/", disallow: [...PRIVATE, ...FILTERS] },
     ],
-    // Only Google's scope here: /sitemap-wide.xml (every other page) is submitted to Bing directly, so Google never
-    // reads a list of pages it is blocked from (lib/seo/widePages.ts).
-    sitemap: `${base}/sitemap.xml`,
+    // /sitemap-wide.xml: the product pages beyond /sitemap.xml (lib/seo/widePages.ts), an index of per-tree files.
+    sitemap: [`${base}/sitemap.xml`, `${base}/sitemap-wide.xml`],
     host: base,
   };
 }

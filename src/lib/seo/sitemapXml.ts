@@ -1,5 +1,4 @@
 /** Hand-written sitemap files (/sitemap-wide.xml, lib/seo/widePages.ts): XML and lastmod. */
-import type { MetadataRoute } from "next";
 import { INTL_CODES } from "@/lib/apple/countries";
 import { latestEventPerStore } from "@/lib/stock/queries";
 import type { PageEntry } from "./widePages";
@@ -22,12 +21,6 @@ export function urlset(entries: PageEntry[], latest: Record<string, string>, bas
     return best ? new Date(best).toISOString() : now;
   };
   return doc(entries.map((e) => `<url><loc>${esc(base + e.path)}</loc><lastmod>${lastmod(e.storeNumbers)}</lastmod></url>`).join("\n"));
-}
-
-/** A <urlset> of Next sitemap entries (absolute URLs). */
-export function entriesUrlset(entries: MetadataRoute.Sitemap): Response {
-  const iso = (d: string | Date | undefined) => new Date(d ?? Date.now()).toISOString();
-  return doc(entries.map((e) => `<url><loc>${esc(e.url)}</loc><lastmod>${iso(e.lastModified)}</lastmod></url>`).join("\n"));
 }
 
 /** A <sitemapindex> of absolute URLs. */

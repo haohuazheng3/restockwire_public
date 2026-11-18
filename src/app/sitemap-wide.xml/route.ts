@@ -1,4 +1,4 @@
-/** /sitemap-wide.xml: the index of every page outside Google's scope, for Bing and the answer engines (lib/seo/widePages.ts). */
+/** /sitemap-wide.xml: the index of the product sitemaps beyond /sitemap.xml (lib/seo/widePages.ts). */
 import { WIDE_FILES } from "@/lib/seo/widePages";
 import { sitemapIndex } from "@/lib/seo/sitemapXml";
 

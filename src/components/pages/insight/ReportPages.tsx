@@ -3,7 +3,6 @@
  * language. An edition is the country's confirmed restock log for one Monday–Sunday week in its reference zone
  * (lib/content/insight.ts weekReport); a week gets an edition from REPORT_MIN_RESTOCKS restocks.
  */
-import { GOOGLE_NOINDEX } from "@/lib/seo/indexScope";
 import type { Metadata } from "next";
 import { cache } from "react";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -15,7 +14,7 @@ import { PendingLink as Link } from "@/components/ui/PendingLink";
 import { emptyFacts } from "@/lib/content/facts";
 import { PART_INDEX, storeByNumber, storePath } from "@/lib/apple/catalog";
 import { prefixOf, type Country } from "@/lib/apple/countries";
-import { REPORT_MIN_RESTOCKS, reportWeeks, weekReport, type WeekReport } from "@/lib/content/insight";
+import { reportWeeks, weekReport, type WeekReport } from "@/lib/content/insight";
 import { alertHref } from "@/lib/seo/enrich";
 import { dict } from "@/lib/i18n/dict";
 import { pageLocale, t } from "@/lib/i18n/server";
@@ -110,11 +109,9 @@ export async function reportMetadata(c: Country, week: string, loc: Locale = eng
   const D = dict(loc.lang).insight.reports;
   const v = viewOf(r, c, loc.lang);
   const url = familyUrl("reports", loc, `/${week}`);
-  const thin = r.restocks < REPORT_MIN_RESTOCKS;
   return {
     title: { absolute: `${D.title(v.w, v.range)} · RestockWire` }, description: D.meta(v),
     alternates: { canonical: url },
-    ...(thin ? { robots: GOOGLE_NOINDEX } : {}),
     openGraph: { type: "article", siteName: "RestockWire", title: D.title(v.w, v.range), description: D.meta(v), url },
   };
 }
