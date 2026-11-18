@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { INTL_CODES } from "@/lib/apple/countries";
 import { MODELS } from "@/lib/apple/catalog-core";
 import { NATIVE_LOCALES } from "@/lib/i18n/locales";
@@ -12,6 +13,10 @@ import { NATIVE_LOCALES } from "@/lib/i18n/locales";
  * state/city restock-times pages, and the US storage/color product pages.
  *
  * Widen it later by deleting a rule here: the sitemap and the header both follow this one function.
+ *
+ * 2026-11-18 (owner: "所有页面都对 ai 爬虫开放", "第二个网站也全部放开"): the scope is now Google's only. Out-of-scope pages
+ * say `googlebot: noindex, follow`, so Bing and the answer engines (ChatGPT, Claude, Perplexity…) may index every page;
+ * robots.txt lets them crawl all of it (app/robots.ts) and /sitemap-wide.xml lists it for them (submitted to Bing only).
  */
 const INTL = new Set<string>(INTL_CODES);
 const NATIVE = new Set<string>(NATIVE_LOCALES.map((l) => l.id));
@@ -35,4 +40,7 @@ export function inIndexScope(pathname: string): boolean {
   return true;
 }
 
-export const OUT_OF_SCOPE_ROBOTS = "noindex, follow";
+/** The X-Robots-Tag of an out-of-scope page: addressed to Google only. */
+export const OUT_OF_SCOPE_ROBOTS = "googlebot: noindex, follow";
+/** The same as page metadata, for the pages kept out of Google's index by quality rules (thin weeks, empty blog hubs, non-national product pages). */
+export const GOOGLE_NOINDEX: Metadata["robots"] = { index: true, follow: true, googleBot: { index: false, follow: true } };

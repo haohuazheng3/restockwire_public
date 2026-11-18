@@ -4,10 +4,12 @@
  */
 import type { Metadata } from "next";
 import { BLOG_HOME } from "@/content/blog";
+import { GOOGLE_NOINDEX } from "@/lib/seo/indexScope";
 import { blogIndexable, blogPath, categoryIndexable, categoryPath, postPath, TITLE_SUFFIX } from "./registry";
 import type { BlogCategory, BlogPost } from "./types";
 
-const NOINDEX: Metadata["robots"] = { index: false, follow: true };
+/** Empty hubs: kept out of Google only (2026-11-18, every page open to Bing and the answer engines). */
+const NOINDEX: Metadata["robots"] = GOOGLE_NOINDEX;
 
 export function homeMeta(): Metadata {
   return {

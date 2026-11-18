@@ -48,7 +48,16 @@ export function countryEntries(cc: Exclude<CountryCode, "us">, base: string, now
  */
 export const QUESTION_PAGES = ["/when-does-iphone-duo-restock", "/how-fast-does-iphone-duo-sell-out", "/iphone-duo-restock-alerts", "/iphone-duo-in-stock-near-me", "/how-to-buy-an-iphone-duo-in-store", "/iphone-duo-most-restocked-stores", "/apple-store-pickup-explained", "/iphone-duo-restock-checkout-guide", "/is-iphone-duo-back-in-stock", "/iphone-duo-availability-checker", "/where-to-buy-iphone-duo-today"] as const;
 
+/** /sitemap.xml: Google's index scope (lib/seo/indexScope.ts). */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  return (await allSitemapEntries()).filter((e) => inIndexScope(new URL(e.url).pathname));
+}
+
+/**
+ * Every listable page but the product pages beyond the national model pages: the in-scope ones go to /sitemap.xml,
+ * the rest to /sitemap-wide.xml for Bing and the answer engines (lib/seo/widePages.ts).
+ */
+export async function allSitemapEntries(): Promise<MetadataRoute.Sitemap> {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://restockwire.com";
   const now = new Date();
   const [latest, ...intlLatest] = await Promise.all([latestEventPerStore(), ...INTL_CODES.map((cc) => latestEventPerStore(cc))]);
@@ -103,6 +112,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...INTL_CODES.flatMap((cc) => ownFor(cc, prefixOf(cc))),
     ...NATIVE_LOCALES.flatMap((loc) => [...ownFor(loc.cc, `/${loc.id}`), ...guides.map((g) => ({ url: `${base}/${loc.id}/${g}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.6 }))]),
   ];
-  // Only what is inside the index scope (lib/seo/indexScope.ts); the rest is served with noindex, follow.
-  return [{ url: `${base}/stock-check-timing`, lastModified: new Date("2026-11-07T22:30:00Z"), changeFrequency: "monthly" as const, priority: 0.7 }, ...signalPages, ...statics, ...questions, ...restockPlaces, ...models, ...states, ...cities, ...stores, ...products, ...blog, ...countries, ...natives, ...own].filter((e) => inIndexScope(new URL(e.url).pathname));
+  return [{ url: `${base}/stock-check-timing`, lastModified: new Date("2026-11-07T22:30:00Z"), changeFrequency: "monthly" as const, priority: 0.7 }, ...signalPages, ...statics, ...questions, ...restockPlaces, ...models, ...states, ...cities, ...stores, ...products, ...blog, ...countries, ...natives, ...own];
 }

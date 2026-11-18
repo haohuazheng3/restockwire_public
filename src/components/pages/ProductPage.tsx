@@ -14,6 +14,7 @@ import { PendingLink as Link } from "@/components/ui/PendingLink";
 import { STORE_INDEX, modelByKey, appleBuyUrl, cityPath, statePath, storePath, appleName, itemFor, placeTarget, mapPath, restocksPath, storesIndexPath } from "@/lib/apple/catalog";
 import { prefixOf, theName, type Country } from "@/lib/apple/countries";
 import { isIndexedProductPage, productPath, storePlace, type Place, type Product } from "@/lib/seo/products";
+import { GOOGLE_NOINDEX } from "@/lib/seo/indexScope";
 import { treeOf } from "@/lib/seo/tree";
 import { childPlaces, configGrid, facetsFor, indexStock, lastChecked, nearestWithStock, siblingPlaces, storeLines } from "@/lib/seo/productData";
 import { productJsonLdFor } from "@/lib/seo/productCopy";
@@ -94,7 +95,7 @@ const load = cache(async (cc: Country["cc"], slug: string, path: string) => {
   const lines = storeLines(ix, product, place.stores);
   const inStock = lines.filter((l) => l.available.length > 0).length;
   // Index scope (the SEO plan §10, §12): the national page of a model (US: also a storage size or a color). Every
-  // place-level product page and every exact configuration is noindex, follow: the /apple-stores page of that place
+  // place-level product page and every exact configuration is noindex, follow for Google (Bing and the answer engines may index it, 2026-11-18): the /apple-stores page of that place
   // is the single indexed page for the model in that place, which keeps near-duplicates out of the index.
   const indexable = isIndexedProductPage(product, place);
   return { kind: "page" as const, product, place, ix, lines, inStock, stats, clock, feed, reports, indexable, sell, heat, leaders, now };
@@ -133,7 +134,7 @@ export async function productMetadata(c: Country, p: ProductParams, loc: Locale 
   const languages = d.place.level === "country" && d.product.kind === "model" ? hreflangFor({ model: d.product.slug }, loc) : undefined;
   return {
     title, description, alternates: { canonical, ...(languages ? { languages } : {}) },
-    ...(INDEXABLE && !d.indexable ? { robots: { index: false, follow: true } } : {}),
+    ...(INDEXABLE && !d.indexable ? { robots: GOOGLE_NOINDEX } : {}),
     openGraph: { type: "website", siteName: "RestockWire", title, description, url },
   };
 }

@@ -3,6 +3,7 @@
  * language. An edition is the country's confirmed restock log for one Monday–Sunday week in its reference zone
  * (lib/content/insight.ts weekReport); a week gets an edition from REPORT_MIN_RESTOCKS restocks.
  */
+import { GOOGLE_NOINDEX } from "@/lib/seo/indexScope";
 import type { Metadata } from "next";
 import { cache } from "react";
 import { JsonLd } from "@/components/seo/JsonLd";
@@ -113,7 +114,7 @@ export async function reportMetadata(c: Country, week: string, loc: Locale = eng
   return {
     title: { absolute: `${D.title(v.w, v.range)} · RestockWire` }, description: D.meta(v),
     alternates: { canonical: url },
-    ...(thin ? { robots: { index: false, follow: true } } : {}),
+    ...(thin ? { robots: GOOGLE_NOINDEX } : {}),
     openGraph: { type: "article", siteName: "RestockWire", title: D.title(v.w, v.range), description: D.meta(v), url },
   };
 }

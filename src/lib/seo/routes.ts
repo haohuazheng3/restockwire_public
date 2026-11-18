@@ -22,6 +22,8 @@ export const TOP_LEVEL: ReadonlySet<string> = new Set([
   "apple-pickup-status", "restock-reports", "fastest-selling-apple-stores", "compare-apple-stores",
   "restock-alerts-on-apple-watch", "restock-alerts-in-focus-mode", "restock-alerts-on-android",
   "blog", "opengraph-image", "_not-found", "icons", "img", "vendor", "zip",
+  // Every page outside Google's scope, for Bing and the answer engines (/sitemap-wide/{file}.xml, lib/seo/widePages.ts).
+  "sitemap-wide",
 ]);
 
 /** Question pages that exist for every country under its prefix (/ca/when-does-iphone-duo-restock …). */
