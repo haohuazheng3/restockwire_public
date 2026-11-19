@@ -10,7 +10,8 @@ import { alertSetOf } from "@/lib/alertSet";
 import { Identify } from "@/components/account/Identify";
 import { SignOutButton } from "@/components/account/SignOutButton";
 import { DeviceList } from "@/components/account/DeviceList";
-import { PushSetup } from "@/components/push/PushSetup";
+import { PushSetup, type EmailMode } from "@/components/push/PushSetup";
+import { hasMobileDevice } from "@/lib/push/platform";
 import { env } from "@/lib/env";
 import { summarizeDevices } from "@/lib/devices";
 import { RestockTimes, RestockTimesSkeleton } from "@/components/account/RestockTimes";
@@ -59,6 +60,8 @@ export default async function Account() {
   const active = watches.filter((w) => w.active).length;
   const renews = sub?.currentPeriodEnd ? day(lang, sub.currentPeriodEnd, "UTC") : null;
   const deviceInfo = summarizeDevices(devices, lang);
+  // Email goes quiet only once a phone or tablet has notifications on (computers only: every alert also by email).
+  const emailMode: EmailMode = hasMobileDevice(devices.filter((x) => !x.disabledAt)) ? "pause" : "too";
   const fit = PAID_PLANS.find((k) => PLANS[k].limit >= active) ?? "max";
   // An account may watch stores in several countries: the picker opens on the country most of them are in,
   // and every chosen store keeps its name (grouped by country) whatever list is showing.
@@ -83,7 +86,7 @@ export default async function Account() {
 
       {/* First thing on the dashboard (owner 2026-11-05): are phone notifications on? If not, the one button that turns them on. */}
       <div>
-        <PushSetup vapidPublicKey={env.vapidPublicKey()} account={deviceInfo} />
+        <PushSetup vapidPublicKey={env.vapidPublicKey()} account={deviceInfo} email={emailMode} />
         {devices.length > 0 && (
           <DeviceList devices={devices.map((x) => ({ id: x.id, platform: x.platform, standalone: x.standalone, added: ago(lang, x.createdAt), lastAlert: x.lastSentAt ? ago(lang, x.lastSentAt) : null, disabledAt: x.disabledAt?.toISOString() ?? null, lastError: x.lastError }))} />
         )}

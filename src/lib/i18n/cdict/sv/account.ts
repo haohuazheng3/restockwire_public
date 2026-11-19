@@ -41,7 +41,8 @@ export const account: CDict["account"] = {
       readyBrowser: "Notiserna kommer via mejl tills den här webbläsaren är påslagen. Tryck på **Aktivera notiser**, så landar de här inom några sekunder.",
       on: "En påfyllning landar här inom några sekunder, med appen öppen eller stängd.",
       onComputer: "På en dator syns de bara när den är vaken – lägg till mobilen också.",
-      onEmail: "Mejlnotiserna pausas så länge någon enhet har notiser på.",
+      onEmail: "Mejlnotiserna pausas så länge en mobil eller surfplatta har notiser på.",
+      onEmailToo: "Tills en mobil eller surfplatta har notiser på fortsätter mejlnotiserna också.",
     },
     elsewhere: {
       needsInstall: "Notiser skickas till {label}. Safari på iPhone visar inga notiser – det gör bara hemskärmsappen.",

@@ -22,6 +22,7 @@ import { recordError, errorMessage } from "../errors";
 import { enabledSubscriptionsFor, notifyPushStopped, pushConfigured, sendPushNudge, sendPushToRows } from "../push/server";
 import { logOps } from "../ops";
 import { restockPayload } from "../push/payload";
+import { hasMobileDevice } from "../push/platform";
 import { coveredWatchIds, effectivePlan } from "../plans";
 import type { Transition } from "./ingest";
 import { langOfUser } from "../i18n/notify";
@@ -154,6 +155,16 @@ export async function drainNotifications(timeoutMs = 15_000, settleMs = 1_000): 
  */
 export function storeFilter(storeNumbers: string[]) {
   return sql`${schema.watches.storeNumbers} ?| array[${sql.join(storeNumbers.map((s) => sql`${s}`), sql`, `)}]::text[]`;
+}
+
+/**
+ * Which of a member's alerts go out by email, and which of those are recorded as email notifications. Email is the
+ * fallback (no device, or every push to that store failed). A member whose devices are all computers (`emailToo`, see
+ * hasMobileDevice) gets every alert by email as well, but only the fallback ones are recorded: a pushed alert already
+ * owns that rule × event's notification row.
+ */
+export function emailPlan<T>(all: T[], fallback: T[], hasDevices: boolean, emailToo: boolean): { send: T[]; record: T[] } {
+  return { send: hasDevices && emailToo ? all : fallback, record: fallback };
 }
 
 export function notifyRestocks(transitions: Transition[], eventIds: number[], now = new Date()): Promise<NotifyStats> {
@@ -369,17 +380,24 @@ async function sendRestockAlerts(transitions: Transition[], eventIds: number[], 
         }
       }));
     }
-    if (byEmail.length === 0) return;
+    // Computers only (no phone or tablet among the live devices): every alert also goes by email (owner, 2026-11-18).
+    const mail = emailPlan(g.hits, byEmail, devices.length > 0, !hasMobileDevice(devices));
+    if (mail.send.length === 0) return;
     try {
-      const providerId = await sendAlertEmail(g.c.email, byEmail.map(lineOf), byEmail[0].watch.id, lang);
-      await record(byEmail, "email", "sent", { providerId, latencyMs: Date.now() - started });
-      stats.sent += byEmail.length;
+      const providerId = await sendAlertEmail(g.c.email, mail.send.map(lineOf), mail.send[0].watch.id, lang);
+      if (mail.record.length) {
+        await record(mail.record, "email", "sent", { providerId, latencyMs: Date.now() - started });
+        stats.sent += mail.record.length;
+      }
+      if (mail.send.length > mail.record.length) {
+        await logOps("poller", "debug", `alert email copy sent with push (${mail.send.length - mail.record.length} alert(s))`, { userId, providerId }).catch(() => undefined);
+      }
       // No device at all: once in a while, the e-mail that says the phone banner exists (never blocks the alert).
       if (devices.length === 0) sendPushNudge(userId, g.c.email, now, lang).catch(() => undefined);
     } catch (e) {
-      stats.failed += byEmail.length;
-      await recordError("poller", `alert email failed: ${errorMessage(e)}`, { watchId: byEmail[0].watch.id });
-      await record(byEmail, "email", "failed", { error: errorMessage(e).slice(0, 500) });
+      stats.failed += mail.record.length;
+      await recordError("poller", `alert email failed: ${errorMessage(e)}`, { watchId: mail.send[0].watch.id });
+      if (mail.record.length) await record(mail.record, "email", "failed", { error: errorMessage(e).slice(0, 500) });
     }
   }));
   if (eventIds.length) {

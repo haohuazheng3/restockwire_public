@@ -37,7 +37,8 @@ export const account: CDict["account"] = {
       readyBrowser: "這個瀏覽器開啟通知之前，提醒會寄到你的電郵。按**開啟通知**，幾秒內便會送到這裏。",
       on: "無論 App 開着或關閉，補貨都會在幾秒內送到這裏。",
       onComputer: "電腦只會在未睡眠時彈出提醒，記得把手機也加進來。",
-      onEmail: "只要有裝置開啟通知，電郵提醒便會暫停。",
+      onEmail: "只要有手機或平板開啟通知，電郵提醒便會暫停。",
+      onEmailToo: "在手機或平板開啟通知前，電郵提醒會繼續同時寄出。",
     },
     elsewhere: {
       needsInstall: "你的{label}會收到提醒。在 iPhone 上只有主畫面 App 能顯示通知，Safari 不行。",

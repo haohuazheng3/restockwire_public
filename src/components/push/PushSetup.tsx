@@ -31,7 +31,14 @@ export function B({ text, vars = {} }: { text: string; vars?: Record<string, Rea
   return <>{out}</>;
 }
 
-export function PushSetup({ vapidPublicKey, title, compact = false, account }: { vapidPublicKey: string; title?: string; compact?: boolean; account?: DeviceSummary | null }) {
+/**
+ * What the account's email does while notifications are on (from the server, which sees every device): "pause" = a
+ * phone or tablet has them on; "too" = computers only, so every alert also goes by email. Unset (no account data):
+ * the card says only what this device knows.
+ */
+export type EmailMode = "pause" | "too";
+
+export function PushSetup({ vapidPublicKey, title, compact = false, account, email }: { vapidPublicKey: string; title?: string; compact?: boolean; account?: DeviceSummary | null; email?: EmailMode }) {
   const p = usePush(vapidPublicKey);
   const d = useT().account.push;
   // No "Preview here" any more (owner 2026-11-08): its in-page sample banner sat on top of the header card, and
@@ -47,7 +54,7 @@ export function PushSetup({ vapidPublicKey, title, compact = false, account }: {
             <h2 className={compact ? "text-lg font-semibold" : "text-xl font-semibold"}>{title ?? d.title}</h2>
             <StatusPill status={onElsewhere ? "on" : p.status} d={d} />
           </div>
-          <p className="mt-1 max-w-xl text-sm text-ink-2">{onElsewhere ? <Elsewhere p={p} label={elsewhere!} d={d} /> : <Explain p={p} d={d} />}</p>
+          <p className="mt-1 max-w-xl text-sm text-ink-2">{onElsewhere ? <Elsewhere p={p} label={elsewhere!} d={d} /> : <Explain p={p} d={d} email={email} />}</p>
         </div>
         {onElsewhere ? <ElsewhereActions p={p} d={d} /> : <Actions p={p} d={d} />}
       </div>
@@ -73,7 +80,7 @@ function StatusPill({ status, d }: { status: PushState["status"]; d: T }) {
   return <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${cls}`}>{label}</span>;
 }
 
-function Explain({ p, d }: { p: PushState; d: T }) {
+function Explain({ p, d, email }: { p: PushState; d: T; email?: EmailMode }) {
   const e = d.explain;
   switch (p.status) {
     case "checking": return <>{e.checking}</>;
@@ -86,8 +93,14 @@ function Explain({ p, d }: { p: PushState; d: T }) {
     // user believing they were set while every alert went to their email (FlowGlance, 2026-11-02).
     case "ready": return <B text={p.platform === "ios" ? e.readyIos : p.standalone ? e.readyDevice : e.readyBrowser} />;
     // "On" also says where the alerts stop going: a desktop member read the email going quiet as a broken account
-    // (2026-11-18), and a computer only shows a push while it is awake.
-    case "on": return <>{[e.on, p.platform === "desktop" ? e.onComputer : "", e.onEmail].filter(Boolean).reduce(joinSentences)}</>;
+    // (2026-11-18), and a computer only shows a push while it is awake. Email pauses only once a phone or tablet has
+    // them on; with computers only, every alert also goes by email (src/lib/push/platform.ts hasMobileDevice).
+    case "on": {
+      const mode = email ?? (p.platform === "ios" || p.platform === "android" ? "pause" : undefined);
+      const computer = p.platform === "desktop" && mode !== "pause" ? e.onComputer : "";
+      const mail = mode === "pause" ? e.onEmail : mode === "too" ? e.onEmailToo : "";
+      return <>{[e.on, computer, mail].filter(Boolean).reduce(joinSentences)}</>;
+    }
   }
 }
 

@@ -37,7 +37,8 @@ export const account: CDict["account"] = {
       readyBrowser: "Vos alertes arrivent par e-mail tant que ce navigateur n’est pas activé. Touchez **Activer les notifications** et elles arrivent ici en quelques secondes.",
       on: "Prêt. Chaque remise en stock s’affiche ici en quelques secondes, même app fermée.",
       onComputer: "Sur un ordinateur, elles n’apparaissent que s’il n’est pas en veille : ajoutez aussi votre téléphone.",
-      onEmail: "Les alertes par e-mail sont en pause tant qu’un appareil a les notifications activées.",
+      onEmail: "Les alertes par e-mail sont en pause tant qu’un téléphone ou une tablette a les notifications activées.",
+      onEmailToo: "Tant qu’aucun téléphone ni aucune tablette n’a les notifications activées, les alertes par e-mail continuent.",
     },
     elsewhere: {
       needsInstall: "Appareils servis : {label}. Sur iPhone, Safari ne peut pas les afficher : il faut l’icône de l’écran d’accueil.",
